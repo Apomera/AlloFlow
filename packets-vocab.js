@@ -437,10 +437,21 @@
       keys.forEach(function (k) {
         var mk = typeof myWords.normalizeMediaKey === 'function' ? myWords.normalizeMediaKey(k) : k;
         var entry = found[mk] || found[k] || null;
+        var isNone = !!(entry && entry.picture && entry.picture.none === true);
         var hasPic = !!(entry && entry.picture && !entry.picture.none && typeof entry.picture.dataUri === 'string' && entry.picture.dataUri);
-        if (hasPic) {
+        if (isNone) {
+          if (myPictures[k]) { delete myPictures[k]; changedPic = true; }
+          if (!(edits.words[k] && edits.words[k].noPicture)) {
+            wordEdit(k).noPicture = true;
+            changedPic = true;
+          }
+        } else if (hasPic) {
           if (!myPictures[k] || myPictures[k].dataUri !== entry.picture.dataUri) {
             myPictures[k] = { dataUri: entry.picture.dataUri, credit: entry.picture.credit || { own: true }, stored: true };
+            changedPic = true;
+          }
+          if (edits.words[k] && edits.words[k].noPicture) {
+            delete edits.words[k].noPicture;
             changedPic = true;
           }
         } else if (myPictures[k] && myPictures[k].stored) {
@@ -774,11 +785,26 @@
     var host = $('custom-pic-rows');
     if (!host) return;
     host.textContent = '';
+    var persistPic = function (key, patch) {
+      if (!myWords) return;
+      try {
+        if (typeof myWords.save === 'function') {
+          Promise.resolve(myWords.save({ word: key, picture: patch })).catch(function () {});
+        } else if (typeof myWords.putMedia === 'function') {
+          Promise.resolve(myWords.putMedia(key, { picture: patch })).catch(function () {});
+        } else if (typeof myWords.put === 'function') {
+          var nwKey = typeof myWords.normalizeWord === 'function' ? myWords.normalizeWord(key) : key;
+          if (nwKey) Promise.resolve(myWords.put(nwKey, { picture: patch })).catch(function () {});
+        }
+      } catch (_) {}
+    };
     rows.forEach(function (row) {
       var box = el('div', 'v-row');
       box.setAttribute('data-custom-pic-row', row.key);
       var line = el('div', 'v-line');
+      var isSuppressed = !!(row.pictureOff || (edits.words[row.key] && edits.words[row.key].noPicture === true));
       var status = row.customPicture ? 'Your picture is set.'
+        : isSuppressed ? 'Picture removed.'
         : row.pictureSource === 'diagram' ? 'School concept diagram.'
         : row.picture ? 'Picture from the picture set.'
         : 'No picture yet.';
@@ -804,12 +830,31 @@
         var rmBtn = button('Remove my picture', 'btn-small', function () {
           delete myPictures[row.key];
           if (edits.words[row.key]) delete edits.words[row.key].customPicture;
-          if (myWords && typeof myWords.putMedia === 'function') myWords.putMedia(row.key, { picture: null }).catch(function () {});
+          persistPic(row.key, null);
           setText('custom-pic-said', 'Removed your picture for ' + row.word + '.');
           changed();
         }, 'Remove my picture for ' + row.word);
         rmBtn.setAttribute('data-remove-pic', row.key);
         tools.appendChild(rmBtn);
+      } else if (row.picture && !isSuppressed) {
+        var hideBtn = button('Remove picture', 'btn-small', function () {
+          delete myPictures[row.key];
+          wordEdit(row.key).noPicture = true;
+          persistPic(row.key, { none: true });
+          setText('custom-pic-said', 'Removed picture for ' + row.word + '.');
+          changed();
+        }, 'Remove picture for ' + row.word);
+        hideBtn.setAttribute('data-hide-pic', row.key);
+        tools.appendChild(hideBtn);
+      } else if (isSuppressed) {
+        var restoreBtn = button('Restore picture', 'btn-small', function () {
+          if (edits.words[row.key]) delete edits.words[row.key].noPicture;
+          persistPic(row.key, null);
+          setText('custom-pic-said', 'Restored picture for ' + row.word + '.');
+          changed();
+        }, 'Restore picture for ' + row.word);
+        restoreBtn.setAttribute('data-restore-pic', row.key);
+        tools.appendChild(restoreBtn);
       }
       add(line, add(el('p', 'v-text'), el('span', 'v-word', row.word), doc.createTextNode(' — ' + status)), tools);
       box.appendChild(line);

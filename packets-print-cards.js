@@ -1690,8 +1690,13 @@
     var picMap = Object.create(null);
     var suppressedPicWords = Object.create(null);
     if (picturesOn && picWords.length) {
-      var resolved = picturesOf(picWords, ownMap, symbols, matcher, readingSymbolsExt, semanticBridge);
+      var resolved = picturesOf(picWords, ownMap, symbols, matcher, readingSymbolsExt, semanticBridge, {
+        strictConcrete: opts.strictConcrete !== undefined ? !!opts.strictConcrete : true,
+        preferDiagrams: opts.preferDiagrams !== undefined ? !!opts.preferDiagrams : false
+      });
       picWords.forEach(function (w) {
+        var ownE0 = ownEntryFor(ownMap, w);
+        if (ownE0 && ownE0.picture && ownE0.picture.none) suppressedPicWords[w.toLowerCase()] = true;
         if (resolved[w]) picMap[w.toLowerCase()] = resolved[w];
       });
       // Merge embedded item / lesson images when not suppressed by teacher { none: true }
@@ -1708,7 +1713,8 @@
           var raw = it.item || {};
           var low = String(it.word || '').toLowerCase();
           var ownE = ownEntryFor(ownMap, it.word);
-          if (raw.pictureNone || (ownE && ownE.picture && ownE.picture.none)) { picMap[low] = null; suppressedPicWords[low] = true; return; }
+          var ownRestored = !!(ownE && Object.prototype.hasOwnProperty.call(ownE, 'picture') && ownE.picture === null);
+          if ((ownE && ownE.picture && ownE.picture.none) || (raw.pictureNone && !ownRestored && !picMap[low])) { picMap[low] = null; suppressedPicWords[low] = true; return; }
           var emb = wsSafeImgFrom(raw.wordPicture, imagesMap) || wsSafeImgFrom(raw.image, imagesMap) || wsSafeImgFrom(raw.picture, imagesMap);
           if (emb && !picMap[low]) {
             var cred = raw.imageCredit || (raw.picture && raw.picture.credit) || null;
@@ -1728,6 +1734,10 @@
     }
 
     var usedPicWords = [], usedPicByWord = Object.create(null);
+    var isPictureSuppressed = function (word) {
+      var k = String(word || '').trim().toLowerCase();
+      return !!(k && suppressedPicWords[k]);
+    };
     var hasPicture = function (word) {
       if (!picturesOn) return false;
       var k = String(word || '').trim().toLowerCase();
@@ -1776,6 +1786,7 @@
       syllablesSrc: ctx.syllablesSrc,
       hasPicture: hasPicture,
       pictureFor: pictureFor,
+      isPictureSuppressed: isPictureSuppressed,
       computeCredits: computeCredits,
       words: picWords,
       missingPicWords: picturesOn
@@ -3520,16 +3531,24 @@
     // Resolve pictures for Part 3 — Name the Picture
     var usedPicWords = [];
     var usedPicByWord = Object.create(null);
-    var resolvedFromIndex = picturesOn && words.length ? picturesOf(words, ownMap, symbols, matcher) : Object.create(null);
+    var resolvedFromIndex = picturesOn && words.length ? picturesOf(words, ownMap, symbols, matcher, undefined, undefined, { preferDiagrams: true }) : Object.create(null);
     var picEntries = [];
     var missingPicWords = [];
+    var suppressedPicWords = [];
     if (picturesOn) {
       entries.forEach(function (ent) {
-        if (ent.noPicture) return;
         var ownE = ownEntryFor(ownMap, ent.word);
-        if (ownE && ownE.picture && ownE.picture.none) return;
+        var ownSuppressed = !!(ownE && ownE.picture && ownE.picture.none);
+        var ownRestored = !!(ownE && Object.prototype.hasOwnProperty.call(ownE, 'picture') && ownE.picture === null);
+        var ownPic = (ownE && ownE.picture && !ownE.picture.none && isPicture(ownE.picture.dataUri)) ? ownE.picture : null;
+        if (ownSuppressed || (ent.noPicture && !ownPic && !ownRestored)) {
+          suppressedPicWords.push(ent.word);
+          return;
+        }
         var resolved = null;
-        if (ent.directUri) {
+        if (ownPic) {
+          resolved = { uri: ownPic.dataUri, set: 'own', credit: ownPic.credit || { own: true } };
+        } else if (ent.directUri) {
           var setName = ent.pictureSet || (ent.pictureCredit ? 'own' : 'own');
           if (setName === 'symbol') setName = 'mulberry';
           resolved = { uri: ent.directUri, set: setName, credit: ent.pictureCredit || null };
@@ -3606,6 +3625,7 @@
       clozeItems: clozeItems,
       pictureItems: pictureItems,
       missingPicWords: missingPicWords,
+      suppressedPicWords: suppressedPicWords,
       hiddenSections: custom.hiddenSections,
       hiddenParts: custom.hiddenParts,
       hiddenItems: custom.hiddenItems,
@@ -4277,12 +4297,15 @@
   }
   // Which picture each word shows: { uri, set, credit } or null. set is 'own' for a picture the teacher added.
   // Optional 4th argument matcher (AlloWordPictureMatcher) adds 696 K-12 curriculum diagrams + lemma/compound/concept matching.
-  function picturesOf(words, own, symbols, matcher, readingSymbolsExt, semanticBridge) {
+  // Optional 7th argument matchOpts ({ strictConcrete, preferDiagrams }) configures matcher behavior per worksheet type.
+  function picturesOf(words, own, symbols, matcher, readingSymbolsExt, semanticBridge, matchOpts) {
     var out = Object.create(null);
     var symReady = !!(symbols && typeof symbols.get === 'function' && (typeof symbols.ready !== 'function' || symbols.ready()));
     var ext = readingSymbolsExt !== undefined ? readingSymbolsExt : getReadingSymbolsExt();
     var extReady = !!(ext && typeof ext.get === 'function' && (typeof ext.ready !== 'function' || ext.ready()));
     var sem = semanticBridge !== undefined ? semanticBridge : getSemanticBridge();
+    var preferDiagrams = matchOpts && matchOpts.preferDiagrams !== undefined ? !!matchOpts.preferDiagrams : true;
+    var strictConcrete = !!(matchOpts && matchOpts.strictConcrete);
     words.forEach(function (word) {
       var entry = ownEntryFor(own, word);
       var picture = entry && entry.picture;
@@ -4305,7 +4328,8 @@
             readingSymbolsExt: extReady ? ext : null,
             semantic: sem,
             semanticBridge: sem,
-            preferDiagrams: true
+            preferDiagrams: preferDiagrams,
+            strictConcrete: strictConcrete
           });
         } catch (_) { matched = null; }
         if (matched && matched.svg) {
@@ -4354,7 +4378,8 @@
   }
 
   function create(doc, win) {
-    var view = null, nodes = {}, state = null, pictures = Object.create(null), run = 0, opener = null, busy = false, note = '', syllableNote = '', docEscBound = false;
+    var view = null, nodes = {}, state = null, cardsOwn = null, pictures = Object.create(null), run = 0, opener = null, busy = false, note = '', syllableNote = '', docEscBound = false;
+    var picFileInput = null, picUploadTarget = null;
     var options = { size: DEFAULT_SIZE, shows: 'both', lines: true, syllables: false, pages: 'both' };
     var loadingSyllables = false;
     var wsView = null, wsNodes = {}, wsState = null, wsOwn = null, wsRun = 0, wsOpener = null, wsBusy = false, wsNote = '', wsSyllableNote = '';
@@ -4639,6 +4664,178 @@
     }
 
     function cardsShow() { return state && state.pictures ? options.shows : 'word'; }
+    function persistMyWordPicture(word, picturePatch) {
+      var mw = (win && win.AlloPacketMyWords) || (root && root.AlloPacketMyWords) || null;
+      if (!mw) return;
+      var cleanWord = String(word || '').trim();
+      if (!cleanWord) return;
+      try {
+        if (typeof mw.save === 'function') {
+          Promise.resolve(mw.save({ word: cleanWord, picture: picturePatch })).catch(function () {});
+        } else if (typeof mw.putMedia === 'function') {
+          Promise.resolve(mw.putMedia(cleanWord, { picture: picturePatch })).catch(function () {});
+        } else if (typeof mw.put === 'function') {
+          var nw = typeof mw.normalizeWord === 'function' ? mw.normalizeWord(cleanWord) : cleanWord.toLowerCase();
+          if (nw) Promise.resolve(mw.put(nw, { picture: picturePatch })).catch(function () {});
+        }
+      } catch (_) {}
+    }
+    function setOwnEntry(map, word, picturePatch) {
+      var next = Object.create(null);
+      var low = String(word || '').trim().toLowerCase();
+      if (map && typeof map === 'object') {
+        Object.keys(map).forEach(function (k) {
+          if (String(k).toLowerCase() !== low) next[k] = map[k];
+        });
+      }
+      if (low) next[low] = { picture: picturePatch };
+      return next;
+    }
+    function applyInlinePictureOverride(scope, word, picturePatch) {
+      var cleanWord = String(word || '').trim();
+      if (!cleanWord) return;
+      persistMyWordPicture(cleanWord, picturePatch);
+      if (scope === 'ws') {
+        wsOwn = setOwnEntry(wsOwn, cleanWord, picturePatch);
+        drawWorksheet();
+      } else if (scope === 'vocab') {
+        vocabOwn = setOwnEntry(vocabOwn, cleanWord, picturePatch);
+        drawVocabWorksheet();
+      } else if (scope === 'cards' && state) {
+        cardsOwn = setOwnEntry(cardsOwn, cleanWord, picturePatch);
+        pictures = picturesOf(
+          state.words,
+          cardsOwn,
+          state.symbols,
+          state.matcher,
+          state.readingSymbolsExt || getReadingSymbolsExt(),
+          state.semanticBridge || getSemanticBridge(),
+          { strictConcrete: true, preferDiagrams: false }
+        );
+        draw();
+      }
+    }
+    function readInlineImageFile(file, done) {
+      if (!file || typeof done !== 'function') return;
+      var ReaderCtor = (win && typeof win.FileReader === 'function') ? win.FileReader
+        : (typeof FileReader === 'function' ? FileReader : null);
+      if (!ReaderCtor) return;
+      var reader = new ReaderCtor();
+      reader.onload = function () {
+        var uri = String(reader.result || '');
+        if (!isPicture(uri)) return;
+        if (/^data:image\/svg\+xml[;,]/i.test(uri)) {
+          done(uri);
+          return;
+        }
+        var canCanvas = false;
+        try {
+          var probe = doc.createElement('canvas');
+          canCanvas = !!(probe && typeof probe.getContext === 'function' && probe.getContext('2d') && win && typeof win.Image === 'function');
+        } catch (_) {
+          canCanvas = false;
+        }
+        if (!canCanvas) {
+          done(uri);
+          return;
+        }
+        try {
+          var img = new win.Image();
+          var settled = false;
+          var finish = function (outUri) {
+            if (settled) return;
+            settled = true;
+            done(isPicture(outUri) ? outUri : uri);
+          };
+          img.onload = function () {
+            try {
+              var w = Number(img.naturalWidth || img.width) || 0;
+              var h = Number(img.naturalHeight || img.height) || 0;
+              if (!w || !h) { finish(uri); return; }
+              var maxSide = 320;
+              var scale = Math.max(w, h) > maxSide ? (maxSide / Math.max(w, h)) : 1;
+              var cw = Math.max(1, Math.round(w * scale));
+              var ch = Math.max(1, Math.round(h * scale));
+              var canvas = doc.createElement('canvas');
+              canvas.width = cw;
+              canvas.height = ch;
+              var ctx = canvas.getContext('2d');
+              if (!ctx) { finish(uri); return; }
+              ctx.drawImage(img, 0, 0, cw, ch);
+              var isJpeg = /^data:image\/jpe?g[;,]/i.test(uri);
+              var out = isJpeg ? canvas.toDataURL('image/jpeg', 0.85) : canvas.toDataURL('image/png');
+              finish(isPicture(out) ? out : uri);
+            } catch (_) {
+              finish(uri);
+            }
+          };
+          img.onerror = function () { finish(uri); };
+          img.src = uri;
+        } catch (_) {
+          done(uri);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    function ensurePicFileInput() {
+      if (picFileInput && doc.contains(picFileInput)) return picFileInput;
+      picFileInput = doc.createElement('input');
+      picFileInput.type = 'file';
+      picFileInput.accept = 'image/*';
+      picFileInput.hidden = true;
+      picFileInput.className = 'pc-pic-file-input';
+      picFileInput.setAttribute('aria-hidden', 'true');
+      picFileInput.tabIndex = -1;
+      picFileInput.addEventListener('change', function () {
+        var file = picFileInput.files && picFileInput.files[0];
+        var target = picUploadTarget;
+        picUploadTarget = null;
+        try { picFileInput.value = ''; } catch (_) {}
+        if (!file || !target || !target.word) return;
+        readInlineImageFile(file, function (dataUri) {
+          applyInlinePictureOverride(target.scope, target.word, { dataUri: dataUri, credit: { own: true } });
+        });
+      });
+      doc.body.appendChild(picFileInput);
+      return picFileInput;
+    }
+    function makePicActionsNode(scope, word, hasPic, isSuppressed) {
+      var cleanWord = String(word || '').trim();
+      var wrap = el('div', 'pc-pic-actions');
+      wrap.setAttribute('data-pic-controls', cleanWord);
+      var upBtn = el('button', 'pc-pic-btn', 'Upload image');
+      upBtn.type = 'button';
+      upBtn.setAttribute('data-pic-upload', cleanWord);
+      upBtn.setAttribute('aria-label', 'Upload image for ' + cleanWord);
+      upBtn.addEventListener('click', function () {
+        picUploadTarget = { scope: scope, word: cleanWord };
+        var inp = ensurePicFileInput();
+        try { inp.value = ''; } catch (_) {}
+        inp.click();
+      });
+      wrap.appendChild(upBtn);
+      if (hasPic) {
+        var delBtn = el('button', 'pc-pic-btn', 'Remove picture');
+        delBtn.type = 'button';
+        delBtn.setAttribute('data-pic-delete', cleanWord);
+        delBtn.setAttribute('aria-label', 'Remove picture for ' + cleanWord);
+        delBtn.addEventListener('click', function () {
+          applyInlinePictureOverride(scope, cleanWord, { none: true });
+        });
+        wrap.appendChild(delBtn);
+      }
+      if (isSuppressed) {
+        var resBtn = el('button', 'pc-pic-btn', 'Restore picture');
+        resBtn.type = 'button';
+        resBtn.setAttribute('data-pic-restore', cleanWord);
+        resBtn.setAttribute('aria-label', 'Restore picture for ' + cleanWord);
+        resBtn.addEventListener('click', function () {
+          applyInlinePictureOverride(scope, cleanWord, null);
+        });
+        wrap.appendChild(resBtn);
+      }
+      return wrap;
+    }
     function cardOf(word) {
       var shows = cardsShow(), picture = shows !== 'word' ? pictures[word] : null;
       var card = el('li', 'pc-card ' + lengthClass(word));
@@ -4651,6 +4848,11 @@
         card.classList.add('pc-has-pic');
       }
       if (!picture || shows !== 'picture') card.appendChild(wordNode('span', 'pc-word', word));
+      if (shows !== 'word') {
+        var ownE = ownEntryFor(cardsOwn, word);
+        var isSuppressed = !!(ownE && ownE.picture && ownE.picture.none);
+        card.appendChild(makePicActionsNode('cards', word, !!picture, isSuppressed));
+      }
       return card;
     }
     function cardPages(words) {
@@ -4718,6 +4920,7 @@
       var own = typeof state.own === 'function' ? Promise.resolve().then(function () { return state.own(state.words); }).catch(function () { return null; }) : Promise.resolve(null);
       return own.then(function (found) {
         if (mine !== run) return;
+        cardsOwn = found && typeof found === 'object' ? found : (state.own && typeof state.own === 'object' ? state.own : null);
         var symbols = state.symbols;
         var ext = state.readingSymbolsExt || getReadingSymbolsExt();
         var sem = state.semanticBridge || getSemanticBridge();
@@ -4726,11 +4929,11 @@
         var symsReady = !symbols || (typeof symbols.ready !== 'function' || symbols.ready());
         var extReady = !ext || (typeof ext.ready !== 'function' || ext.ready());
         var hasUnownedWord = state.words.some(function (word) {
-          var entry = ownEntryFor(found, word);
+          var entry = ownEntryFor(cardsOwn, word);
           return !(entry && entry.picture);
         });
         if (!hasUnownedWord || (symsReady && extReady && !!curMatcher) || typeof state.loadPictures !== 'function') {
-          pictures = picturesOf(state.words, found, symbols, state.matcher, ext, sem);
+          pictures = picturesOf(state.words, cardsOwn, symbols, state.matcher, ext, sem, { strictConcrete: true, preferDiagrams: false });
           return;
         }
         busy = true;
@@ -4744,7 +4947,7 @@
           if (!state.matcher && freshMatcher) state.matcher = freshMatcher;
           var freshExt = state.readingSymbolsExt || getReadingSymbolsExt();
           var freshSem = state.semanticBridge || getSemanticBridge();
-          pictures = picturesOf(state.words, found, ready ? symbols : null, state.matcher, ready ? freshExt : null, freshSem);
+          pictures = picturesOf(state.words, cardsOwn, ready ? symbols : null, state.matcher, ready ? freshExt : null, freshSem, { strictConcrete: true, preferDiagrams: false });
         });
       });
     }
@@ -4764,6 +4967,7 @@
         matcher: s.matcher || defaultMatcher,
         loadPictures: s.loadPictures || null, own: s.own || null,
         creditLine: typeof s.creditLine === 'function' ? s.creditLine : root && root.AlloPacketMyWords && root.AlloPacketMyWords.creditLine };
+      cardsOwn = typeof s.own === 'object' && typeof s.own !== 'function' ? s.own : null;
       pictures = Object.create(null); busy = false; note = ''; syllableNote = '';
       options.shows = state.pictures ? 'both' : (state.symbols || state.own || state.matcher ? 'word' : 'both');
       syncRadioValue('shows', options.shows);
@@ -6155,6 +6359,7 @@
       wsNodes.print.addEventListener('click', function () { if (!wsBusy && wsState) win.print(); });
       wsNodes.download = el('button', 'btn', 'Download HTML worksheet');
       wsNodes.download.type = 'button';
+      wsNodes.download.id = 'pc-ws-download';
       wsNodes.download.addEventListener('click', downloadWorksheetHtml);
       wsNodes.docx = el('button', 'btn', 'Download Word (.docx)');
       wsNodes.docx.type = 'button';
@@ -6680,6 +6885,13 @@
             body.appendChild(el('div', 'pc-ws-line'));
           }
 
+          if (model.picturesOn && !WS_HIDE_PICTURE[act] && it.word) {
+            var picWord = it.origWord || it.word;
+            var ownPicE = ownEntryFor(wsOwn, picWord);
+            var isPicSuppressed = !!(ownPicE && ownPicE.picture && ownPicE.picture.none)
+              || (typeof model.isPictureSuppressed === 'function' && model.isPictureSuppressed(picWord));
+            body.appendChild(makePicActionsNode('ws', picWord, model.hasPicture(picWord), isPicSuppressed));
+          }
           li.appendChild(body);
           list.appendChild(li);
           secKeyLines.push(wsKeyEntryText(act, it));
@@ -7180,6 +7392,7 @@
       vocabNodes.print.addEventListener('click', function () { if (!vocabBusy && vocabState) win.print(); });
       vocabNodes.download = el('button', 'btn', 'Download HTML worksheet');
       vocabNodes.download.type = 'button';
+      vocabNodes.download.id = 'pc-vocab-download';
       vocabNodes.download.addEventListener('click', downloadVocabWorksheetHtml);
       vocabNodes.docx = el('button', 'btn', 'Download Word (.docx)');
       vocabNodes.docx.type = 'button';
@@ -7483,6 +7696,18 @@
       }
 
       // Part 3 — Name the Picture
+      var suppressedWords = Array.isArray(model.suppressedPicWords) ? model.suppressedPicWords : [];
+      var missingWords = Array.isArray(model.missingPicWords) ? model.missingPicWords : [];
+      var manageWords = [];
+      var seenManage = Object.create(null);
+      suppressedWords.forEach(function (w) {
+        var k = String(w || '').toLowerCase();
+        if (k && !seenManage[k]) { seenManage[k] = true; manageWords.push({ word: w, suppressed: true }); }
+      });
+      missingWords.forEach(function (w) {
+        var k = String(w || '').toLowerCase();
+        if (k && !seenManage[k]) { seenManage[k] = true; manageWords.push({ word: w, suppressed: false }); }
+      });
       if (!hp.pictures && model.pictureItems.length) {
         var p3Copy = wsApplySectionCopy(ov, 'pictures', null, 'Part 3 \u2014 Name the Picture', 'Look at each picture. Write the matching vocabulary word on the line underneath.');
         var p3Sec = el('section', 'pc-ws-section');
@@ -7504,14 +7729,42 @@
           var line = el('div', 'pc-vocab-pic-line');
           line.setAttribute('aria-label', 'writing line');
           tile.appendChild(line);
+          tile.appendChild(makePicActionsNode('vocab', item.word, true, false));
           pGrid.appendChild(tile);
         });
         p3Sec.appendChild(pGrid);
+        if (model.picturesOn && manageWords.length) {
+          var mgBox = el('div', 'pc-pic-suppressed');
+          mgBox.setAttribute('data-vocab-pic-manage', 'true');
+          mgBox.appendChild(el('p', 'pc-pic-suppressed-title', 'Words without a picture (screen only \u2014 not printed):'));
+          var mgList = el('ul', 'pc-pic-suppressed-list');
+          manageWords.forEach(function (entry) {
+            var row = el('li', 'pc-pic-suppressed-row');
+            row.appendChild(el('span', 'pc-pic-suppressed-word', entry.word));
+            row.appendChild(makePicActionsNode('vocab', entry.word, false, entry.suppressed));
+            mgList.appendChild(row);
+          });
+          mgBox.appendChild(mgList);
+          p3Sec.appendChild(mgBox);
+        }
         sheet.appendChild(p3Sec);
         keySections.push({
           heading: p3Copy.heading,
           lines: model.pictureItems.map(function (item) { return item.word; })
         });
+      } else if (!hp.pictures && model.picturesOn && manageWords.length) {
+        var mgOnly = el('div', 'pc-pic-suppressed');
+        mgOnly.setAttribute('data-vocab-pic-manage', 'true');
+        mgOnly.appendChild(el('p', 'pc-pic-suppressed-title', 'Words without a picture (screen only \u2014 not printed):'));
+        var mgOnlyList = el('ul', 'pc-pic-suppressed-list');
+        manageWords.forEach(function (entry) {
+          var row = el('li', 'pc-pic-suppressed-row');
+          row.appendChild(el('span', 'pc-pic-suppressed-word', entry.word));
+          row.appendChild(makePicActionsNode('vocab', entry.word, false, entry.suppressed));
+          mgOnlyList.appendChild(row);
+        });
+        mgOnly.appendChild(mgOnlyList);
+        sheet.appendChild(mgOnly);
       }
 
       var creditLines = model.computeCredits();

@@ -2269,6 +2269,19 @@
     return sem && typeof sem.lookup === 'function' ? sem : null;
   }
   function getMatcher() { return window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher) || null; }
+  function getStrictMatcher() {
+    var m = getMatcher();
+    if (!m || typeof m.matchWord !== 'function') return null;
+    return {
+      matchWord: function (entryOrWord, options) {
+        return m.matchWord(entryOrWord, Object.assign({}, options || {}, {
+          preferDiagrams: false,
+          strictConcrete: true,
+          useSemantic: false
+        }));
+      }
+    };
+  }
   function indexProbeBank(bank) {
     if (!bank || typeof bank.has !== 'function') return null;
     if (typeof bank.ready === 'function' && bank.ready()) return bank;
@@ -2291,17 +2304,16 @@
     var symReady = !!(symbols && typeof symbols.ready === 'function' && symbols.ready());
     var ext = getReadingSymbolsExt();
     var extReady = !!(ext && (typeof ext.ready !== 'function' || ext.ready()));
-    var sem = getSemanticBridge();
-    var key = (symReady ? '1' : '0') + (extReady ? '1' : '0') + (sem ? '1:' : '0:') + String(word).toLowerCase();
+    var key = (symReady ? '1' : '0') + (extReady ? '1:' : '0:') + String(word).toLowerCase();
     if (Object.prototype.hasOwnProperty.call(matcherCache, key)) return matcherCache[key];
     var hit = null;
     try {
       hit = m.matchWord({ word: word }, {
         symbols: symReady ? symbols : null,
         readingSymbolsExt: extReady ? ext : null,
-        semantic: sem,
-        semanticBridge: sem,
-        preferDiagrams: true
+        preferDiagrams: false,
+        strictConcrete: true,
+        useSemantic: false
       });
     } catch (_) { hit = null; }
     matcherCache[key] = (hit && typeof hit.svg === 'string') ? hit : null;
@@ -2311,8 +2323,7 @@
     if (!word) return null;
     var m = getMatcher();
     var ext = getReadingSymbolsExt();
-    var sem = getSemanticBridge();
-    var key = (symbols ? '1' : '0') + (ext ? '1' : '0') + (sem ? '1' : '0') + (m ? '1:' : '0:') + String(word).toLowerCase();
+    var key = (symbols ? '1' : '0') + (ext ? '1' : '0') + (m ? '1:' : '0:') + String(word).toLowerCase();
     if (Object.prototype.hasOwnProperty.call(probeCache, key)) return probeCache[key];
     var hit = null;
     if (m && typeof m.matchWord === 'function') {
@@ -2320,9 +2331,9 @@
         hit = m.matchWord({ word: word }, {
           symbols: indexProbeBank(symbols),
           readingSymbolsExt: indexProbeBank(ext),
-          semantic: sem,
-          semanticBridge: sem,
-          preferDiagrams: true
+          preferDiagrams: false,
+          strictConcrete: true,
+          useSemantic: false
         });
       } catch (_) { hit = null; }
     }
@@ -2332,10 +2343,8 @@
   function indexHasPicture(word) {
     if (!word) return false;
     var ext = getReadingSymbolsExt();
-    var sem = getSemanticBridge();
     if (symbols && symbols.has(word)) return true;
     if (ext && ext.has(word)) return true;
-    if (sem && typeof sem.has === 'function' && sem.has(word)) return true;
     return !!matcherProbe(word);
   }
   function matcherHas(word) { return !!matcherMatch(word) || !!matcherProbe(word); }
@@ -2478,14 +2487,12 @@
     var box = $('f-pictures');
     if (!box || !box.checked) return Promise.resolve(false);
     var ext = getReadingSymbolsExt();
-    var sem = getSemanticBridge();
     var symReady = !symbols || symbols.ready();
     var extReady = !ext || typeof ext.ready !== 'function' || ext.ready();
     var needsShards = (!!symbols || !!ext) && words.some(function (word) {
       if (noPicture(word) || ownPicture(word)) return false;
       if (symbols && symbols.has(word)) return true;
       if (ext && ext.has(word)) return true;
-      if (sem && typeof sem.has === 'function' && sem.has(word)) return true;
       var probed = matcherProbe(word);
       return !!(probed && probed.set !== 'diagram' && probed.matchType !== 'diagram');
     });
@@ -2702,7 +2709,7 @@
   // plan: { words, activities, seed, title, picked }.
   function packetOptions(plan, withWords, pictures, own, learner) {
     var options = { words: plan.words, activities: plan.activities, seed: plan.seed, title: plan.title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
-      wordlist: wordlist, toWav: toWav, toMp3: toMp3, picked: plan.picked, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null, matcher: pictures ? getMatcher() : null };
+      wordlist: wordlist, toWav: toWav, toMp3: toMp3, picked: plan.picked, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null, matcher: pictures ? getStrictMatcher() : null };
     if (own) options.own = own;
     if (learner) options.learnerLabel = learner;
     if (state.tracing !== 'both' && plan.activities.indexOf('letter_tracing') >= 0) options.tracingCases = state.tracing;
@@ -4654,8 +4661,8 @@
         pictures: !!$('f-pictures').checked,
         symbols: symbols,
         readingSymbolsExt: getReadingSymbolsExt(),
-        semanticBridge: getSemanticBridge(),
-        matcher: getMatcher() || window.AlloWordPictureMatcher || null,
+        semanticBridge: null,
+        matcher: getStrictMatcher(),
         loadPictures: (symbols || getReadingSymbolsExt()) ? loadPictures : null,
         own: ownFor
       };
@@ -4679,8 +4686,8 @@
         pictures: !!$('f-pictures').checked,
         symbols: symbols,
         readingSymbolsExt: getReadingSymbolsExt(),
-        semanticBridge: getSemanticBridge(),
-        matcher: getMatcher() || window.AlloWordPictureMatcher || null,
+        semanticBridge: null,
+        matcher: getStrictMatcher(),
         loadPictures: (symbols || getReadingSymbolsExt()) ? loadPictures : null,
         own: ownFor,
         dictionary: dictionary,

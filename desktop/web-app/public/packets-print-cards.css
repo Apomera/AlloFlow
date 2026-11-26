@@ -352,6 +352,43 @@ body.pc-on > :not(.pc) { display: none !important; }
 .pc-vocab-pic-img { display: block; width: 24mm; height: 24mm; object-fit: contain; background: #ffffff; }
 .pc-vocab-pic-line { width: 100%; height: 7mm; border-bottom: 0.5mm solid #000000; }
 
+/* Inline screen-only picture controls (strictly monochrome; hidden on print) */
+.pc-pic-file-input { display: none !important; }
+.pc-pic-actions {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+.pc-card .pc-pic-actions { justify-content: center; margin-top: 0.25rem; }
+.pc-pic-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 1.85rem; padding: 0.2rem 0.55rem;
+  border: 1px solid #000000; border-radius: 4px;
+  background: #ffffff; color: #000000;
+  font: inherit; font-size: 0.78rem; font-weight: 700; line-height: 1.15;
+  cursor: pointer;
+}
+.pc-pic-btn:hover, .pc-pic-btn:focus-visible {
+  background: #000000; color: #ffffff; outline: 2px solid #000000; outline-offset: 1px;
+}
+.pc-pic-suppressed {
+  margin-top: 3.5mm; padding: 2.5mm 3mm;
+  border: 1px dashed #808080; border-radius: 4px;
+  background: #ffffff; color: #000000;
+}
+.pc-pic-suppressed-title {
+  margin: 0 0 2mm; font-size: 9.5pt; font-weight: 700; color: #000000;
+}
+.pc-pic-suppressed-list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 1.8mm;
+}
+.pc-pic-suppressed-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 0.5rem; padding-top: 1.2mm; border-top: 1px solid #808080;
+}
+.pc-pic-suppressed-row:first-child { border-top: 0; padding-top: 0; }
+.pc-pic-suppressed-word { font-size: 10pt; font-weight: 700; color: #000000; }
+
 /* Read-Along printable worksheet elements (monochrome inside .pc-sheet) */
 .pc-ra-passage { padding: 3.5mm 4mm; border: 0.45mm solid #000000; background: #ffffff; font-size: 12pt; line-height: 1.72; color: #000000; }
 .pc-ra-subhead { margin: 3mm 0 1.5mm; font-size: 12.5pt; font-weight: 700; color: #000000; }
@@ -462,6 +499,7 @@ body.pc-on > :not(.pc) { display: none !important; }
   .pc { min-height: 0; padding: 0; background: #ffffff; }
   .pc-bar { display: none !important; }
   .pc-find-missing-pics, [data-find-missing-pics] { display: none !important; }
+  .pc-pic-actions, .pc-pic-suppressed, .pc-pic-file-input, [data-pic-controls] { display: none !important; }
   .pc-audio-wrap { display: none !important; }
   .pc-score-sheet { display: block !important; color: #000000; background: #ffffff; padding: 0; }
   .pc-sheets { padding: 0; }

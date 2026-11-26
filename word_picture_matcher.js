@@ -505,11 +505,16 @@
       .trim();
   }
 
-  function generateLemmaCandidates(w) {
+  var STRICT_SKIP_IRREGULAR = nullMap({
+    better: 1, best: 1, worse: 1, worst: 1
+  });
+
+  function generateLemmaCandidates(w, strictInflectionOnly) {
     var cands = [];
+    var minStem = strictInflectionOnly ? 3 : 2;
     var singleCvcRe = /^[^aeiouy]*[aeiou][bcdfghjklmnpqrstvz]$/;
     function push(s) {
-      if (s && s.length >= 2 && cands.indexOf(s) < 0) cands.push(s);
+      if (s && s.length >= minStem && cands.indexOf(s) < 0) cands.push(s);
     }
     function pushSuffixStem(stem) {
       var doubled = stem.length >= 4 && stem.slice(-1) === stem.slice(-2, -1);
@@ -525,7 +530,10 @@
         push(stem);
       }
     }
-    if (IRREGULAR_BASES[w]) push(IRREGULAR_BASES[w]);
+    if (IRREGULAR_BASES[w] && !(strictInflectionOnly && STRICT_SKIP_IRREGULAR[w])) {
+      push(IRREGULAR_BASES[w]);
+    }
+    if (w.length <= 3) return cands;
     if (w.length >= 5 && w.slice(-3) === 'ies') push(w.slice(0, -3) + 'y');
     if (w.length >= 5 && w.slice(-3) === 'ves') {
       push(w.slice(0, -3) + 'f');
@@ -545,7 +553,6 @@
     if (w.length >= 5 && w.slice(-3) === 'ied') push(w.slice(0, -3) + 'y');
     if (w.length >= 5 && w.slice(-3) === 'ier') push(w.slice(0, -3) + 'y');
     if (w.length >= 6 && w.slice(-4) === 'iest') push(w.slice(0, -4) + 'y');
-    if (w.length >= 5 && w.slice(-3) === 'ily') push(w.slice(0, -3) + 'y');
     if (w.length >= 6 && w.slice(-3) === 'ing') {
       pushSuffixStem(w.slice(0, -3));
     }
@@ -558,6 +565,8 @@
     if (w.length >= 6 && w.slice(-3) === 'est') {
       pushSuffixStem(w.slice(0, -3));
     }
+    if (strictInflectionOnly) return cands;
+    if (w.length >= 5 && w.slice(-3) === 'ily') push(w.slice(0, -3) + 'y');
     if (w.length >= 5 && w.slice(-2) === 'ly') push(w.slice(0, -2));
     if (w.length >= 7 && w.slice(-4) === 'ness') push(w.slice(0, -4));
     if (w.length >= 6 && w.slice(-3) === 'ful') push(w.slice(0, -3));
@@ -734,6 +743,7 @@
     var extBank = resolveReadingSymbolsExt(options);
     var bank = combineSymbolBanks(primaryBank, extBank);
     var preferDiagrams = Boolean(options && options.preferDiagrams);
+    var strictConcrete = Boolean(options && options.strictConcrete);
     var isObj = entryOrWord && typeof entryOrWord === 'object';
     var rawWord = isObj ? (entryOrWord.word || '') : String(entryOrWord || '');
     var lemma = isObj ? normalizeWord(entryOrWord.lemma || '') : '';
@@ -741,6 +751,42 @@
     var clean = normalizeWord(rawWord);
     var phrase = normalizePhrase(rawWord);
     if (!clean && !phrase) return null;
+
+    if (strictConcrete) {
+      if (bank) {
+        // Tier 1: Exact match in WordSoundsSymbols or ReadingSymbolsExt
+        if (clean && hasSymbol(bank, clean)) {
+          return buildMatch(bank, rawWord, clean, 'exact', options);
+        }
+        if (phrase && phrase !== clean && hasSymbol(bank, phrase)) {
+          return buildMatch(bank, rawWord, phrase, 'exact', options);
+        }
+      }
+      // Optional exact CURRICULUM_DIAGRAMS key match ONLY when preferDiagrams === true (never DIAGRAM_ALIASES)
+      if (preferDiagrams && (clean || phrase)) {
+        var exactKey = (phrase && Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, phrase)) ? phrase
+          : (clean && Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, clean)) ? clean
+          : (phrase && Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, phrase.replace(/\s+/g, '_'))) ? phrase.replace(/\s+/g, '_')
+          : '';
+        if (exactKey) {
+          var strictDiag = getDiagram(exactKey, '', rawWord);
+          if (strictDiag) return strictDiag;
+        }
+      }
+      if (bank) {
+        // Tier 2: Safe inflectional lemma match only (skip CONCEPT_CUES, DIAGRAM_ALIASES, semantic bridge, compound)
+        if (lemma && lemma !== clean && hasSymbol(bank, lemma)) {
+          return buildMatch(bank, rawWord, lemma, 'lemma', options, String(rawWord || lemma));
+        }
+        var strictMorph = generateLemmaCandidates(clean || phrase, true);
+        for (var sm = 0; sm < strictMorph.length; sm++) {
+          if (hasSymbol(bank, strictMorph[sm])) {
+            return buildMatch(bank, rawWord, strictMorph[sm], 'lemma', options, String(rawWord || strictMorph[sm]));
+          }
+        }
+      }
+      return null;
+    }
 
     if (bank) {
       // Tier 1: Exact match (single token or exact phrase in symbol bank)

@@ -374,7 +374,7 @@ describe('1. Word Sounds Activity Worksheet HTML (all 13 Packets + 6 Main-App ac
       activities: ['counting'],
       own,
       creditLine: myWords.creditLine,
-    }, { pictures: true, symbols: SYMBOLS, matcher });
+    }, { pictures: true, preferDiagrams: true, symbols: SYMBOLS, matcher });
 
     const doc = new JSDOM(html).window.document;
     const csp = doc.querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
