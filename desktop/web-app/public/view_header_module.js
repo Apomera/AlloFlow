@@ -1198,6 +1198,81 @@ function HeaderBar(props) {
   const headerAnalyticsLabel = screeningLiveActive ? (t("header.screening_live") || "Screening") + " \xB7 " + Math.max(0, (screenerSession.subtests || []).length - (screenerSession.currentIndex || 0)) + " " + (t("header.screening_left") || "left") : parentProgressLabel;
   const compactViewFallback = String(activeView || "").replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   const compactContextLabel = guidedMode ? t("launch_pad.guided_title") || "Guided Mode" : activeView === "dashboard" ? dashboardNavLabel : activeView === "input" ? t("tools.source") || "Source Material" : compactViewFallback || (t("common.ready") || "Ready");
+  const [showEngineStatus, setShowEngineStatus] = React.useState(false);
+  const [engineStatusRev, setEngineStatusRev] = React.useState(0);
+  const engineStatusRef = React.useRef(null);
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.addEventListener !== "function") return void 0;
+    const bump = () => setEngineStatusRev((n) => n + 1);
+    const events = ["alloflow:ai-config-changed", "alloflow:student-ai-config-changed", "alloflow:ai-key-lock-changed", "storage"];
+    events.forEach((ev) => window.addEventListener(ev, bump));
+    return () => events.forEach((ev) => window.removeEventListener(ev, bump));
+  }, []);
+  React.useEffect(() => {
+    if (!showEngineStatus) return void 0;
+    const onPointerDown = (event) => {
+      if (engineStatusRef.current && !engineStatusRef.current.contains(event.target)) setShowEngineStatus(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setShowEngineStatus(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [showEngineStatus]);
+  const engineSummary = React.useMemo(() => {
+    const rawBackend = (() => {
+      try {
+        const direct = ai && (ai.backend || ai._backend || ai.provider);
+        if (direct) return String(direct).toLowerCase();
+        if (typeof localStorage !== "undefined") return String(localStorage.getItem("alloflow_ai_backend") || "gemini").toLowerCase();
+      } catch (_) {
+      }
+      return "gemini";
+    })();
+    const aiDisabled = typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) || rawBackend === "off" || rawBackend === "none";
+    const isLocalAi = !aiDisabled && (typeof window !== "undefined" && window.AIBackendLocal && typeof window.AIBackendLocal.isLocalTextBackend === "function" && window.AIBackendLocal.isLocalTextBackend(rawBackend) || ["ollama", "lmstudio", "webllm", "chrome", "chrome-ai", "local", "llamacpp", "vllm", "jan"].includes(rawBackend));
+    const aiNames = {
+      gemini: "Gemini",
+      openai: "OpenAI",
+      anthropic: "Claude",
+      claude: "Claude",
+      openrouter: "OpenRouter",
+      ollama: "Ollama",
+      lmstudio: "LM Studio",
+      webllm: "WebLLM",
+      chrome: "Chrome AI",
+      "chrome-ai": "Chrome AI",
+      llamacpp: "llama.cpp",
+      vllm: "vLLM",
+      jan: "Jan",
+      "openai-compatible": "Custom AI",
+      custom: "Custom AI"
+    };
+    const aiInfo = aiDisabled ? { name: "AI Off", mode: "local", label: "AI Off (local only)", detail: "" } : {
+      name: aiNames[rawBackend] || rawBackend.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      mode: isLocalAi ? "local" : "cloud",
+      label: `${aiNames[rawBackend] || rawBackend.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} (${isLocalAi ? "local" : "cloud"})`,
+      detail: String(ai && (ai.model || ai._model) || "")
+    };
+    const voiceId = String(selectedVoice || "");
+    const isKokoro = voiceId.startsWith("kokoro:") || Array.isArray(KOKORO_VOICES) && KOKORO_VOICES.some((v) => v && (v.id === voiceId || v.name === voiceId));
+    const isGeminiVoice = !isKokoro && Array.isArray(GEMINI_VOICES) && GEMINI_VOICES.some((v) => v && (v.id === voiceId || v.name === voiceId));
+    const isEdgeVoice = !isKokoro && !isGeminiVoice && Array.isArray(EDGE_TTS_VOICES) && EDGE_TTS_VOICES.some((v) => v && (v.id === voiceId || v.name === voiceId));
+    const ttsInfo = isKokoro ? { name: "Kokoro", mode: "local", label: kokoroDownloading ? "Kokoro (local, loading\u2026)" : "Kokoro (local)" } : isGeminiVoice ? { name: "Gemini TTS", mode: "cloud", label: "Gemini TTS (cloud)" } : isEdgeVoice ? { name: "Edge TTS", mode: "cloud", label: "Edge TTS (cloud)" } : { name: "Browser Speech", mode: "local", label: "Browser Speech (local)" };
+    const sttMap = {
+      whisper: { name: "Whisper", mode: "local", label: "Whisper (local)" },
+      webspeech: { name: "Browser Speech", mode: "local", label: "Browser Speech (local)" },
+      gemini: { name: "Gemini Audio", mode: "cloud", label: "Gemini Audio (cloud)" },
+      off: { name: "Mic Off", mode: "local", label: "Mic Off" },
+      auto: { name: "Auto", mode: "local", label: "Auto (Whisper local / Browser)" }
+    };
+    const sttInfo = sttMap[voiceInputEngine] || sttMap.auto;
+    return { ai: aiInfo, tts: ttsInfo, stt: sttInfo };
+  }, [ai, selectedVoice, voiceInputEngine, kokoroDownloading, kokoroSavedOnDevice, KOKORO_VOICES, GEMINI_VOICES, EDGE_TTS_VOICES, engineStatusRev]);
   const helpMenuAvailable = !!isTeacherMode;
   const helpHasHistory = helpMenuAvailable && ((hintHistory || []).length > 0 || (toastHistoryCount || 0) > 0);
   const helpMenuTitle = homeToolsText("help_menu.title", "Help");
@@ -1290,6 +1365,7 @@ function HeaderBar(props) {
           .allo-premium-appbar { min-height: 56px; }
           .allo-premium-appbar-brand { display: flex; flex: 1 1 auto; align-items: center; gap: .75rem; min-width: 0; }
           .allo-premium-context-block { min-width: 0; max-width: 21rem; flex: 1 1 auto; }
+          @media (min-width: 1180px) { .allo-premium-context-block { max-width: 30rem; } }
           .allo-premium-context-line, .allo-premium-pii-text { overflow-wrap: anywhere; }
           .allo-premium-compact-nav { scrollbar-width: none; }
           .allo-premium-compact-nav::-webkit-scrollbar { display: none; }
@@ -1373,7 +1449,43 @@ function HeaderBar(props) {
             .allo-reading-theme-grid .allo-reading-theme-swatch > span:last-child { overflow: visible !important; text-overflow: clip !important; white-space: normal !important; }
           }
           @media (prefers-reduced-motion: reduce) { .allo-premium-header, .allo-premium-header * { transition-duration: .01ms !important; } }
-        `), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[1600px] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar flex items-center gap-2 sm:gap-3 min-w-0" : "allo-expanded-shell" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar-brand" : "allo-expanded-brand-bar" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "contents" : "allo-expanded-brand-copy" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 shrink-0 items-center gap-3" }, /* @__PURE__ */ React.createElement("h1", { className: `${headerCollapsed ? "text-xl md:text-2xl" : "text-2xl md:text-3xl"} font-black tracking-tight flex min-w-0 shrink-0 items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : `${headerCollapsed ? "p-1 rounded-xl" : "p-1.5 rounded-2xl"} bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30`}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: headerCollapsed ? "w-7 h-7" : "w-8 h-8", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("span", { className: `allo-premium-brand-name ${theme === "contrast" ? "" : "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent"}` }, t("header.app_name"))), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: `hidden 2xl:flex items-center gap-1 ml-1 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-60", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-60", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-60", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), !headerCollapsed && /* @__PURE__ */ React.createElement("p", { className: `allo-expanded-tagline font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), headerCollapsed ? /* @__PURE__ */ React.createElement("div", { className: "allo-premium-context-block flex flex-col justify-center leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: `allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, compactRoleLabel, " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "/"), " ", compactContextLabel), /* @__PURE__ */ React.createElement("span", { className: `allo-premium-pii-row mt-1 flex min-w-0 items-start gap-1 text-xs font-medium ${theme === "contrast" ? "text-red-400" : "text-orange-100"}`, title: piiWarningText }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 11, className: "mt-px shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "allo-premium-pii-text" }, piiWarningText))) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "allo-expanded-pii-chip" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 11, "aria-hidden": "true" }), " ", piiWarningText), /* @__PURE__ */ React.createElement("span", { className: "allo-expanded-rights-chip" }, t("header.rights")))), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "allo-expanded-brand-actions" }, /* @__PURE__ */ React.createElement(
+        `), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[1600px] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar flex items-center gap-2 sm:gap-3 min-w-0" : "allo-expanded-shell" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar-brand" : "allo-expanded-brand-bar" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "contents" : "allo-expanded-brand-copy" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 shrink-0 items-center gap-3" }, /* @__PURE__ */ React.createElement("h1", { className: `${headerCollapsed ? "text-xl md:text-2xl" : "text-2xl md:text-3xl"} font-black tracking-tight flex min-w-0 shrink-0 items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : `${headerCollapsed ? "p-1 rounded-xl" : "p-1.5 rounded-2xl"} bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30`}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: headerCollapsed ? "w-7 h-7" : "w-8 h-8", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("span", { className: `allo-premium-brand-name ${theme === "contrast" ? "" : "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent"}` }, t("header.app_name"))), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: `hidden 2xl:flex items-center gap-1 ml-1 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-60", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-60", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-60", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), !headerCollapsed && /* @__PURE__ */ React.createElement("p", { className: `allo-expanded-tagline font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), headerCollapsed ? /* @__PURE__ */ React.createElement("div", { className: "allo-premium-context-block flex flex-col justify-center leading-tight" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: `allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, compactRoleLabel, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, " / ", compactContextLabel)), /* @__PURE__ */ React.createElement("div", { ref: engineStatusRef, className: "relative inline-flex" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-header-engine-status": true,
+      "aria-expanded": showEngineStatus,
+      "aria-haspopup": "dialog",
+      onClick: () => setShowEngineStatus((open) => !open),
+      title: `AI: ${engineSummary.ai.label} \xB7 Voice: ${engineSummary.tts.label} \xB7 Mic: ${engineSummary.stt.label}`,
+      className: `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-normal normal-case transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${theme === "contrast" ? "border-yellow-400 bg-black text-yellow-300 hover:bg-yellow-400/15" : "border-white/25 bg-white/10 text-white/95 hover:bg-white/20"}`
+    },
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}"),
+    /* @__PURE__ */ React.createElement("span", null, engineSummary.tts.label),
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "opacity-60" }, "\xB7"),
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"),
+    /* @__PURE__ */ React.createElement("span", null, engineSummary.ai.label),
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "opacity-75" }, showEngineStatus ? "\u25B4" : "\u25BE")
+  ), showEngineStatus && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      role: "dialog",
+      "aria-label": "Active AI and speech engines",
+      "data-header-engine-popover": true,
+      className: "absolute left-0 top-full mt-1.5 z-[120] w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-3 text-left text-xs text-slate-800 shadow-xl normal-case tracking-normal"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "font-black text-[11px] uppercase tracking-wider text-slate-500 mb-2" }, "Active Engines"),
+    /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-500" }, "AI Model"), /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 truncate" }, engineSummary.ai.label)), typeof setShowAIBackendModal === "function" && isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      setShowEngineStatus(false);
+      setShowAIBackendModal(true);
+    }, className: "shrink-0 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100" }, "Change")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-500" }, "Read-aloud (TTS)"), /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 truncate" }, engineSummary.tts.label)), typeof setShowVoiceSettings === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      setShowEngineStatus(false);
+      setShowVoiceSettings(true);
+    }, className: "shrink-0 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100" }, "Voice")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-500" }, "Speech-to-text (Mic)"), /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 truncate" }, engineSummary.stt.label)), typeof setShowVoiceSettings === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      setShowEngineStatus(false);
+      setShowVoiceSettings(true);
+    }, className: "shrink-0 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100" }, "Mic")))
+  ))), /* @__PURE__ */ React.createElement("span", { className: `allo-premium-pii-row mt-1 flex min-w-0 items-start gap-1 text-xs font-medium ${theme === "contrast" ? "text-red-400" : "text-orange-100"}`, title: piiWarningText }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 11, className: "mt-px shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "allo-premium-pii-text" }, piiWarningText))) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "allo-expanded-pii-chip" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 11, "aria-hidden": "true" }), " ", piiWarningText), /* @__PURE__ */ React.createElement("span", { className: "allo-expanded-rights-chip" }, t("header.rights")))), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "allo-expanded-brand-actions" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

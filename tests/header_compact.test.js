@@ -94,6 +94,11 @@ describe('what collapsing may and may not hide', () => {
     expect(expandedMetadata).toContain("t('header.rights')");
     expect(SRC).toContain('{compactRoleLabel}');
     expect(SRC).toContain('{compactContextLabel}');
+    expect(SRC).toContain('data-header-engine-status');
+    expect(SRC).toContain('data-header-engine-popover');
+    expect(SRC).toContain('Kokoro (local)');
+    expect(SRC).toContain('Gemini TTS (cloud)');
+    expect(SRC).toContain('Whisper (local)');
   });
 
   it('NEVER hides the privacy notice', () => {

@@ -145,6 +145,10 @@
         <textarea id="f-text" rows="8" maxlength="6000" aria-describedby="text-hint text-said"></textarea>
         <span class="hint" id="text-said" role="status"></span>
         <span class="ra-stats" id="passage-stats" hidden></span>
+        <details class="ra-readability" id="passage-readability" hidden style="margin:6px 0 10px;padding:8px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;font-size:0.9rem;">
+          <summary style="cursor:pointer;font-weight:700;color:#1e293b;" id="passage-readability-summary">Reading level check (teacher only)</summary>
+          <div id="passage-readability-body" style="margin-top:8px;line-height:1.5;color:#334155;"></div>
+        </details>
         <p class="row">
           <button type="button" class="btn btn-small" id="passage-load">Load passage from a .txt or .md file</button>
           <input type="file" id="passage-file" accept=".txt,.md,text/plain,text/markdown" aria-label="A plain text or markdown passage file" hidden>

@@ -1188,6 +1188,93 @@ function HeaderBar(props) {
       : activeView === 'input'
         ? (t('tools.source') || 'Source Material')
         : (compactViewFallback || (t('common.ready') || 'Ready'));
+  const [showEngineStatus, setShowEngineStatus] = React.useState(false);
+  const [engineStatusRev, setEngineStatusRev] = React.useState(0);
+  const engineStatusRef = React.useRef(null);
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+    const bump = () => setEngineStatusRev(n => n + 1);
+    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'storage'];
+    events.forEach(ev => window.addEventListener(ev, bump));
+    return () => events.forEach(ev => window.removeEventListener(ev, bump));
+  }, []);
+  React.useEffect(() => {
+    if (!showEngineStatus) return undefined;
+    const onPointerDown = (event) => {
+      if (engineStatusRef.current && !engineStatusRef.current.contains(event.target)) setShowEngineStatus(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setShowEngineStatus(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [showEngineStatus]);
+  const engineSummary = React.useMemo(() => {
+    const rawBackend = (() => {
+      try {
+        const direct = ai && (ai.backend || ai._backend || ai.provider);
+        if (direct) return String(direct).toLowerCase();
+        if (typeof localStorage !== 'undefined') return String(localStorage.getItem('alloflow_ai_backend') || 'gemini').toLowerCase();
+      } catch (_) {}
+      return 'gemini';
+    })();
+    const aiDisabled = (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) || rawBackend === 'off' || rawBackend === 'none';
+    const isLocalAi = !aiDisabled && (
+      (typeof window !== 'undefined' && window.AIBackendLocal && typeof window.AIBackendLocal.isLocalTextBackend === 'function' && window.AIBackendLocal.isLocalTextBackend(rawBackend))
+      || ['ollama', 'lmstudio', 'webllm', 'chrome', 'chrome-ai', 'local', 'llamacpp', 'vllm', 'jan'].includes(rawBackend)
+    );
+    const aiNames = {
+      gemini: 'Gemini',
+      openai: 'OpenAI',
+      anthropic: 'Claude',
+      claude: 'Claude',
+      openrouter: 'OpenRouter',
+      ollama: 'Ollama',
+      lmstudio: 'LM Studio',
+      webllm: 'WebLLM',
+      chrome: 'Chrome AI',
+      'chrome-ai': 'Chrome AI',
+      llamacpp: 'llama.cpp',
+      vllm: 'vLLM',
+      jan: 'Jan',
+      'openai-compatible': 'Custom AI',
+      custom: 'Custom AI',
+    };
+    const aiInfo = aiDisabled
+      ? { name: 'AI Off', mode: 'local', label: 'AI Off (local only)', detail: '' }
+      : {
+          name: aiNames[rawBackend] || rawBackend.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          mode: isLocalAi ? 'local' : 'cloud',
+          label: `${aiNames[rawBackend] || rawBackend.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} (${isLocalAi ? 'local' : 'cloud'})`,
+          detail: String((ai && (ai.model || ai._model)) || ''),
+        };
+
+    const voiceId = String(selectedVoice || '');
+    const isKokoro = voiceId.startsWith('kokoro:') || (Array.isArray(KOKORO_VOICES) && KOKORO_VOICES.some(v => v && (v.id === voiceId || v.name === voiceId)));
+    const isGeminiVoice = !isKokoro && Array.isArray(GEMINI_VOICES) && GEMINI_VOICES.some(v => v && (v.id === voiceId || v.name === voiceId));
+    const isEdgeVoice = !isKokoro && !isGeminiVoice && Array.isArray(EDGE_TTS_VOICES) && EDGE_TTS_VOICES.some(v => v && (v.id === voiceId || v.name === voiceId));
+    const ttsInfo = isKokoro
+      ? { name: 'Kokoro', mode: 'local', label: kokoroDownloading ? 'Kokoro (local, loading…)' : 'Kokoro (local)' }
+      : isGeminiVoice
+        ? { name: 'Gemini TTS', mode: 'cloud', label: 'Gemini TTS (cloud)' }
+        : isEdgeVoice
+          ? { name: 'Edge TTS', mode: 'cloud', label: 'Edge TTS (cloud)' }
+          : { name: 'Browser Speech', mode: 'local', label: 'Browser Speech (local)' };
+
+    const sttMap = {
+      whisper: { name: 'Whisper', mode: 'local', label: 'Whisper (local)' },
+      webspeech: { name: 'Browser Speech', mode: 'local', label: 'Browser Speech (local)' },
+      gemini: { name: 'Gemini Audio', mode: 'cloud', label: 'Gemini Audio (cloud)' },
+      off: { name: 'Mic Off', mode: 'local', label: 'Mic Off' },
+      auto: { name: 'Auto', mode: 'local', label: 'Auto (Whisper local / Browser)' },
+    };
+    const sttInfo = sttMap[voiceInputEngine] || sttMap.auto;
+    return { ai: aiInfo, tts: ttsInfo, stt: sttInfo };
+  }, [ai, selectedVoice, voiceInputEngine, kokoroDownloading, kokoroSavedOnDevice, KOKORO_VOICES, GEMINI_VOICES, EDGE_TTS_VOICES, engineStatusRev]);
   // Teachers' "?" opens a short menu: explain the screen, the tour, past tips. The
   // tour and tips used to be unlabelled icons seen only in the expanded header.
   // With Help Mode on, "?" turns it off in one click. Students have one item, so no menu.
@@ -1275,6 +1362,7 @@ function HeaderBar(props) {
           .allo-premium-appbar { min-height: 56px; }
           .allo-premium-appbar-brand { display: flex; flex: 1 1 auto; align-items: center; gap: .75rem; min-width: 0; }
           .allo-premium-context-block { min-width: 0; max-width: 21rem; flex: 1 1 auto; }
+          @media (min-width: 1180px) { .allo-premium-context-block { max-width: 30rem; } }
           .allo-premium-context-line, .allo-premium-pii-text { overflow-wrap: anywhere; }
           .allo-premium-compact-nav { scrollbar-width: none; }
           .allo-premium-compact-nav::-webkit-scrollbar { display: none; }
@@ -1394,9 +1482,68 @@ function HeaderBar(props) {
               )}
               {headerCollapsed ? (
                 <div className="allo-premium-context-block flex flex-col justify-center leading-tight">
-                  <span className={`allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
-                    {compactRoleLabel} <span aria-hidden="true">/</span> {compactContextLabel}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className={`allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
+                      {compactRoleLabel}<span className="sr-only"> / {compactContextLabel}</span>
+                    </span>
+                    <div ref={engineStatusRef} className="relative inline-flex">
+                      <button
+                        type="button"
+                        data-header-engine-status
+                        aria-expanded={showEngineStatus}
+                        aria-haspopup="dialog"
+                        onClick={() => setShowEngineStatus(open => !open)}
+                        title={`AI: ${engineSummary.ai.label} · Voice: ${engineSummary.tts.label} · Mic: ${engineSummary.stt.label}`}
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-normal normal-case transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${theme === 'contrast' ? 'border-yellow-400 bg-black text-yellow-300 hover:bg-yellow-400/15' : 'border-white/25 bg-white/10 text-white/95 hover:bg-white/20'}`}
+                      >
+                        <span aria-hidden="true">🔊</span>
+                        <span>{engineSummary.tts.label}</span>
+                        <span aria-hidden="true" className="opacity-60">·</span>
+                        <span aria-hidden="true">✨</span>
+                        <span>{engineSummary.ai.label}</span>
+                        <span aria-hidden="true" className="opacity-75">{showEngineStatus ? '▴' : '▾'}</span>
+                      </button>
+                      {showEngineStatus && (
+                        <div
+                          role="dialog"
+                          aria-label="Active AI and speech engines"
+                          data-header-engine-popover
+                          className="absolute left-0 top-full mt-1.5 z-[120] w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-3 text-left text-xs text-slate-800 shadow-xl normal-case tracking-normal"
+                        >
+                          <div className="font-black text-[11px] uppercase tracking-wider text-slate-500 mb-2">Active Engines</div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0">
+                                <div className="text-[11px] font-semibold text-slate-500">AI Model</div>
+                                <div className="font-bold text-slate-800 truncate">{engineSummary.ai.label}</div>
+                              </div>
+                              {typeof setShowAIBackendModal === 'function' && isTeacherMode && (
+                                <button type="button" onClick={() => { setShowEngineStatus(false); setShowAIBackendModal(true); }} className="shrink-0 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">Change</button>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
+                              <div className="min-w-0">
+                                <div className="text-[11px] font-semibold text-slate-500">Read-aloud (TTS)</div>
+                                <div className="font-bold text-slate-800 truncate">{engineSummary.tts.label}</div>
+                              </div>
+                              {typeof setShowVoiceSettings === 'function' && (
+                                <button type="button" onClick={() => { setShowEngineStatus(false); setShowVoiceSettings(true); }} className="shrink-0 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">Voice</button>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
+                              <div className="min-w-0">
+                                <div className="text-[11px] font-semibold text-slate-500">Speech-to-text (Mic)</div>
+                                <div className="font-bold text-slate-800 truncate">{engineSummary.stt.label}</div>
+                              </div>
+                              {typeof setShowVoiceSettings === 'function' && (
+                                <button type="button" onClick={() => { setShowEngineStatus(false); setShowVoiceSettings(true); }} className="shrink-0 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">Mic</button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   <span className={`allo-premium-pii-row mt-1 flex min-w-0 items-start gap-1 text-xs font-medium ${theme === 'contrast' ? 'text-red-400' : 'text-orange-100'}`} title={piiWarningText}>
                     <AlertCircle size={11} className="mt-px shrink-0" aria-hidden="true" />
                     <span className="allo-premium-pii-text">{piiWarningText}</span>

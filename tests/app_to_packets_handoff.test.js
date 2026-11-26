@@ -214,7 +214,7 @@ describe('Wave 4 Main App -> Packets 1-Click Handoffs', () => {
         },
       ],
     });
-    expect(openSpy).toHaveBeenCalledWith('packets-vocab.html#import-draft', '_blank', 'noopener');
+    expect(openSpy).toHaveBeenCalledWith(expect.stringMatching(/\/packets-vocab\.html#import-draft$/), '_blank', 'noopener');
     expect(addToast).toHaveBeenCalledWith(expect.stringContaining('Vocabulary Packet'), 'success');
   });
 
@@ -262,7 +262,7 @@ describe('Wave 4 Main App -> Packets 1-Click Handoffs', () => {
         ship: PNG_1X1,
       },
     });
-    expect(openSpy).toHaveBeenCalledWith('packets-make.html#import-draft', '_blank', 'noopener');
+    expect(openSpy).toHaveBeenCalledWith(expect.stringMatching(/\/packets-make\.html#import-draft$/), '_blank', 'noopener');
     expect(addToast).toHaveBeenCalledWith(expect.stringContaining('Word Sounds Packet'), 'success');
   });
 

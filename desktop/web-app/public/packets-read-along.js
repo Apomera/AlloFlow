@@ -824,6 +824,73 @@
   // ---------------------------------------------------------------------------
   // Step 1: the passage, as the sentences the file will read
   // ---------------------------------------------------------------------------
+  function countEnglishSyllables(rawWord) {
+    var clean = String(rawWord || '').toLowerCase().replace(/^[^a-z]+|[^a-z]+$/g, '');
+    if (!clean) return 0;
+    if (table && typeof table.lookup === 'function') {
+      var found = table.lookup(clean);
+      if (found && Array.isArray(found.parts) && found.parts.length) return found.parts.length;
+    }
+    if (clean.length <= 3) return 1;
+    var trimmed = clean.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '');
+    var groups = trimmed.match(/[aeiouy]{1,2}/g);
+    return Math.max(1, groups ? groups.length : 1);
+  }
+
+  function updateReadability(sentences) {
+    var box = $('passage-readability');
+    var summaryEl = $('passage-readability-summary');
+    var bodyEl = $('passage-readability-body');
+    if (!box || !summaryEl || !bodyEl) return;
+    var rows = Array.isArray(sentences) ? sentences : [];
+    var words = [];
+    rows.forEach(function (row) {
+      var parts = String(row && row.text || '').split(/\s+/).filter(Boolean);
+      for (var i = 0; i < parts.length; i++) words.push(parts[i]);
+    });
+    if (words.length < 10 || rows.length < 1) {
+      box.hidden = true;
+      bodyEl.textContent = '';
+      return;
+    }
+    var lang = ($('f-lang') && $('f-lang').value) ? String($('f-lang').value).toLowerCase() : 'en';
+    var avgSentLen = words.length / rows.length;
+    box.hidden = false;
+    if (lang !== 'en') {
+      summaryEl.textContent = 'Reading level check (teacher only) · avg ' + avgSentLen.toFixed(1) + ' words/sentence';
+      bodyEl.textContent = 'Average sentence length: ' + avgSentLen.toFixed(1) + ' words (' + count(words.length, 'word') + ' across ' + count(rows.length, 'sentence') + '). Flesch-Kincaid is calibrated for English prose only. Teacher estimate — never shown to students.';
+      return;
+    }
+    var totalSyllables = 0;
+    var multiSyllableCount = 0;
+    var countedWords = 0;
+    for (var w = 0; w < words.length; w++) {
+      var syl = countEnglishSyllables(words[w]);
+      if (syl > 0) {
+        countedWords += 1;
+        totalSyllables += syl;
+        if (syl >= 3) multiSyllableCount += 1;
+      }
+    }
+    if (!countedWords) {
+      box.hidden = true;
+      return;
+    }
+    var fkGrade = Math.max(0, 0.39 * avgSentLen + 11.8 * (totalSyllables / countedWords) - 15.59);
+    var fkEase = Math.max(0, Math.min(100, Math.round(206.835 - 1.015 * avgSentLen - 84.6 * (totalSyllables / countedWords))));
+    var easeBand = fkEase >= 80 ? 'Very easy' : fkEase >= 70 ? 'Easy' : fkEase >= 60 ? 'Plain English' : fkEase >= 50 ? 'Fairly difficult' : 'Difficult';
+    var multiPct = Math.round((multiSyllableCount / countedWords) * 100);
+    summaryEl.textContent = 'Reading level check (teacher only) · ~Grade ' + fkGrade.toFixed(1);
+    var tip = multiPct >= 12 ? ' Many 3+ syllable words — turning on Syllables or Word meanings in Step 4 may help.' : '';
+    bodyEl.textContent =
+      'Flesch-Kincaid Grade: ~' + fkGrade.toFixed(1) +
+      ' · Flesch Reading Ease: ' + fkEase + '/100 (' + easeBand + ')' +
+      ' · Avg. sentence length: ' + avgSentLen.toFixed(1) + ' words' +
+      ' · 3+ syllable words: ' + multiSyllableCount + ' (' + multiPct + '%).' +
+      tip +
+      ' Teacher estimate only (never shown to students; works best on English prose, not poetry or word lists).';
+  }
+
   function readPassage() {
     var text = String($('f-text').value || '');
     state.sentences = builder.splitPassage(text);
@@ -844,6 +911,7 @@
         statsEl.hidden = true;
       }
     }
+    updateReadability(state.sentences);
   }
 
   function stateLine(row) {
@@ -2986,7 +3054,7 @@
       refreshSoon();
     });
     if ($('f-page-mode')) $('f-page-mode').addEventListener('change', function () { state.unsaved = true; readPassage(); draw(); refreshFile(); });
-    if ($('f-lang')) $('f-lang').addEventListener('change', function () { state.unsaved = true; syncLangUi(); syncSupportCards(); draw(); refreshFile(); });
+    if ($('f-lang')) $('f-lang').addEventListener('change', function () { state.unsaved = true; syncLangUi(); syncSupportCards(); updateReadability(state.sentences); draw(); refreshFile(); });
     if ($('f-pos')) $('f-pos').addEventListener('change', function () {
       state.unsaved = true;
       syncPosCustomizerUi();

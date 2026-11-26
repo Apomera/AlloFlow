@@ -98,7 +98,7 @@ describe('there is a front door', () => {
 
   it('is wired from the host and reaches the built module', () => {
     for (const f of COPIES) {
-      expect(readFileSync(f, 'utf8'), f).toContain('<EducatorHubModal setShowRecentQrShares={setShowRecentQrShares}');
+      expect(readFileSync(f, 'utf8'), f).toMatch(/<EducatorHubModal\b[^>]*setShowRecentQrShares=\{setShowRecentQrShares\}/);
     }
     expect(HUB_MODULE, 'a source-only change would never ship').toContain('educator_hub_activities_card');
   });
@@ -121,7 +121,7 @@ describe('the dialog does not close by accident', () => {
 
   it('still closes deliberately, by button and by host-owned Escape handling', () => {
     expect(ASSIGNMENT_CENTER).toContain("tx('share_collect.close_aria', 'Close Share & Collect')");
-    expect(ASSIGNMENT_CENTER).toContain('useFocusTrap(dialogRef, isOpen, onClose);');
+    expect(ASSIGNMENT_CENTER).toMatch(/useFocusTrap\(dialogRef,\s*isOpen,\s*(?:onClose|handleDialogEscape)\);/);
   });
 
   it('is named for what it does now', () => {

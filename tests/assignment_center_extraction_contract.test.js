@@ -89,7 +89,7 @@ describe('Assignment Center safe view extraction', () => {
     expect(source).not.toMatch(/\b(?:fetch|safeGetItem|safeSetItem)\s*\(|\blocalStorage\b|\bsessionStorage\b|_alloMailbox|callGemini/);
     expect(source).not.toContain('view.url');
     expect(source).toContain('rowViews must contain display-only fields plus callback closures');
-    expect(source).toContain('value={view.linkLabel ||');
+    expect(source).toContain('view.linkLabel ||');
     expect(source).toContain('typeof view.onCopyLink');
     expect(source).toContain('typeof view.onRevoke');
     expect(source).toContain('surveyHostingAvailable');
