@@ -11,6 +11,8 @@ body.pc-on > :not(.pc) { display: none !important; }
 .pc-said { margin-top: 0.5rem; font-weight: 600; color: var(--ink); }
 .pc-actions { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; margin-top: 1rem; }
 .pc-actions .btn { min-height: 2.75rem; }
+.pc-find-missing-pics { display: inline-flex; align-items: center; text-decoration: none; }
+.pc-find-missing-pics[hidden] { display: none !important; }
 .pc-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.85rem; }
 .pc-presets .btn { min-height: 2.75rem; }
 .pc-presets-label { font-weight: 700; color: var(--ink); font-size: 0.9375rem; }
@@ -222,6 +224,7 @@ body.pc-on > :not(.pc) { display: none !important; }
 .pc-ws-pic { display: block; width: 18mm; height: 18mm; object-fit: contain; border: 0.25mm solid #808080; padding: 1mm; background: #ffffff; flex: none; }
 .pc-ws-pic-sm { width: 11mm; height: 11mm; object-fit: contain; display: block; flex: none; }
 .pc-ws-word { font-size: 16pt; font-weight: 700; color: #000000; letter-spacing: 0.02em; overflow-wrap: anywhere; }
+.pc-ws-listen { font-size: 11pt; font-style: italic; font-weight: 600; color: #000000; }
 .pc-ws-boxes { display: inline-flex; flex-wrap: wrap; align-items: center; }
 .pc-ws-box {
   display: inline-block; width: 12mm; height: 12mm; box-sizing: border-box;
@@ -458,6 +461,7 @@ body.pc-on > :not(.pc) { display: none !important; }
   body.pc-on.paper-on > #print-cards-view:not([hidden]) { display: block !important; }
   .pc { min-height: 0; padding: 0; background: #ffffff; }
   .pc-bar { display: none !important; }
+  .pc-find-missing-pics, [data-find-missing-pics] { display: none !important; }
   .pc-audio-wrap { display: none !important; }
   .pc-score-sheet { display: block !important; color: #000000; background: #ffffff; padding: 0; }
   .pc-sheets { padding: 0; }

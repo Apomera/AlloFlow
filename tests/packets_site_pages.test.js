@@ -483,7 +483,8 @@ describe('the pages as files', () => {
     for (const file of files) expect(Math.abs(statSync(file.url).size - file.bytes) / file.bytes, file.url).toBeLessThan(0.05);
     const scripts = [...parse('packets-make.html').querySelectorAll('script')].map((script) => script.getAttribute('src'));
     expect(scripts).toEqual(['packets-page.js', 'word_sounds_phonemes_en.js', 'word_sounds_core.js', 'word_sounds_wordlist_en.js', 'word_sounds_take_home_loader.js', 'word_sounds_packet_builder.js',
-      'word_sounds_symbols_en.js', 'packets_my_words.js', 'packets-words.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-print-cards.js', 'packets-make.js']);
+      'word_sounds_symbols_en.js', 'reading_symbols_ext_en.js', 'word_picture_semantic_en.js', 'word_picture_matcher.js',
+      'packets_my_words.js', 'packets-words.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-print-cards.js', 'packets-make.js']);
     // The picture index is small (it says which words have a picture); the drawings load only when a file is made with them.
     expect(statSync('word_sounds_symbols_en.js').size).toBeLessThan(40000);
     const megabytes = scripts.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;

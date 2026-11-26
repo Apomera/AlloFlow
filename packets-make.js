@@ -1424,7 +1424,7 @@
     state.hand = true;
     state.chosen = listChecked();
   }
-  function hasPicture(word) { return !noPicture(word) && (ownPicture(word) || !!myPictured[word] || (!!symbols && symbols.has(word)) || matcherHas(word)); }
+  function hasPicture(word) { return !noPicture(word) && (ownPicture(word) || !!myPictured[word] || indexHasPicture(word)); }
   // Every word the picker would offer now, A to Z (the picker's rules, not its count). Worked out again only when a choice changes.
   function poolWords() {
     var asked = criteria();
@@ -1457,7 +1457,7 @@
     sounds = sounds || (entry ? entry.sounds : null);
     return sounds ? count(sounds.length, 'sound') + ': ' + sounds.map(soundName).join(', ') + '.' : '';
   }
-  function pictureFact(word) { return noPicture(word) ? ' Picture off.' : ownPicture(word) || myPictured[word] ? ' Your picture.' : (symbols && symbols.has(word)) || matcherHas(word) ? ' Has a picture.' : ''; }
+  function pictureFact(word) { return noPicture(word) ? ' Picture off.' : ownPicture(word) || myPictured[word] ? ' Your picture.' : indexHasPicture(word) ? ' Has a picture.' : ''; }
   function listRow(entry, checked, index) {
     var word = entry.word, info = entry.typed || entry.earlier ? checkWord(word) : null;
     var ok = usable(word), on = checked.indexOf(word) >= 0;
@@ -2259,20 +2259,86 @@
   // page, says which words have one. The drawings are in the files it names: the same files whatever words are
   // chosen, fetched only when a file is made with the box checked. A file made without them is the same file as before.
   // picturesChoice: '' until the teacher clicks the box (then it is on exactly when a word has a picture), 'on' or 'off' after.
-  var symbols = null, picturesChoice = '', picturesNote = '', picturesLoading = null, matcherLoading = null, matcherCache = Object.create(null);
+  var symbols = null, picturesChoice = '', picturesNote = '', picturesLoading = null, matcherLoading = null, matcherCache = Object.create(null), probeCache = Object.create(null);
+  function getReadingSymbolsExt() {
+    var ext = window.AlloReadingSymbolsExt || (window.AlloModules && window.AlloModules.ReadingSymbolsExt) || null;
+    return ext && typeof ext.has === 'function' && typeof ext.get === 'function' ? ext : null;
+  }
+  function getSemanticBridge() {
+    var sem = window.AlloWordPictureSemantic || (window.AlloModules && window.AlloModules.WordPictureSemantic) || null;
+    return sem && typeof sem.lookup === 'function' ? sem : null;
+  }
   function getMatcher() { return window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher) || null; }
+  function indexProbeBank(bank) {
+    if (!bank || typeof bank.has !== 'function') return null;
+    if (typeof bank.ready === 'function' && bank.ready()) return bank;
+    return {
+      has: function (w) { return bank.has(w); },
+      get: function (w) {
+        if (!bank.has(w)) return null;
+        var set = typeof bank.set === 'function' ? (bank.set(w) || 'mulberry') : 'mulberry';
+        return { svg: '<svg/>', label: String(w), set: set, file: '' };
+      },
+      set: typeof bank.set === 'function' ? bank.set : undefined,
+      words: typeof bank.words === 'function' ? bank.words : undefined,
+      credit: bank.credit,
+      credits: bank.credits
+    };
+  }
   function matcherMatch(word) {
     var m = getMatcher();
     if (!m || typeof m.matchWord !== 'function' || !word) return null;
     var symReady = !!(symbols && typeof symbols.ready === 'function' && symbols.ready());
-    var key = (symReady ? '1:' : '0:') + String(word).toLowerCase();
+    var ext = getReadingSymbolsExt();
+    var extReady = !!(ext && (typeof ext.ready !== 'function' || ext.ready()));
+    var sem = getSemanticBridge();
+    var key = (symReady ? '1' : '0') + (extReady ? '1' : '0') + (sem ? '1:' : '0:') + String(word).toLowerCase();
     if (Object.prototype.hasOwnProperty.call(matcherCache, key)) return matcherCache[key];
     var hit = null;
-    try { hit = m.matchWord({ word: word }, { symbols: symReady ? symbols : null, preferDiagrams: true }); } catch (_) { hit = null; }
+    try {
+      hit = m.matchWord({ word: word }, {
+        symbols: symReady ? symbols : null,
+        readingSymbolsExt: extReady ? ext : null,
+        semantic: sem,
+        semanticBridge: sem,
+        preferDiagrams: true
+      });
+    } catch (_) { hit = null; }
     matcherCache[key] = (hit && typeof hit.svg === 'string') ? hit : null;
     return matcherCache[key];
   }
-  function matcherHas(word) { return !!matcherMatch(word); }
+  function matcherProbe(word) {
+    if (!word) return null;
+    var m = getMatcher();
+    var ext = getReadingSymbolsExt();
+    var sem = getSemanticBridge();
+    var key = (symbols ? '1' : '0') + (ext ? '1' : '0') + (sem ? '1' : '0') + (m ? '1:' : '0:') + String(word).toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(probeCache, key)) return probeCache[key];
+    var hit = null;
+    if (m && typeof m.matchWord === 'function') {
+      try {
+        hit = m.matchWord({ word: word }, {
+          symbols: indexProbeBank(symbols),
+          readingSymbolsExt: indexProbeBank(ext),
+          semantic: sem,
+          semanticBridge: sem,
+          preferDiagrams: true
+        });
+      } catch (_) { hit = null; }
+    }
+    probeCache[key] = (hit && typeof hit.svg === 'string') ? hit : null;
+    return probeCache[key];
+  }
+  function indexHasPicture(word) {
+    if (!word) return false;
+    var ext = getReadingSymbolsExt();
+    var sem = getSemanticBridge();
+    if (symbols && symbols.has(word)) return true;
+    if (ext && ext.has(word)) return true;
+    if (sem && typeof sem.has === 'function' && sem.has(word)) return true;
+    return !!matcherProbe(word);
+  }
+  function matcherHas(word) { return !!matcherMatch(word) || !!matcherProbe(word); }
   function loadMatcher() {
     if (getMatcher()) return Promise.resolve(true);
     if (!matcherLoading) {
@@ -2283,6 +2349,7 @@
           if (done) return;
           done = true;
           matcherCache = Object.create(null);
+          probeCache = Object.create(null);
           var ready = !!ok && !!getMatcher();
           if (!ready) matcherLoading = null;
           resolve(ready);
@@ -2297,20 +2364,35 @@
     }
     return matcherLoading;
   }
+  function fetchPictureShard(bank, shard) {
+    return fetchBounded(window.fetch(shard.url).then(function (reply) {
+      if (!reply.ok) throw new Error(shard.url + ' answered ' + reply.status);
+      return reply.text();
+    }).then(function (text) {
+      bank.add(JSON.parse(text, function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      }));
+    }), 15000, shard.url);
+  }
   function loadPictures() {
     var mTask = loadMatcher().catch(function () { return false; });
-    if (symbols.ready()) return mTask.then(function () { return true; });
+    var ext = getReadingSymbolsExt();
+    var symReady = !symbols || symbols.ready();
+    var extReady = !ext || typeof ext.ready !== 'function' || ext.ready() || !Array.isArray(ext.shards);
+    if (symReady && extReady) return mTask.then(function () { return !!(symbols ? symbols.ready() : (ext && ext.ready())); });
     if (!picturesLoading) {
-      picturesLoading = Promise.all(symbols.shards.map(function (shard) {
-        return fetchBounded(window.fetch(shard.url).then(function (reply) {
-          if (!reply.ok) throw new Error(shard.url + ' answered ' + reply.status);
-          return reply.text();
-        }).then(function (text) {
-          symbols.add(JSON.parse(text, function (k, v) {
-            return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
-          }));
-        }), 15000, shard.url);
-      })).then(function () { picturesLoading = null; matcherCache = Object.create(null); return mTask.then(function () { return symbols.ready(); }); }, function (error) { picturesLoading = null; throw error; });
+      var symTask = !symReady
+        ? Promise.all(symbols.shards.map(function (shard) { return fetchPictureShard(symbols, shard); }))
+        : Promise.resolve();
+      var extTask = !extReady
+        ? Promise.all(ext.shards.map(function (shard) { return fetchPictureShard(ext, shard).catch(function () {}); }))
+        : Promise.resolve();
+      picturesLoading = Promise.all([symTask, extTask]).then(function () {
+        picturesLoading = null;
+        matcherCache = Object.create(null);
+        probeCache = Object.create(null);
+        return mTask.then(function () { return !!((symbols && symbols.ready()) || (ext && typeof ext.ready === 'function' && ext.ready())); });
+      }, function (error) { picturesLoading = null; throw error; });
     }
     return picturesLoading;
   }
@@ -2318,14 +2400,31 @@
   // A picture the teacher added to a word (My words) is used in place of its symbol.
   function noPicture(word) { var entry = mineOf(word); return !!(entry && entry.picture && entry.picture.none) || !!myNoPicture[word] || !!previewNoPicture[word]; }
   function ownPicture(word) { var entry = mineOf(word); return !!(entry && entry.picture && !entry.picture.none) && !previewNoPicture[word]; }
+  function picturesQueueInfo(wordList) {
+    var clean = [], seen = Object.create(null);
+    (Array.isArray(wordList) ? wordList : []).forEach(function (raw) {
+      var w = myWords && typeof myWords.normalizeWord === 'function'
+        ? myWords.normalizeWord(raw)
+        : (function (s) { return /^[a-z]{2,24}$/.test(s) ? s : ''; }(String(raw == null ? '' : raw).trim().toLowerCase()));
+      if (w && /^[a-z]{2,24}$/.test(w) && !seen[w]) { seen[w] = true; clean.push(w); }
+    });
+    if (!clean.length) return { href: '', count: 0 };
+    var first = clean[0], rest = clean.slice(1, 50);
+    return {
+      href: PICTURES_PAGE + '#word=' + first
+        + (rest.length ? '&' + 'more=' + rest.join(',') : ''),
+      count: clean.length
+    };
+  }
   // The box is never switched off: with no picture among the words it can still be checked (the file is then the
   // plain one), and the line beside it says why there are none and what to do.
   function drawPictures(inFile) {
     var box = $('f-pictures');
     if (!box) return;
     var words = fileWords();
+    var ext = getReadingSymbolsExt();
     var theirs = words.filter(ownPicture).length;
-    var have = words.filter(function (word) { return !noPicture(word) && (ownPicture(word) || (!!symbols && symbols.has(word)) || matcherHas(word)); }).length;
+    var have = words.filter(function (word) { return !noPicture(word) && (ownPicture(word) || indexHasPicture(word)); }).length;
     var onlyPictures = !!($('f-only-pictures') && $('f-only-pictures').checked);
     box.disabled = false;
     // On when the teacher checked it, or before any click when the teacher filtered for words with pictures or most chosen words have one.
@@ -2339,8 +2438,9 @@
       if (noPicture(word) || ownPicture(word)) return;
       var set = '';
       if (symbols && symbols.has(word)) set = typeof symbols.set === 'function' ? symbols.set(word) || 'mulberry' : 'mulberry';
+      else if (ext && ext.has(word)) set = typeof ext.set === 'function' ? ext.set(word) || 'mulberry' : 'mulberry';
       else {
-        var matched = matcherMatch(word);
+        var matched = matcherMatch(word) || matcherProbe(word);
         if (matched) set = matched.set === 'openmoji' ? 'openmoji' : ((matched.matchType === 'diagram' || matched.set === 'diagram') ? 'diagram' : 'mulberry');
       }
       if (set && sets.indexOf(set) < 0) sets.push(set);
@@ -2351,15 +2451,50 @@
       : !n && words.length ? (symbols ? NO_PICTURES_SAID : NO_INDEX_SAID)
         : added ? 'Pictures for ' + n + ' of ' + count(of, 'word') + ': ' + added + ' you added' + (n > added ? ', ' + count(n - added, 'symbol') + ' from ' + setsSaid + '.' : '.')
           : symbols ? 'Pictures for ' + n + ' of ' + count(of, 'word') + '. Symbols: ' + setsSaid + '.' : NO_INDEX_SAID));
+    var missingLink = $('find-missing-pictures');
+    if (missingLink) {
+      var missingWords = words.filter(function (word) {
+        return !noPicture(word) && !ownPicture(word) && !myPictured[word] && !indexHasPicture(word);
+      });
+      var q = picturesQueueInfo(missingWords);
+      if (q.href) {
+        missingLink.href = q.href;
+        missingLink.textContent = q.count === 1
+          ? 'Find a picture for the 1 missing word'
+          : 'Find pictures for the ' + q.count + ' missing words';
+        missingLink.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
+        missingLink.hidden = false;
+        show('find-missing-pictures-row', true);
+      } else {
+        missingLink.href = PICTURES_PAGE;
+        missingLink.hidden = true;
+        show('find-missing-pictures-row', false);
+      }
+    }
   }
   // Whether the file being made gets pictures: the box is checked and the drawings are here. The drawings
-  // are fetched only when a word of the file shows a symbol (not when every picture is the teacher's).
+  // are fetched whenever any word of the file may resolve via symbols, extended reading symbols, or the matcher.
   function picturesFor(run, words) {
     var box = $('f-pictures');
     if (!box || !box.checked) return Promise.resolve(false);
-    var needsSymbol = !!symbols && words.some(function (word) { return !noPicture(word) && !ownPicture(word) && symbols.has(word); });
-    if (!needsSymbol) return Promise.resolve(words.some(function (word) { return !noPicture(word) && (ownPicture(word) || matcherHas(word)); }));
-    if (!symbols.ready() && run === buildRun) making('Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.', null);
+    var ext = getReadingSymbolsExt();
+    var sem = getSemanticBridge();
+    var symReady = !symbols || symbols.ready();
+    var extReady = !ext || typeof ext.ready !== 'function' || ext.ready();
+    var needsShards = (!!symbols || !!ext) && words.some(function (word) {
+      if (noPicture(word) || ownPicture(word)) return false;
+      if (symbols && symbols.has(word)) return true;
+      if (ext && ext.has(word)) return true;
+      if (sem && typeof sem.has === 'function' && sem.has(word)) return true;
+      var probed = matcherProbe(word);
+      return !!(probed && probed.set !== 'diagram' && probed.matchType !== 'diagram');
+    });
+    var hasAnyPicture = needsShards || words.some(function (word) {
+      return !noPicture(word) && (ownPicture(word) || !!matcherProbe(word));
+    });
+    if (!needsShards) return Promise.resolve(hasAnyPicture);
+    if (symReady && extReady && getMatcher()) return Promise.resolve(true);
+    if ((!symReady || !extReady) && symbols && run === buildRun) making('Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.', null);
     var loading = loadPictures().then(function (ready) { return !!ready; }, function () { return false; });
     drawPictures();
     return loading.then(function (ready) {
@@ -2796,7 +2931,7 @@
           sample: false,
           label: core.activityLabel(act) + (word ? ' — ' + word : ''),
           canSwap: REROLL_ACTS.indexOf(act) >= 0,
-          canTogglePicture: !!(picOn && word && (ownPicture(word) || !!myPictured[word] || noPicture(word) || (!!symbols && symbols.has(word)) || matcherHas(word))),
+          canTogglePicture: !!(picOn && word && (ownPicture(word) || !!myPictured[word] || noPicture(word) || indexHasPicture(word))),
           noPicture: !!(word && noPicture(word)),
         });
       });
@@ -4513,7 +4648,17 @@
     // The drawings come through loadPictures, so they are fetched once for both.
     var cards = window.AlloPacketPrintCards;
     if (cards && typeof cards.wire === 'function') cards.wire($('print-cards'), function () {
-      return { words: fileWords(), title: titleNow(), pictures: !!$('f-pictures').checked, symbols: symbols, loadPictures: symbols ? loadPictures : null, own: ownFor };
+      return {
+        words: fileWords(),
+        title: titleNow(),
+        pictures: !!$('f-pictures').checked,
+        symbols: symbols,
+        readingSymbolsExt: getReadingSymbolsExt(),
+        semanticBridge: getSemanticBridge(),
+        matcher: getMatcher() || window.AlloWordPictureMatcher || null,
+        loadPictures: (symbols || getReadingSymbolsExt()) ? loadPictures : null,
+        own: ownFor
+      };
     });
     var wordSoundsWorksheetState = function () {
       var activeActs = lastLesson && Array.isArray(lastLesson.blocks) && lastLesson.blocks.length
@@ -4533,8 +4678,10 @@
         title: titleNow(),
         pictures: !!$('f-pictures').checked,
         symbols: symbols,
+        readingSymbolsExt: getReadingSymbolsExt(),
+        semanticBridge: getSemanticBridge(),
         matcher: getMatcher() || window.AlloWordPictureMatcher || null,
-        loadPictures: symbols ? loadPictures : null,
+        loadPictures: (symbols || getReadingSymbolsExt()) ? loadPictures : null,
         own: ownFor,
         dictionary: dictionary,
         core: core,
@@ -4547,19 +4694,116 @@
       if (!built || !built.html) return;
       var zipKit = window.AlloPacketZip;
       if (!zipKit || typeof zipKit.create !== 'function' || !cards || typeof cards.buildWordSoundsWorksheetHtml !== 'function') return;
+      var btn = $('download-bundle');
+      var prevText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Building bundle...'; }
+      var restore = function () {
+        if (btn) { btn.disabled = false; btn.textContent = prevText || 'Download classroom bundle (.zip)'; }
+      };
       var wsState = wordSoundsWorksheetState();
       var ext = '.html';
-      var zip = zipKit.create();
-      zip.add('01-Interactive-Packet' + ext, built.html);
-      zip.add('02-Worksheet-Scaffolded' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: true, showHints: true, showSyllables: true, includeAnswerKey: false }));
-      zip.add('03-Worksheet-Independent' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: false, showHints: false, showSyllables: false, includeAnswerKey: false }));
-      zip.add('04-Teacher-Answer-Key' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: true, showHints: true, showSyllables: true, includeAnswerKey: true }));
-      var slug = String(titleNow() || 'word-sounds').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'word-sounds';
-      var url = '';
-      try { url = URL.createObjectURL(new Blob(zip.finish(), { type: 'application/zip' })); } catch (_) { url = ''; }
-      if (!url) return;
-      saveBlob(url, slug + '-classroom-bundle.zip');
-      window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
+      var docxExt = '.docx';
+      var finishZip = function (extraEntries) {
+        try {
+          var zip = zipKit.create();
+          zip.add('01-Interactive-Packet' + ext, built.html);
+          zip.add('02-Worksheet-Scaffolded' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: true, showHints: true, showSyllables: true, includeAnswerKey: false, showListeningWords: false }));
+          zip.add('03-Worksheet-Independent' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: false, showHints: false, showSyllables: false, includeAnswerKey: false, showListeningWords: false }));
+          zip.add('04-Teacher-Answer-Key' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: true, showHints: true, showSyllables: true, includeAnswerKey: true }));
+          (extraEntries || []).forEach(function (entry) {
+            if (entry && entry.name && entry.data !== undefined && entry.data !== null) zip.add(entry.name, entry.data);
+          });
+          if (typeof cards.buildWordSoundsAudioPlan === 'function') {
+            try {
+              var audioPlan = cards.buildWordSoundsAudioPlan(wsState, {});
+              if (audioPlan && audioPlan.clipCount > 0) {
+                var audioHtml = typeof cards.buildAudioCompanionHtml === 'function'
+                  ? cards.buildAudioCompanionHtml(audioPlan)
+                  : (typeof cards.buildWordSoundsAudioCompanionHtml === 'function' ? cards.buildWordSoundsAudioCompanionHtml(wsState) : '');
+                if (audioHtml) zip.add('08-Offline-Audio-Companion' + ext, audioHtml);
+              }
+            } catch (_) {}
+          }
+          var slug = String(titleNow() || 'word-sounds').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'word-sounds';
+          var url = '';
+          try { url = URL.createObjectURL(new Blob(zip.finish(), { type: 'application/zip' })); } catch (_) { url = ''; }
+          if (url) {
+            saveBlob(url, slug + '-classroom-bundle.zip');
+            window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
+          }
+        } finally {
+          restore();
+        }
+      };
+      var loadDocx = typeof cards.ensureDocx === 'function'
+        ? cards.ensureDocx()
+        : Promise.resolve(window.AlloPacketDocx || window.AlloPacketsDocx || null);
+      Promise.resolve(loadDocx).then(function (docxMod) {
+        if (!docxMod) { finishZip([]); return; }
+        var prep = function (m) {
+          if (typeof cards.prepareDocxModelAsync === 'function') return cards.prepareDocxModelAsync(docxMod, m);
+          if (typeof docxMod.prepareImagesAsync === 'function') {
+            return Promise.resolve().then(function () { return docxMod.prepareImagesAsync(m, window, doc); }).then(function (p) { return p || m; }, function () { return m; });
+          }
+          return Promise.resolve(m);
+        };
+        var jobs = [];
+        if (typeof docxMod.buildWordSoundsDocx === 'function' && typeof cards.normalizeWorksheetModel === 'function' && typeof cards.buildWordSoundsDocxModel === 'function') {
+          try {
+            var scaffModel = cards.normalizeWorksheetModel(wsState, { pictures: true, hints: true, syllables: true, answerKey: false, showListeningWords: false });
+            if (scaffModel && scaffModel.sections && scaffModel.sections.length) {
+              var scaffDoc = cards.buildWordSoundsDocxModel(scaffModel);
+              jobs.push(prep(scaffDoc).then(function (prepared) {
+                var res = docxMod.buildWordSoundsDocx(prepared, { zip: zipKit, filename: '05-Worksheet-Scaffolded' + docxExt });
+                return res && res.bytes ? { name: '05-Worksheet-Scaffolded' + docxExt, data: res.bytes } : null;
+              }, function () { return null; }));
+            }
+            var indepModel = cards.normalizeWorksheetModel(wsState, { pictures: false, hints: false, syllables: false, answerKey: false, showListeningWords: false });
+            if (indepModel && indepModel.sections && indepModel.sections.length) {
+              var indepDoc = cards.buildWordSoundsDocxModel(indepModel);
+              jobs.push(prep(indepDoc).then(function (prepared) {
+                var res = docxMod.buildWordSoundsDocx(prepared, { zip: zipKit, filename: '06-Worksheet-Independent' + docxExt });
+                return res && res.bytes ? { name: '06-Worksheet-Independent' + docxExt, data: res.bytes } : null;
+              }, function () { return null; }));
+            }
+          } catch (_) {}
+        }
+        if (typeof docxMod.buildWordCardsDocx === 'function') {
+          try {
+            var cardWords = Array.isArray(wsState.words) ? wsState.words.filter(Boolean) : [];
+            if (cardWords.length) {
+              var pics = wsState.pictures && typeof cards.picturesOf === 'function'
+                ? cards.picturesOf(cardWords, wsState.own, wsState.symbols, wsState.matcher, wsState.readingSymbolsExt, wsState.semanticBridge)
+                : Object.create(null);
+              var cardList = cardWords.map(function (w) {
+                var p = pics[w];
+                var fallbackImg = wsState.pictures && wsState.images && (wsState.images[w] || wsState.images[String(w).toLowerCase()]);
+                return { word: w, displayWord: w, pictureUri: (p && p.uri) || (typeof fallbackImg === 'string' ? fallbackImg : '') };
+              });
+              var cardsModel = {
+                title: wsState.title || 'Word Cards',
+                cards: cardList,
+                size: 6,
+                shows: wsState.pictures ? 'both' : 'word',
+                lines: true,
+                pages: 'both',
+                credits: typeof cards.creditsFor === 'function' ? cards.creditsFor(cardWords, pics, wsState.symbols) : []
+              };
+              jobs.push(prep(cardsModel).then(function (prepared) {
+                var res = docxMod.buildWordCardsDocx(prepared, { zip: zipKit, filename: '07-Word-Cards' + docxExt });
+                return res && res.bytes ? { name: '07-Word-Cards' + docxExt, data: res.bytes } : null;
+              }, function () { return null; }));
+            }
+          } catch (_) {}
+        }
+        return Promise.all(jobs).then(function (entries) {
+          finishZip(entries.filter(Boolean));
+        }, function () {
+          finishZip([]);
+        });
+      }, function () {
+        finishZip([]);
+      });
     });
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}

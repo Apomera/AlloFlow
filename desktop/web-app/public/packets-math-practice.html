@@ -208,7 +208,7 @@
         <legend class="sr-only">How to practice</legend>
         <div class="choices" id="methods">
           <label class="choice"><input type="radio" name="method" value="ccc">
-            <span class="choice-name">Cover, copy, compare</span>
+            <span class="choice-name">Cover, copy, compare (study answer first)</span>
             <span class="choice-line">The student looks at a fact and its answer, covers it, types the answer from memory, then sees if it matches. A wrong answer is shown again and typed again.</span>
             <span class="choice-example">Example: 7 × 8 = 56 is shown. Cover it, then type the answer from memory. Answer: 56.</span>
           </label>
@@ -216,6 +216,18 @@
             <span class="choice-name">Rehearsal with known facts</span>
             <span class="choice-line">Up to 3 new facts, mixed in among facts the student already knows, so most answers are right. Based on incremental rehearsal.</span>
             <span class="choice-example">Example: The new fact 7 × 8 = 56 is shown first. Then come 7 × 10, a fact the student knows, and 7 × 8 again. Type the answer. Answer: 70, then 56.</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="block" id="panel-recall">
+        <legend>When answers are shown</legend>
+        <div class="radios radios-stack" id="recall-options">
+          <label class="radio"><input type="radio" name="recall" value="study" checked>
+            <span>Study answer first <span class="radio-sub">Shows the fact and answer to study before covering it (standard cover, copy, compare or new-fact introduction).</span></span>
+          </label>
+          <label class="radio"><input type="radio" name="recall" value="memory">
+            <span>Hide answers first — answer from memory <span class="radio-sub">Every card opens covered with the number pad ready. The student answers from memory first and only sees the answer after trying.</span></span>
           </label>
         </div>
       </fieldset>

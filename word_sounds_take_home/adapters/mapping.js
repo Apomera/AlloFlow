@@ -37,6 +37,9 @@ module.exports = {
     mapping_dropped: '{spelling} put back.',
     mapping_placed: '{spelling} is in slot {n}.',
     mapping_removed: '{spelling} taken out of slot {n}.',
+    mapping_put_back: '↩ Put back',
+    mapping_put_back_label: 'Put back in spelling pool',
+    mapping_selected: '{spelling} selected. Choose another slot to move it, or tap Put back.',
     mapping_cleared: 'All the slots are empty again.',
     mapping_clear: 'Empty the slots',
     mapping_auto: 'Your answer is checked when every slot is full.',
@@ -116,7 +119,7 @@ module.exports = {
       target: graphemes.join(' '), graphemes: graphemes,
       chips: order.map(function (id) { var chip = spans[id] > 1 ? { text: graphemes[id], audio: clips[id][0], audios: clips[id], span: spans[id] } : { text: graphemes[id], audio: clips[id] }; if (says[id]) chip.says = says[id]; return chip; }),
       wordAudio: wordAudio, promptAudio: prompt,
-      introAudio: [prompt], answerAudio: [wordAudio],
+      introAudio: [prompt, wordAudio], answerAudio: [wordAudio],
     };
     if (spanning) result.spans = spans;
     return { item: result };
@@ -133,10 +136,16 @@ module.exports = {
     var slots = [];
     for (var s = 0; s < n; s++) slots.push(null);
     var picked = null;
+    var pickedFrom = -1;
     var errors = [];
+    var defaultOldHow = 'Tap a spelling to pick it up, then tap a slot to put it there. Tap a filled slot to take it out.';
+    var howText = (!L.mapping_how || L.mapping_how === defaultOldHow)
+      ? 'Tap a spelling to pick it up, then tap a slot to put it there. Tap a filled slot to hear and move it, or tap Put back to return it.'
+      : L.mapping_how;
     var locked = function () { return ctx.isDone(); };
     var text = function (ci) { return item.chips[ci].text; };
     var covered = function (si) { return si > 0 && slots[si] != null && slots[si - 1] === slots[si]; };
+    var byKey = function (e) { return !e || e.detail === 0; };
     // The surprising-sound notes ("s says /z/ here.") appear the first time a chip is played and stay for this word.
     // Never in a check (ctx.check): there the note would give away what the check measures. In practice a
     // note shown while the child works counts as help (support 'spellingNotes'); the ones shown with the answer do not.
@@ -148,7 +157,7 @@ module.exports = {
       notesEl.appendChild(ctx.el('p', { class: 'letters', 'data-mapping-says': chip.text, text: ctx.fmt(L.mapping_says, { spelling: chip.text, sound: chip.says }) }));
       if (help) ctx.support('spellingNotes');
     };
-    var hear = function (ci) { var chip = item.chips[ci]; if (chip.audios) ctx.playAll(chip.audios); else ctx.play(chip.audio); note(ci, true); };
+    var hear = function (ci) { var chip = item.chips[ci]; if (!chip) return; if (chip.audios) ctx.playAll(chip.audios); else if (chip.audio) ctx.play(chip.audio); note(ci, true); };
     var takeOut = function (ci) { for (var i = 0; i < n; i++) if (slots[i] === ci) slots[i] = null; };
 
     var drag = null, dragEndedAt = 0;
@@ -174,7 +183,8 @@ module.exports = {
         doc.body.appendChild(g);
         drag.ghost = g;
         drag.w = r.width; drag.h = r.height;
-        if (drag.from === 'tray') { picked = drag.ci; draw(); }
+        if (drag.from === 'tray') { picked = drag.ci; pickedFrom = -1; draw(); }
+        else if (drag.from === 'slot') { picked = drag.ci; pickedFrom = drag.si; draw(); }
       }
       drag.ghost.style.left = (e.clientX - drag.w / 2) + 'px';
       drag.ghost.style.top = (e.clientY - drag.h / 2) + 'px';
@@ -199,7 +209,7 @@ module.exports = {
           placeChip(d.ci, to, null);
         } else if (to !== d.si) {
           var span = spanOf(d.ci);
-          if (to + span > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(d.ci) })); return; }
+          if (to + span > n) { picked = null; pickedFrom = -1; draw(); ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(d.ci) })); return; }
           var swapSingle = span === 1 && slots[to] != null && spanOf(slots[to]) === 1 ? slots[to] : null;
           takeOut(d.ci);
           if (swapSingle != null) {
@@ -209,25 +219,27 @@ module.exports = {
             for (var k = 0; k < span; k++) if (slots[to + k] != null) takeOut(slots[to + k]);
             for (var j = 0; j < span; j++) slots[to + j] = d.ci;
           }
-          picked = null; errors = [];
+          picked = null; pickedFrom = -1; errors = [];
           draw();
           afterPlace(d.ci, to, null);
+        } else {
+          picked = null; pickedFrom = -1; draw();
         }
       } else if (trayNode && d.from === 'slot') {
         var first = slots.indexOf(d.ci);
         takeOut(d.ci);
-        errors = [];
+        picked = null; pickedFrom = -1; errors = [];
         draw();
         ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(d.ci), n: first + 1 }));
-      } else if (d.from === 'tray') {
-        picked = null; draw();
+      } else {
+        picked = null; pickedFrom = -1; draw();
       }
     };
 
     var chipSlot = function (ci) { return ci % 6; };
     var chipBg = function (ci) { return 'var(--c' + chipSlot(ci) + 'b,var(--soft))'; };
     var chipBd = function (ci) { return 'var(--c' + chipSlot(ci) + ',var(--accent))'; };
-    var tray = ctx.el('ul', { class: 'row', 'data-map-tray': '', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:12px' });
+    var tray = ctx.el('ul', { class: 'row', 'data-map-tray': '', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:6px 0;margin:16px 0;gap:12px' });
     var chipEls = item.chips.map(function (chip, ci) {
       var two = spanOf(ci) > 1;
       var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-map-tile': String(ci), 'data-map-c': String(chipSlot(ci)),
@@ -239,6 +251,19 @@ module.exports = {
       tray.appendChild(li);
       return { li: li, pick: pick };
     });
+    var putBackBtn = ctx.el('button', { type: 'button', 'data-map-put-back': '', 'aria-label': L.mapping_put_back_label || 'Put back in spelling pool',
+      style: 'min-width:var(--map-sz,72px);min-height:var(--map-h,56px);padding:0 16px;border-radius:16px;font-size:1.05rem;font-weight:800;border:3px dashed var(--accent);background:var(--soft);color:var(--accent);box-shadow:0 0 0 3px var(--accent)',
+      on: { click: function (e) {
+        if (locked() || picked == null || pickedFrom < 0) return;
+        var out = picked, first = slots.indexOf(out);
+        takeOut(out);
+        picked = null; pickedFrom = -1; errors = [];
+        draw();
+        ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: (first >= 0 ? first : 0) + 1 }));
+        if (byKey(e) && chipEls[out] && chipEls[out].pick) { try { chipEls[out].pick.focus(); } catch (_) {} }
+      } } }, [L.mapping_put_back || '↩ Put back']);
+    var putBackLi = ctx.el('li', { 'data-map-put-back-item': '', hidden: true }, [putBackBtn]);
+    tray.appendChild(putBackLi);
     var slotList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.mapping_slots });
     var slotEls = slots.map(function (_, si) {
       var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-map-slot': String(si), style: 'min-width:var(--map-box,80px);min-height:var(--map-box,80px);border-width:3px;font-size:1.5rem;font-weight:700',
@@ -249,7 +274,7 @@ module.exports = {
     });
     var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
       if (locked()) return;
-      picked = null; errors = [];
+      picked = null; pickedFrom = -1; errors = [];
       for (var i = 0; i < n; i++) slots[i] = null;
       draw(); ctx.announce(L.mapping_cleared);
       if (chipEls[0] && chipEls[0].pick) { try { chipEls[0].pick.focus(); } catch (_) {} }
@@ -257,9 +282,13 @@ module.exports = {
 
     var draw = function () {
       var holding = picked != null && !locked();
+      var holdingFromSlot = holding && pickedFrom >= 0;
+      putBackLi.hidden = !holdingFromSlot;
+      tray.style.outline = holdingFromSlot ? '2px dashed var(--accent)' : '';
+      tray.style.borderRadius = holdingFromSlot ? '16px' : '';
       chipEls.forEach(function (c, ci) {
         c.li.hidden = slots.indexOf(ci) >= 0;
-        var on = picked === ci;
+        var on = picked === ci && pickedFrom < 0;
         var bg = chipBg(ci), bd = chipBd(ci);
         c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
         c.pick.style.background = on ? bd : bg;
@@ -274,6 +303,7 @@ module.exports = {
         el.li.hidden = covered(si);
         var two = ci != null && spanOf(ci) > 1;
         var bad = errors.indexOf(si) >= 0 && ci != null;
+        var lifted = holdingFromSlot && ci != null && ci === picked;
         btn.textContent = '';
         if (ci == null) {
           btn.style.position = '';
@@ -294,11 +324,14 @@ module.exports = {
         if (two) btn.setAttribute('data-span', String(spanOf(ci))); else btn.removeAttribute('data-span');
         if (ci != null && !bad) btn.setAttribute('data-map-c', String(chipSlot(ci))); else btn.removeAttribute('data-map-c');
         if (bad) btn.setAttribute('data-mapping-error', 'true'); else btn.removeAttribute('data-mapping-error');
+        if (ci != null) btn.setAttribute('aria-pressed', lifted ? 'true' : 'false'); else btn.removeAttribute('aria-pressed');
         btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
         btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : chipBd(ci);
-        btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
-        btn.style.color = bad ? 'var(--warn)' : ci == null ? '' : 'var(--ink)';
-        btn.style.boxShadow = ci == null && holding ? '0 0 0 3px var(--accent)' : '';
+        btn.style.background = lifted ? chipBd(ci) : bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
+        btn.style.color = lifted ? 'var(--accent-ink)' : bad ? 'var(--warn)' : ci == null ? '' : 'var(--ink)';
+        btn.style.transform = lifted ? 'translateY(-6px) scale(1.08)' : '';
+        btn.style.boxShadow = lifted ? ('0 0 0 3px var(--card), 0 0 0 7px ' + chipBd(ci))
+          : (ci == null && holding ? '0 0 0 3px var(--accent)' : (holdingFromSlot && ci != null ? '0 0 0 2px var(--accent)' : ''));
         btn.style.touchAction = ci == null ? 'manipulation' : 'none';
         var baseLabel = ci == null ? ctx.fmt(L.mapping_slot_empty, { n: si + 1 })
           : two ? ctx.fmt(L.mapping_slot_filled_two, { n: si + 1, m: si + spanOf(ci), spelling: text(ci) })
@@ -308,11 +341,10 @@ module.exports = {
       });
       if (locked()) clearBtn.setAttribute('aria-disabled', 'true');
     };
-    var byKey = function (e) { return !e || e.detail === 0; };
     var onChip = function (ci, e) {
       if (locked() || slots.indexOf(ci) >= 0) return;
-      if (picked === ci) { picked = null; draw(); ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(ci) })); return; }
-      picked = ci;
+      if (picked === ci && pickedFrom < 0) { picked = null; pickedFrom = -1; draw(); ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(ci) })); return; }
+      picked = ci; pickedFrom = -1;
       draw();
       ctx.support('soundListens');
       hear(ci);
@@ -349,8 +381,8 @@ module.exports = {
     var placeChip = function (ci, si, e) {
       var span = spanOf(ci);
       // A spanning chip cannot start in the last slot.
-      if (si + span > n) { picked = null; draw(); ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(ci) })); return; }
-      picked = null; errors = [];
+      if (si + span > n) { picked = null; pickedFrom = -1; draw(); ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(ci) })); return; }
+      picked = null; pickedFrom = -1; errors = [];
       for (var k = 0; k < span; k++) if (slots[si + k] != null) takeOut(slots[si + k]); // chips already there go back to the tray
       for (var j = 0; j < span; j++) slots[si + j] = ci;
       draw();
@@ -359,13 +391,40 @@ module.exports = {
     var onSlot = function (si, e) {
       if (locked()) return;
       if (picked == null) {
-        var out = slots[si];
-        if (out == null) { ctx.announce(L.mapping_how); return; }
-        var first = slots.indexOf(out);
-        takeOut(out);
+        var inSlot = slots[si];
+        if (inSlot == null) { ctx.announce(howText); return; }
+        var first = slots.indexOf(inSlot);
+        picked = inSlot;
+        pickedFrom = first >= 0 ? first : si;
         errors = [];
         draw();
-        ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: first + 1 }));
+        var chip = item.chips[inSlot];
+        if (chip && (chip.audios || chip.audio)) hear(inSlot);
+        ctx.announce(ctx.fmt(L.mapping_selected || '{spelling} selected. Choose another slot to move it, or tap Put back.', { spelling: text(inSlot) }));
+        return;
+      }
+      if (pickedFrom >= 0) {
+        if (slots[si] === picked || si === pickedFrom) {
+          var stayed = picked, atSlot = pickedFrom;
+          picked = null; pickedFrom = -1;
+          draw();
+          ctx.announce(ctx.fmt(L.mapping_placed, { spelling: text(stayed), n: atSlot + 1 }));
+          return;
+        }
+        var moved = picked, fromSi = pickedFrom, span = spanOf(moved);
+        if (si + span > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(moved) })); return; }
+        var swapSingle = span === 1 && slots[si] != null && spanOf(slots[si]) === 1 ? slots[si] : null;
+        takeOut(moved);
+        if (swapSingle != null) {
+          slots[si] = moved;
+          slots[fromSi] = swapSingle;
+        } else {
+          for (var k = 0; k < span; k++) if (slots[si + k] != null) takeOut(slots[si + k]);
+          for (var j = 0; j < span; j++) slots[si + j] = moved;
+        }
+        picked = null; pickedFrom = -1; errors = [];
+        draw();
+        afterPlace(moved, si, e);
         return;
       }
       if (si + spanOf(picked) > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return; }
@@ -378,20 +437,33 @@ module.exports = {
         var k = String(key == null ? '' : key);
         if (k === 'Escape' || k === 'Esc') {
           if (picked == null) return false;
-          var drop = picked;
-          picked = null;
+          var drop = picked, wasSlot = pickedFrom;
+          picked = null; pickedFrom = -1;
           draw();
-          ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(drop) }));
-          if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+          if (wasSlot >= 0) {
+            ctx.announce(ctx.fmt(L.mapping_placed, { spelling: text(drop), n: wasSlot + 1 }));
+            if (slotEls[wasSlot] && slotEls[wasSlot].btn) { try { slotEls[wasSlot].btn.focus(); } catch (_) {} }
+          } else {
+            ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(drop) }));
+            if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+          }
           return true;
         }
         if (k === 'Backspace') {
+          if (picked != null && pickedFrom >= 0) {
+            var selOut = picked, selFirst = slots.indexOf(selOut);
+            takeOut(selOut);
+            picked = null; pickedFrom = -1; errors = [];
+            draw();
+            ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(selOut), n: (selFirst >= 0 ? selFirst : 0) + 1 }));
+            return true;
+          }
           for (var si = n - 1; si >= 0; si--) {
             if (slots[si] != null) {
               var out = slots[si];
               var first = slots.indexOf(out);
               takeOut(out);
-              picked = null; errors = [];
+              picked = null; pickedFrom = -1; errors = [];
               draw();
               ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: first + 1 }));
               return true;
@@ -402,7 +474,7 @@ module.exports = {
         if (k === 'Enter') {
           var ae = doc && doc.activeElement;
           var onBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
-          if (onBtn || picked == null) return false;
+          if (onBtn || picked == null || pickedFrom >= 0) return false;
           var sp = spanOf(picked);
           for (var ei = 0; ei <= n - sp; ei++) {
             var fits = true;
@@ -416,6 +488,7 @@ module.exports = {
           var idx = Number(k) - 1;
           if (picked != null) {
             if (idx < n && !covered(idx)) {
+              if (pickedFrom >= 0) { onSlot(idx, { detail: 1 }); return true; }
               if (idx + spanOf(picked) > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return true; }
               placeChip(picked, idx, { detail: 1 });
               return true;
@@ -431,9 +504,10 @@ module.exports = {
       });
     }
 
+    var wordLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.mapping_word, { word: item.word }) });
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.mapping_question }));
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.fmt(L.mapping_word, { word: item.word }) }));
-    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.mapping_how + ' ' + L.mapping_auto }));
+    ctx.root.appendChild(wordLine);
+    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: howText + ' ' + L.mapping_auto }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: L.hear_question }),
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
@@ -449,7 +523,7 @@ module.exports = {
     draw();
     return {
       reveal: function (correct) {
-        picked = null; errors = [];
+        picked = null; pickedFrom = -1; errors = [];
         if (!correct) {
           var used = [];
           for (var i = 0; i < n; i++) slots[i] = null;
@@ -461,10 +535,10 @@ module.exports = {
             box += want;
           }
         }
+        wordLine.hidden = false;
         draw();
-        // The answer shown: every surprising spelling of the word is explained too.
         item.chips.forEach(function (chip, ci) { note(ci, false); });
-        slotEls.forEach(function (el) { el.btn.removeAttribute('data-map-c'); el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; el.btn.style.color = ''; });
+        slotEls.forEach(function (el) { el.btn.removeAttribute('data-map-c'); el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; el.btn.style.color = ''; el.btn.style.boxShadow = ''; });
       },
     };
   },

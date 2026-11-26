@@ -102,8 +102,13 @@ module.exports = {
     var boxes = [];
     for (var b = 0; b < n; b++) boxes.push(null);
     var picked = null;
+    var pickedFrom = -1;
     var errors = [];
     var token = 0;
+    var defaultOldHow = 'Tap a sound to pick it up, then tap a box to put it there. Tap a filled box to take its sound out.';
+    var howText = (!L.segmentation_how || L.segmentation_how === defaultOldHow)
+      ? 'Tap a sound to pick it up, then tap a box to put it there. Tap a filled box to hear and move it, or tap Put back to return it.'
+      : L.segmentation_how;
     // With letters on, a sound like oo_short shows its friendly name (ctx.sound).
     var said = function (label) { return typeof ctx.sound === 'function' ? ctx.sound(label) : '/' + label + '/'; };
     var name = function (ci) { return ctx.showLetters ? said(item.chips[ci].label) : ctx.fmt(L.sound_n, { n: ci + 1 }); };
@@ -156,6 +161,19 @@ module.exports = {
       tray.appendChild(li);
       return { li: li, pick: pick };
     });
+    var putBackBtn = ctx.el('button', { type: 'button', 'data-seg-put-back': '', 'aria-label': 'Put back in sound pool',
+      style: 'min-width:var(--seg-sz,64px);min-height:var(--seg-sz,64px);padding:0 16px;border-radius:16px;font-size:1.05rem;font-weight:800;border:3px dashed var(--accent);background:var(--soft);color:var(--accent);box-shadow:0 0 0 3px var(--accent)',
+      on: { click: function (e) {
+        if (locked() || picked == null || pickedFrom < 0) return;
+        halt();
+        var out = picked, fromBi = pickedFrom;
+        boxes[fromBi] = null; picked = null; pickedFrom = -1; errors = [];
+        draw();
+        tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: fromBi + 1 }));
+        if (byKey(e) && chipEls[out] && chipEls[out].pick) { try { chipEls[out].pick.focus(); } catch (_) {} }
+      } } }, ['↩ Put back']);
+    var putBackLi = ctx.el('li', { 'data-seg-put-back-item': '', hidden: true }, [putBackBtn]);
+    tray.appendChild(putBackLi);
     var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.segmentation_boxes, style: 'justify-content:center;margin:12px 0 0' });
     var boxEls = boxes.map(function (_, bi) {
       var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-seg-box': String(bi), style: 'min-width:var(--seg-box,76px);min-height:var(--seg-box,76px);border-width:3px;border-radius:16px;font-size:1.25rem;font-weight:800',
@@ -188,7 +206,8 @@ module.exports = {
         doc.body.appendChild(g);
         drag.ghost = g;
         drag.w = r.width; drag.h = r.height;
-        if (drag.from === 'tray') { picked = drag.ci; draw(); }
+        if (drag.from === 'tray') { picked = drag.ci; pickedFrom = -1; draw(); }
+        else if (drag.from === 'box') { picked = drag.ci; pickedFrom = drag.bi; draw(); }
       }
       drag.ghost.style.left = (e.clientX - drag.w / 2) + 'px';
       drag.ghost.style.top = (e.clientY - drag.h / 2) + 'px';
@@ -210,15 +229,16 @@ module.exports = {
       if (box && ctx.root.contains(box)) {
         var to = Number(box.getAttribute('data-seg-box'));
         if (d.from === 'tray') placeAt(d.ci, to);
-        else if (to !== d.bi) { var other = boxes[to]; boxes[to] = d.ci; boxes[d.bi] = other; errors = []; draw(); ctx.play(item.chips[d.ci].audio); tell(ctx.fmt(L.segmentation_placed, { sound: name(d.ci), n: to + 1 })); }
+        else if (to !== d.bi) { var other = boxes[to]; boxes[to] = d.ci; boxes[d.bi] = other; picked = null; pickedFrom = -1; errors = []; draw(); ctx.play(item.chips[d.ci].audio); tell(ctx.fmt(L.segmentation_placed, { sound: name(d.ci), n: to + 1 })); }
+        else { picked = null; pickedFrom = -1; draw(); }
       } else if (back && d.from === 'box') {
-        boxes[d.bi] = null; errors = []; draw(); tell(ctx.fmt(L.segmentation_removed, { sound: name(d.ci), n: d.bi + 1 }));
-      } else if (d.from === 'tray') { picked = null; draw(); }
+        boxes[d.bi] = null; picked = null; pickedFrom = -1; errors = []; draw(); tell(ctx.fmt(L.segmentation_removed, { sound: name(d.ci), n: d.bi + 1 }));
+      } else { picked = null; pickedFrom = -1; draw(); }
     };
     var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { onCheck(); } }, text: L.segmentation_check });
     var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
       if (locked()) return;
-      halt(); picked = null; errors = [];
+      halt(); picked = null; pickedFrom = -1; errors = [];
       for (var i = 0; i < n; i++) boxes[i] = null;
       draw(); tell(L.segmentation_cleared);
       if (chipEls[0] && chipEls[0].pick) { try { chipEls[0].pick.focus(); } catch (_) {} }
@@ -240,9 +260,13 @@ module.exports = {
     var draw = function () {
       var full = boxes.every(function (x) { return x != null; });
       var holding = picked != null && !locked();
+      var holdingFromBox = holding && pickedFrom >= 0;
+      putBackLi.hidden = !holdingFromBox;
+      tray.style.outline = holdingFromBox ? '2px dashed var(--accent)' : '';
+      tray.style.borderRadius = holdingFromBox ? '16px' : '';
       chipEls.forEach(function (c, ci) {
         c.li.hidden = boxes.indexOf(ci) >= 0;
-        var on = picked === ci;
+        var on = picked === ci && pickedFrom < 0;
         var bg = chipBg(ci), bd = chipBd(ci);
         c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
         // Held: it lifts and flips to its own chip accent color with theme accent-ink and a ring.
@@ -256,15 +280,20 @@ module.exports = {
       boxEls.forEach(function (btn, bi) {
         var ci = boxes[bi];
         var bad = errors.indexOf(bi) >= 0 && ci != null;
+        var lifted = holdingFromBox && pickedFrom === bi && ci != null;
         if (ci == null) { btn.textContent = ''; btn.appendChild(icon('drop')); } else face(btn, ci);
         if (ci != null && !bad) btn.setAttribute('data-seg-c', String(chipSlot(ci)));
         else btn.removeAttribute('data-seg-c');
+        if (ci != null) btn.setAttribute('aria-pressed', lifted ? 'true' : 'false');
+        else btn.removeAttribute('aria-pressed');
         btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
         btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : chipBd(ci);
-        btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
-        btn.style.color = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--ink)';
-        // While a tile is held, the empty boxes light up: that is where it can go.
-        btn.style.boxShadow = holding && ci == null ? '0 0 0 3px var(--accent)' : '';
+        btn.style.background = lifted ? chipBd(ci) : bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
+        btn.style.color = lifted ? 'var(--accent-ink)' : bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--ink)';
+        btn.style.transform = lifted ? 'translateY(-6px) scale(1.08)' : '';
+        // While a tile is held, empty boxes light up; while a placed box chip is lifted, it gets a focus ring and other boxes highlight as targets.
+        btn.style.boxShadow = lifted ? ('0 0 0 3px var(--card), 0 0 0 7px ' + chipBd(ci))
+          : (holding && ci == null ? '0 0 0 3px var(--accent)' : (holdingFromBox && ci != null ? '0 0 0 2px var(--accent)' : ''));
         btn.style.touchAction = ci == null ? 'manipulation' : 'none';
         btn.setAttribute('aria-label', ci == null ? ctx.fmt(L.segmentation_box_empty, { n: bi + 1 })
           : ctx.fmt(bad ? L.segmentation_box_check : L.segmentation_box_filled, { n: bi + 1, sound: name(ci) }));
@@ -280,7 +309,7 @@ module.exports = {
     };
     // A tray tile into box bi (a sound already there goes back to the tiles).
     var placeAt = function (ci, bi) {
-      picked = null; errors = [];
+      picked = null; pickedFrom = -1; errors = [];
       boxes[bi] = ci;
       draw();
       ctx.play(item.chips[ci].audio);
@@ -289,8 +318,8 @@ module.exports = {
     var onChip = function (ci, e) {
       if (locked() || boxes.indexOf(ci) >= 0) return;
       halt();
-      if (picked === ci) { picked = null; draw(); tell(ctx.fmt(L.segmentation_dropped, { sound: name(ci) })); return; }
-      picked = ci;
+      if (picked === ci && pickedFrom < 0) { picked = null; pickedFrom = -1; draw(); tell(ctx.fmt(L.segmentation_dropped, { sound: name(ci) })); return; }
+      picked = ci; pickedFrom = -1;
       draw();
       ctx.play(item.chips[ci].audio);
       tell(ctx.fmt(L.segmentation_picked, { sound: name(ci) }));
@@ -303,11 +332,31 @@ module.exports = {
       halt();
       errors = [];
       if (picked == null) {
-        var out = boxes[bi];
-        if (out == null) { tell(L.segmentation_how); return; }
-        boxes[bi] = null;
+        var inBox = boxes[bi];
+        if (inBox == null) { tell(howText); return; }
+        picked = inBox;
+        pickedFrom = bi;
         draw();
-        tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: bi + 1 }));
+        ctx.play(item.chips[inBox].audio);
+        tell(name(inBox) + ' selected. Choose another box to move it, or tap Put back.');
+        return;
+      }
+      if (pickedFrom >= 0) {
+        if (bi === pickedFrom) {
+          var stayed = picked;
+          picked = null; pickedFrom = -1;
+          draw();
+          tell(ctx.fmt(L.segmentation_placed, { sound: name(stayed), n: bi + 1 }));
+          return;
+        }
+        var moved = picked, fromBi = pickedFrom, other = boxes[bi];
+        boxes[bi] = moved;
+        boxes[fromBi] = other;
+        picked = null; pickedFrom = -1;
+        draw();
+        ctx.play(item.chips[moved].audio);
+        tell(ctx.fmt(L.segmentation_placed, { sound: name(moved), n: bi + 1 }));
+        if (byKey(e)) nextFocus().focus();
         return;
       }
       placeAt(picked, bi);
@@ -337,18 +386,30 @@ module.exports = {
         var k = String(key == null ? '' : key);
         if (k === 'Escape' || k === 'Esc') {
           if (picked == null) return false;
-          var drop = picked;
-          picked = null;
+          var drop = picked, wasBox = pickedFrom;
+          picked = null; pickedFrom = -1;
           draw();
-          tell(ctx.fmt(L.segmentation_dropped, { sound: name(drop) }));
-          if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+          if (wasBox >= 0) {
+            tell(ctx.fmt(L.segmentation_placed, { sound: name(drop), n: wasBox + 1 }));
+            if (boxEls[wasBox]) { try { boxEls[wasBox].focus(); } catch (_) {} }
+          } else {
+            tell(ctx.fmt(L.segmentation_dropped, { sound: name(drop) }));
+            if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+          }
           return true;
         }
         if (k === 'Backspace') {
+          if (picked != null && pickedFrom >= 0) {
+            var selOut = boxes[pickedFrom], selBi = pickedFrom;
+            halt(); boxes[selBi] = null; picked = null; pickedFrom = -1; errors = [];
+            draw();
+            tell(ctx.fmt(L.segmentation_removed, { sound: name(selOut), n: selBi + 1 }));
+            return true;
+          }
           for (var bi = n - 1; bi >= 0; bi--) {
             if (boxes[bi] != null) {
               var out = boxes[bi];
-              halt(); boxes[bi] = null; picked = null; errors = [];
+              halt(); boxes[bi] = null; picked = null; pickedFrom = -1; errors = [];
               draw();
               tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: bi + 1 }));
               return true;
@@ -366,7 +427,11 @@ module.exports = {
         if (/^[1-9]$/.test(k)) {
           var idx = Number(k) - 1;
           if (picked != null) {
-            if (idx < n) { placeAt(picked, idx); return true; }
+            if (idx < n) {
+              if (pickedFrom >= 0) onBox(idx, { detail: 1 });
+              else placeAt(picked, idx);
+              return true;
+            }
             return false;
           }
           if (idx < chipEls.length && boxes.indexOf(idx) < 0) {
@@ -379,7 +444,7 @@ module.exports = {
     }
 
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.segmentation_question }));
-    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.segmentation_how }));
+    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: howText }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: L.hear_question }),
       ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
@@ -398,7 +463,7 @@ module.exports = {
     return {
       reveal: function (correct) {
         halt();
-        picked = null; errors = [];
+        picked = null; pickedFrom = -1; errors = [];
         say.textContent = '';
         if (!correct) {
           // Show the right sounds in the boxes, using the tray's own chips.

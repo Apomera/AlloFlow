@@ -2485,7 +2485,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           onDrop: (e) => handleDrop(e, bucket.id),
           className: `flex-1 min-w-[250px] max-w-sm bg-slate-100 rounded-xl border-2 border-dashed transition-all p-4 flex flex-col ${isChecked ? "border-slate-300" : draggedItem ? "border-indigo-400 ring-2 ring-indigo-100" : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50"}`
         },
-        /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-lg font-bold mb-4 shadow-sm border ${styles.bg} ${styles.text} ${styles.border}` }, bucket.label),
+        /* @__PURE__ */ React.createElement("div", { className: `flex items-center justify-center gap-2 text-center p-3 rounded-lg font-bold mb-4 shadow-sm border ${styles.bg} ${styles.text} ${styles.border}` }, /* @__PURE__ */ React.createElement("span", null, bucket.label), /* @__PURE__ */ React.createElement(SpeakButton, { text: bucket.label, size: 12 })),
         /* @__PURE__ */ React.createElement("div", { className: "flex-grow space-y-2 min-h-[100px]" }, items.filter((i) => i.currentContainer === bucket.id).map((item) => /* @__PURE__ */ React.createElement(React.Fragment, { key: item.id }, renderCard(item))), items.filter((i) => i.currentContainer === bucket.id).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center text-slate-600 text-xs italic py-8" }, t("concept_sort.drop_placeholder"))),
         keyboardSelectedItemId && /* @__PURE__ */ React.createElement(
           "button",
@@ -4185,7 +4185,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
         onDragLeave: handleDragLeave,
         className: `flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] relative z-10 bg-white shadow-sm ${!reducedMotion ? "transition-all" : ""} ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200 ${!reducedMotion ? "scale-[1.02]" : ""} shadow-md` : `border-${accent}-200`}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: `text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200` }, b.title),
+      /* @__PURE__ */ React.createElement("div", { className: `flex items-center justify-center gap-2 text-center font-black uppercase tracking-wider text-sm py-1.5 px-2 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200` }, /* @__PURE__ */ React.createElement("span", null, b.title), /* @__PURE__ */ React.createElement(SpeakButton, { text: b.title, size: 12 })),
       /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 justify-center content-start flex-grow p-1" }, placed.map((item) => renderMultiBucketItem(item, `sorted into ${b.title}`)), placed.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic text-xs mt-3 text-center w-full" }, t("concept_sort.drop_placeholder") || "Drop here"))
     );
   }))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-t border-slate-200 shadow-inner p-4 flex-shrink-0 max-h-[35vh] flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto w-full" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider" }, t("concept_sort.unsorted_cards") || "Unsorted Items", " (", bankItems.length, ")"), attempts > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" }, attempts, " incorrect attempt", attempts !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement(
@@ -7156,7 +7156,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
         "aria-label": `Drop zone: ${zone.label}`,
         className: `${c.panel} border-2 ${c.border} rounded-xl p-3 min-h-[140px] ${!reducedMotion ? "transition-all" : ""} ${isActive ? `ring-4 ${c.ring} ${!reducedMotion ? "scale-[1.02]" : ""}` : ""}`
       },
-      /* @__PURE__ */ React.createElement("h4", { className: `${c.header} font-black text-sm uppercase tracking-wide text-center py-1.5 px-2 rounded-md mb-2` }, zone.label),
+      /* @__PURE__ */ React.createElement("h4", { className: `${c.header} flex items-center justify-center gap-2 font-black text-sm uppercase tracking-wide text-center py-1.5 px-2 rounded-md mb-2` }, /* @__PURE__ */ React.createElement("span", null, zone.label), /* @__PURE__ */ React.createElement(SpeakButton, { text: zone.label, size: 12 })),
       /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, zoneItems.map((item) => renderMultiZoneItem(item, `sorted into ${zone.label}`, c.border)))
     );
   };

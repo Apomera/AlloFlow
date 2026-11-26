@@ -245,6 +245,13 @@ function resolveGenerationSource({ type, textOverride, inputText, history = [], 
         selection: choice ? 'explicit-reading' : 'designated-primary', candidates: eligible };
 }
 
+function _aiDocumentNoticeStart(text) {
+    const raw = String(text || '');
+    const match = raw.match(/(?:\r?\n){2,}---\s*(?:\r?\n)+\*About this document:[\s\S]*$/i)
+        || raw.match(/(?:\r?\n)+\*About this document:[\s\S]*$/i);
+    return match ? match.index : raw.length;
+}
+
 async function generateReadingSupports(snapshotValue, deps = {}) {
     const contract = deps.contextModule || window.AlloModules?.InstructionalContext;
     const snapshot = contract?.getSourceSnapshot?.(snapshotValue);
@@ -260,14 +267,15 @@ async function generateReadingSupports(snapshotValue, deps = {}) {
         ? `This passage was already rewritten (simplified) for this reader. Choose up to ${maxGlosses} occurrences such a reader is still likely not to know: subject or technical terms, names of people, places, or things, idioms and figurative phrases, and words used in a less common sense. Do not gloss everyday words the reader already knows.`
         : `Choose up to ${maxGlosses} useful unfamiliar occurrences, including archaic usage, literary senses, unfamiliar referents, idioms, and academic vocabulary where relevant.`;
     const language = deps.language || snapshot.language || 'English';
+    const glossableEnd = _aiDocumentNoticeStart(snapshot.text);
     const annotations = [], coveredRanges = [], skippedRanges = [];
     let rejectedCount = 0, cursor = 0;
     const checkAbort = () => { if (deps.signal?.aborted) { const error = new Error('Reading support generation cancelled.'); error.name = 'AbortError'; throw error; } };
-    for (let part = 0; cursor < snapshot.text.length && part < maxChunks; part++) {
+    for (let part = 0; cursor < glossableEnd && part < maxChunks; part++) {
         checkAbort();
         const start = cursor;
-        let end = Math.min(snapshot.text.length, start + chunkChars);
-        if (end < snapshot.text.length) {
+        let end = Math.min(glossableEnd, start + chunkChars);
+        if (end < glossableEnd) {
             const boundary = snapshot.text.lastIndexOf(' ', end);
             const newline = snapshot.text.lastIndexOf('\n', end);
             const split = Math.max(boundary, newline);
@@ -304,7 +312,7 @@ Select the application's exact occurrence IDs. For a phrase, use the first word'
 Return ONLY JSON: {"sourceFingerprint":${JSON.stringify(snapshot.fingerprint)},"annotations":[{"id":"word-0","endId":"word-0","text":"brief contextual gloss","priority":"helpful"}]}.
 Context before (read only; do not annotate): ${JSON.stringify(snapshot.text.slice(Math.max(0, start - 400), start))}
 Source passage: ${JSON.stringify(excerpt)}
-Context after (read only; do not annotate): ${JSON.stringify(snapshot.text.slice(end, Math.min(snapshot.text.length, end + 400)))}
+Context after (read only; do not annotate): ${JSON.stringify(snapshot.text.slice(end, Math.min(glossableEnd, end + 400)))}
 Occurrence choices: ${JSON.stringify(candidates.map(word => ({ id: word.id, quote: word.quote })))}`;
             const raw = await deps.callGemini(prompt, true);
             checkAbort();
@@ -331,9 +339,9 @@ Occurrence choices: ${JSON.stringify(candidates.map(word => ({ id: word.id, quot
             // Keep successful earlier sections, and report unprocessed coverage.
             break;
         }
-        deps.onProgress?.({ current: part + 1, total: Math.min(maxChunks, Math.ceil(snapshot.text.length / chunkChars)) });
+        deps.onProgress?.({ current: part + 1, total: Math.min(maxChunks, Math.max(1, Math.ceil(glossableEnd / chunkChars))) });
     }
-    if (cursor < snapshot.text.length) skippedRanges.push({ start: cursor, end: snapshot.text.length, reason: 'not-processed' });
+    if (cursor < glossableEnd) skippedRanges.push({ start: cursor, end: glossableEnd, reason: 'not-processed' });
     const checked = contract.validateReadingSupports(snapshot, { sourceFingerprint: snapshot.fingerprint, annotations });
     const totalRejected = Number(checked.rejectedCount || 0) + rejectedCount;
     return { ...checked, rejectedCount: totalRejected, coveredRanges, skippedRanges,
@@ -3352,6 +3360,9 @@ const normalizeGlossaryTerms = (raw, sourceText) => {
         if (item.pos !== undefined || item.partOfSpeech !== undefined) { entry.pos = normalizeGlossaryPos(item.pos !== undefined ? item.pos : item.partOfSpeech); delete entry.partOfSpeech; }
         const context = _generatedText(item.contextSentence);
         if (context) entry.contextSentence = context; else delete entry.contextSentence;
+        const example = _generatedText(item.example || item.exampleSentence);
+        if (example) entry.example = example.slice(0, 600); else delete entry.example;
+        delete entry.exampleSentence;
         return entry.term && entry.def ? entry : null;
     }).filter(Boolean).filter(entry => {
         const keys = [entry.term, entry.sourceTerm].map(v => _glossaryQuoteKey(v)).filter(Boolean);
@@ -3507,6 +3518,7 @@ function buildWordListGlossaryPrompt(rawSeed, options = {}) {
     const shape = { id: 0, term: 'Exact supplied term', def: 'Student-friendly definition', tier: 'Academic or Domain-Specific', pos: 'noun, verb, adjective or adverb (the sense defined)' };
     if (plan.translationLanguages.length) shape.translations = translationShape;
     if (options.useEmojis) shape.emoji = 'Optional separate emoji';
+    if (options.includeExampleSentence) shape.example = 'One clear grade-appropriate sentence using this term';
     if (options.includeEtymology) {
         shape.etymology = 'Optional accurate word history in the definition language';
         shape.etymologyByLang = {};
@@ -3519,6 +3531,7 @@ TERM LANGUAGE: The teacher identifies the supplied terms as ${seed.termLanguage}
 DEFINITION LANGUAGE: Write def in ${plan.baseLanguage}. The teacher's terms retain their original language and spelling. Definitions must be understandable to ${grade} students.${levelContext ? '\n' + levelContext : ''}
 No sentence was supplied as evidence: omit contextSentence and all source quotations. Never imply that a definition, example or quotation appeared in a source passage. If a term has several meanings, give a concise usual educational meaning and note genuine ambiguity rather than inventing passage context. All entries need definitions; do not use Tier 2 or Tier 3 counts to drop entries. Classify tier as Academic or Domain-Specific when appropriate.
 ${plan.translationLanguages.length ? 'Include translations ONLY for these requested languages: ' + plan.translationLanguages.join(', ') + '. Each value must be plain text in the form "Translated term: Definition".' : 'Do not add translations or another language column.'}
+${options.includeExampleSentence ? `Include an "example" field for every term: ONE clear, natural, grade-appropriate model sentence in ${plan.baseLanguage} using the term (or a natural inflected form) in the sense defined (max 25 words). Keep this separate from omitted contextSentence and never present it as a source quotation.` : 'Do not add an example field.'}
 ${options.includeEtymology ? 'For useful, well-established etymology, explain the actual supplied term and preserve its morphemes and original script. Do not substitute the history of an English translation. Omit unknown etymology and roots. Optional roots use root, lang, meaning, related (plain text words), langByLocale and meaningByLang; etymologyByLang contains plain text prose.' : 'Do not add etymology or roots.'}
 ${options.useEmojis ? 'An optional emoji may appear only in its separate emoji field.' : 'Do not add emoji.'}
 ${directives ? directives + '\n' : ''}${customInstructions ? 'Additional teacher instructions, within the exact-list requirements above: ' + customInstructions + '\n' : ''}Return ONLY ${options.local ? '{"terms": [...]}' : 'a JSON array'} with entries shaped as ${JSON.stringify(shape)}.
@@ -3607,6 +3620,10 @@ function parseWordListGlossary(raw, rawSeed, options = {}) {
             const text = _wordListOptionalText(row[key], maximum);
             if (text && (key !== 'emoji' || options.useEmojis !== false)
                 && (key !== 'etymology' || options.includeEtymology !== false)) entry[key] = text;
+        }
+        if (options.includeExampleSentence !== false) {
+            const example = _wordListOptionalText(row.example !== undefined ? row.example : row.exampleSentence, 600);
+            if (example) entry.example = example;
         }
         if (options.includeEtymology !== false) {
             const etymologyByLang = _wordListTextMap(row.etymologyByLang, 6000, etymologyNames);
@@ -3838,12 +3855,13 @@ Return up to ${options.tier2Count || 0} Academic (Tier 2) and ${options.tier3Cou
 PRIMARY LANGUAGE: Write each visible term and definition in ${plan.baseLanguage}. ${options.levelContext || ''}
 Keep the exact vocabulary from the original source separately in sourceTerm, and record its language in sourceLanguage. If a term differs in the primary language, term is the natural ${plan.baseLanguage} equivalent; sourceTerm remains the original spelling. Never replace the source passage's vocabulary with unrelated terms.
 ${plan.translationLanguages.length ? 'Include translations ONLY for: ' + plan.translationLanguages.join(', ') + '. Each translations value must contain both the translated term and definition as "Term: Definition".' : 'Return no translation columns. Do not add English or any other second-language text.'}
+${options.includeExampleSentence ? `Include an "example" field for EVERY term: ONE clear, natural, grade-appropriate model sentence in ${plan.baseLanguage} using the term (or a natural inflected form) in the sense defined (max 25 words). Keep "example" distinct from "contextSentence" (the exact quote from the source).` : 'Do not add an example field.'}
 ${options.includeEtymology ? `For each word with useful etymology, explain the actual morphemes and origin of THIS ${plan.baseLanguage} term, its history in ${plan.baseLanguage}, and related words in ${plan.baseLanguage}. Do not substitute the history of its English translation. Preserve source-script morphemes verbatim. If unknown, omit etymology and roots.
 Write etymology in ${plan.baseLanguage}; etymologyByLang may contain prose for ${languages.join(', ')}. Each root has root, langByLocale and meaningByLang keyed by those languages, and optional related words in ${plan.baseLanguage}.` : 'Do not add etymology.'}
 ${options.useEmojis ? 'Use an optional separate emoji field; never place emoji inside term.' : 'Do not add emoji.'}
 ${options.directives || ''}
 ${options.customInstructions ? 'Additional vocabulary instructions: ' + options.customInstructions : ''}
-Return ONLY ${options.local ? '{"terms": [...]}' : 'a JSON array'} with entries shaped as {"term":"Term in ${plan.baseLanguage}","def":"Definition in ${plan.baseLanguage}","sourceTerm":"Exact source vocabulary","sourceLanguage":"Source language","contextSentence":"Sentence copied exactly from the source","tier":"Academic or Domain-Specific","pos":"noun, verb, adjective or adverb (the sense defined)","translations":{${plan.translationLanguages.map(language => JSON.stringify(language) + ':"Term: Definition"').join(',')}}${options.includeEtymology ? ',"etymology":"Optional primary-language prose","etymologyByLang":{},"roots":[]' : ''}}.
+Return ONLY ${options.local ? '{"terms": [...]}' : 'a JSON array'} with entries shaped as {"term":"Term in ${plan.baseLanguage}","def":"Definition in ${plan.baseLanguage}","sourceTerm":"Exact source vocabulary","sourceLanguage":"Source language","contextSentence":"Sentence copied exactly from the source",${options.includeExampleSentence ? `"example":"One clear grade-appropriate sentence using this term in ${plan.baseLanguage}",` : ''}"tier":"Academic or Domain-Specific","pos":"noun, verb, adjective or adverb (the sense defined)","translations":{${plan.translationLanguages.map(language => JSON.stringify(language) + ':"Term: Definition"').join(',')}}${options.includeEtymology ? ',"etymology":"Optional primary-language prose","etymologyByLang":{},"roots":[]' : ''}}.
 Source:\n${options.text || ''}`;
 };
 // A resource with nothing to use; the message avoids the words Full Pack treats as final, so it retries once.
@@ -3922,7 +3940,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
   if (Object.keys(frozenLanguageDeps).length) deps = new Proxy(deps, {
       get: (target, key) => Object.prototype.hasOwnProperty.call(frozenLanguageDeps, key) ? frozenLanguageDeps[key] : Reflect.get(target, key),
   });
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat: ambientTextFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setGenerationStage, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, callGeminiVision, webSearchProvider, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, memoryAidCustomInstructions, appliedChallengeSelectionMode, appliedChallengeFamily, appliedChallengeAgencyMode, appliedChallengeScope, appliedChallengeCustomInstructions, appliedChallengePlan, memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, memoryAidIncludeVisuals, memoryAidIncludeHookFacts, personaCustomInstructions, differentiationTypes, differentiationCustomGrades, selectedReadingSourceId, activeUnitId } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat: ambientTextFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setGenerationStage, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, callGeminiVision, webSearchProvider, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeExampleSentence, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, memoryAidCustomInstructions, appliedChallengeSelectionMode, appliedChallengeFamily, appliedChallengeAgencyMode, appliedChallengeScope, appliedChallengeCustomInstructions, appliedChallengePlan, memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, memoryAidIncludeVisuals, memoryAidIncludeHookFacts, personaCustomInstructions, differentiationTypes, differentiationCustomGrades, selectedReadingSourceId, activeUnitId } = deps;
   let _seed;
   try { _seed = normalizeGenerationSeed(type, configOverride.seed); }
   catch (error) {
@@ -4166,14 +4184,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             const helpers = typeof window !== 'undefined' ? window.AIBackendLocal : null;
             if (!usesLocalTextBackend || !helpers || typeof helpers.resourceSchemaFor !== 'function') return null;
             const schema = helpers.resourceSchemaFor(schemaType);
-            if (schemaType === 'glossary' && _nativeLanguageDefaultsVersion && schema) {
-                const nativeSchema = JSON.parse(JSON.stringify(schema));
-                const row = nativeSchema.properties?.terms?.items || nativeSchema.items;
+            if (schemaType === 'glossary' && (_nativeLanguageDefaultsVersion || includeExampleSentence) && schema) {
+                const patchedSchema = JSON.parse(JSON.stringify(schema));
+                const row = patchedSchema.properties?.terms?.items || patchedSchema.items;
                 if (row?.properties) {
-                    row.properties.sourceTerm = { type: 'string' };
-                    row.properties.sourceLanguage = { type: 'string' };
+                    if (_nativeLanguageDefaultsVersion) {
+                        row.properties.sourceTerm = { type: 'string' };
+                        row.properties.sourceLanguage = { type: 'string' };
+                    }
+                    if (includeExampleSentence) {
+                        row.properties.example = { type: 'string' };
+                    }
                 }
-                return { schema: nativeSchema };
+                return { schema: patchedSchema };
             }
             return schema ? { schema } : null;
         } catch (_) {
@@ -4728,6 +4751,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         glossaryTier2Count,
         glossaryTier3Count,
         includeEtymology,
+        includeExampleSentence,
         autoRemoveWords,
         textFormat,
         leveledTextLength,
@@ -5213,12 +5237,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const effGlossaryInstructions = [effCustomInstructions, _glossaryPriorityNote].filter(Boolean).join(' ');
         const nativeGlossaryPromptOptions = {
             languagePlan: glossaryLanguagePlan, grade: effectiveGrade, tier2Count: t2Count, tier3Count: t3Count,
-            levelContext, useEmojis, includeEtymology, text: textToProcess,
+            levelContext, useEmojis, includeEtymology, includeExampleSentence: !!includeExampleSentence, text: textToProcess,
             customInstructions: effGlossaryInstructions,
             directives: [standardsDirective, dokDirective, interestsDirective, differentiationContext].filter(Boolean).join('\n'),
         };
         const wordListOptions = { languagePlan: glossaryLanguagePlan, grade: effectiveGrade, levelContext,
-            useEmojis: !!useEmojis, includeEtymology: !!includeEtymology, customInstructions: effCustomInstructions,
+            useEmojis: !!useEmojis, includeEtymology: !!includeEtymology, includeExampleSentence: !!includeExampleSentence, customInstructions: effCustomInstructions,
             directives: [standardsDirective, dokDirective, interestsDirective, differentiationContext].filter(Boolean).join('\n') };
         if (_builtInDictionaryGlossary) {
             // English only: the word list's language, or the glossary's base language for a passage.
@@ -5301,12 +5325,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${levelContext}
               ${localLangInstruction}
               ${effGlossaryInstructions ? `Prioritize these terms or concepts if they appear: "${effGlossaryInstructions}".` : ''}
+              ${includeExampleSentence ? 'For each term, also include "example": ONE clear, natural, grade-appropriate model sentence using the term in the defined sense (max 25 words), distinct from "contextSentence".' : ''}
               ${useEmojis ? 'Include a helpful emoji only when it clarifies the term, and put it in the separate "emoji" field, never inside "term".' : 'Do not use emojis.'}
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
               Return ONLY valid JSON with this shape:
-              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
+              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "contextSentence": "Sentence copied from the source",${includeExampleSentence ? ' "example": "One clear sentence using this term",' : ''} "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
               Source excerpt:
               """
               ${localExcerpt(textToProcess, 6000)}
@@ -5319,7 +5344,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             setGenerationTaskProgress(1, 2, t('status_steps.extracting_vocab'));
             const parsed = parseJsonLenient(result, {});
             const parsedContent = _wordListStart ? parseWordListGlossary(parsed, _seed, wordListOptions) : normalizeGlossaryTerms(parsed, textToProcess).slice(0, localTermLimit)
-                .map(({ term, def, tier, pos, translations, emoji, sourceTerm, sourceLanguage, contextSentence }) => ({ term, def, tier, ...(pos !== undefined ? { pos } : {}), ...(sourceTerm ? { sourceTerm, sourceLanguage } : {}), ...(contextSentence ? { contextSentence } : {}), ...(translations ? { translations } : {}), ...(useEmojis && typeof emoji === 'string' && emoji.trim() ? { emoji: emoji.trim() } : {}) }));
+                .map(({ term, def, tier, pos, translations, emoji, sourceTerm, sourceLanguage, contextSentence, example }) => ({ term, def, tier, ...(pos !== undefined ? { pos } : {}), ...(sourceTerm ? { sourceTerm, sourceLanguage } : {}), ...(contextSentence ? { contextSentence } : {}), ...(includeExampleSentence && example ? { example } : {}), ...(translations ? { translations } : {}), ...(useEmojis && typeof emoji === 'string' && emoji.trim() ? { emoji: emoji.trim() } : {}) }));
             if (!parsedContent.length) {
                 throw new Error("Failed to parse Glossary JSON. The AI response was not valid.");
             }
@@ -5338,6 +5363,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               1. An English definition of the word as it is used in this text. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
               3. Translations into: ${langsReq.join(', ')}.
+              ${includeExampleSentence ? `4. Example Sentence for EVERY term: provide an "example" field containing ONE clear, natural, grade-appropriate English sentence (max 25 words) using the term (or a natural inflected form) in the sense defined. Keep "example" distinct from "contextSentence" (the exact quote from the source).` : ''}
               ${includeEtymology ? `
               4. Etymology / Word Roots for EVERY term (Academic AND Domain-Specific):
                  Provide 2-4 plain sentences on the word's origin, appropriate for a ${effectiveGrade} student.
@@ -5367,7 +5393,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}, "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source",${includeExampleSentence ? ' "example": "One clear grade-appropriate sentence using this term",' : ''} "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}, "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -5382,6 +5408,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               For each term, provide:
               1. An English definition of the word as it is used in this text. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
+              ${includeExampleSentence ? `3. Example Sentence for EVERY term: provide an "example" field containing ONE clear, natural, grade-appropriate English sentence (max 25 words) using the term (or a natural inflected form) in the sense defined. Keep "example" distinct from "contextSentence" (the exact quote from the source).` : ''}
               ${includeEtymology ? `
               3. Etymology / Word Roots for EVERY term (Academic AND Domain-Specific):
                  Provide 2-4 plain sentences on the word's origin, appropriate for a ${effectiveGrade} student.
@@ -5406,7 +5433,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source",${includeExampleSentence ? ' "example": "One clear grade-appropriate sentence using this term",' : ''} "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;

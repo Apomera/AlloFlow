@@ -12785,6 +12785,26 @@ const _downloadBRF = (brf) => {
                       className="flex-1 accent-indigo-600 disabled:opacity-60" data-help-key="doc_builder_font_size_slider" aria-label={t("a11y.font_size")} />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <span className="text-[11px] text-slate-600 shrink-0">Line spacing:</span>
+                    <input type="range" min={1.2} max={2.2} step={0.1} value={Number(exportConfig.lineHeight) || 1.5} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, lineHeight: parseFloat(e.target.value) }))}
+                      disabled={usingReadingSettings}
+                      className="flex-1 accent-indigo-600 disabled:opacity-60" data-export-line-height aria-label="Document line spacing" />
+                    <span className="text-xs font-mono text-slate-600 w-8">{(Number(exportConfig.lineHeight) || 1.5).toFixed(1)}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <span className="text-[11px] text-slate-600 shrink-0">Letter spacing:</span>
+                    <input type="range" min={0} max={0.15} step={0.01} value={Number(exportConfig.letterSpacing) || 0} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, letterSpacing: parseFloat(e.target.value) }))}
+                      disabled={usingReadingSettings}
+                      className="flex-1 accent-indigo-600 disabled:opacity-60" data-export-letter-spacing aria-label="Document letter spacing" />
+                    <span className="text-xs font-mono text-slate-600 w-10">{(Number(exportConfig.letterSpacing) || 0).toFixed(2)}em</span>
+                  </div>
+                  <label className="flex items-center gap-2 mt-2 text-[11px] text-slate-700 cursor-pointer" data-export-bionic-toggle>
+                    <input type="checkbox" className="accent-indigo-600"
+                      checked={exportConfig.bionicReading === true || (exportConfig.bionicReading !== false && typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn())}
+                      onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, bionicReading: e.target.checked }))} />
+                    <span className="font-bold">Bionic Reading (bold word starts)</span>
+                  </label>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Margins:</span>
                     <div className="flex gap-1 flex-1">
@@ -14132,19 +14152,19 @@ const _downloadBRF = (brf) => {
                         <button type="button" onClick={openDocumentReferences} aria-pressed={showNavigationPane && navigationPaneTab === 'references'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className="h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Manage</button>
                         <span id="builder-references-help" className={'w-full text-[9px] ' + (documentReferences.brokenCount ? 'font-bold text-red-700' : 'text-slate-500')}>{documentReferences.citations?.length || 0} citation{documentReferences.citations?.length === 1 ? '' : 's'} · {documentReferences.sources?.length || 0} source{documentReferences.sources?.length === 1 ? '' : 's'} · {documentReferences.footnotes.length} footnote{documentReferences.footnotes.length === 1 ? '' : 's'} · {documentReferences.bookmarks.length} bookmark{documentReferences.bookmarks.length === 1 ? '' : 's'}{documentReferences.brokenCount ? ' · ' + documentReferences.brokenCount + ' broken reference' + (documentReferences.brokenCount === 1 ? '' : 's') : ' · Live fields update together.'}</span>
                       </fieldset>
-                      <fieldset className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" aria-describedby="builder-table-help">
+                      <fieldset className="flex min-w-[260px] basis-[280px] flex-1 flex-wrap items-center gap-2 rounded border border-slate-200 bg-slate-50 px-2.5 py-2" aria-describedby="builder-table-help">
                         <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-slate-600">Table</legend>
-                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Body rows
+                        <label className="flex items-center gap-1 whitespace-nowrap shrink-0 text-[10px] font-semibold text-slate-600">Body rows
                           <input type="number" min="1" max="20" value={tableInsertConfig.rows} onChange={(e) => setTableInsertConfig((config) => ({ ...config, rows: Math.max(1, Math.min(20, Number(e.target.value) || 1)) }))} className="h-7 w-14 rounded border border-slate-400 bg-white px-1.5 text-xs" aria-label={t("export_preview.accessibility.table_body_rows") || "Table body rows"} />
                         </label>
-                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Columns
+                        <label className="flex items-center gap-1 whitespace-nowrap shrink-0 text-[10px] font-semibold text-slate-600">Columns
                           <input type="number" min="1" max="10" value={tableInsertConfig.columns} onChange={(e) => setTableInsertConfig((config) => ({ ...config, columns: Math.max(1, Math.min(10, Number(e.target.value) || 1)) }))} className="h-7 w-14 rounded border border-slate-400 bg-white px-1.5 text-xs" aria-label={t("export_preview.accessibility.table_columns") || "Table columns"} />
                         </label>
-                        <label className="flex min-w-36 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600">Caption
+                        <label className="flex min-w-36 flex-1 items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-slate-600">Caption
                           <input value={tableInsertConfig.caption} maxLength={160} onChange={(e) => setTableInsertConfig((config) => ({ ...config, caption: e.target.value }))} placeholder={t("export_preview.accessibility.recommended") || "Recommended"} className="h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-xs" aria-label={t("export_preview.accessibility.table_caption") || "Table caption"} />
                         </label>
-                        <label className="inline-flex min-h-7 cursor-pointer items-center gap-1 text-[10px] font-semibold text-slate-700"><input type="checkbox" checked={tableInsertConfig.headerRow} onChange={(e) => setTableInsertConfig((config) => ({ ...config, headerRow: e.target.checked }))} className="accent-indigo-700" />Header row</label>
-                        <button type="button" onClick={insertAccessibleTable} className="h-7 rounded bg-indigo-700 px-2.5 text-[11px] font-bold text-white hover:bg-indigo-800">Insert table</button>
+                        <label className="inline-flex min-h-7 cursor-pointer items-center gap-1 whitespace-nowrap shrink-0 text-[10px] font-semibold text-slate-700"><input type="checkbox" checked={tableInsertConfig.headerRow} onChange={(e) => setTableInsertConfig((config) => ({ ...config, headerRow: e.target.checked }))} className="accent-indigo-700" />Header row</label>
+                        <button type="button" onClick={insertAccessibleTable} className="min-h-7 shrink-0 whitespace-nowrap rounded bg-indigo-700 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-indigo-800">Insert table</button>
                         <span id="builder-table-help" className="sr-only">Creates semantic table headers and an optional accessible caption.</span>
                       </fieldset>
                       <div className="flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1" role="toolbar" onKeyDown={_handleBuilderToolbarKeyDown} aria-label={t("export_preview.accessibility.insert_document_elements") || "Insert document elements"}>

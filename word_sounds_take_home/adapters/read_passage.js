@@ -139,10 +139,10 @@ module.exports = {
       storyBox.appendChild(node);
     });
     var after = ctx.el('div', { class: 'row' });
+    var picEl = picture ? ctx.el('img', { class: 'picture', src: picture, alt: 'Picture clue' }) : null;
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_passage_prompt }));
-    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_passage_picture_practice : ctx.L.read_passage_matching_practice }));
-    if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_passage_picture_clue, { word: item.target }) }));
-    else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
+    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_passage_picture_practice : 'Choose the word that fits.' }));
+    if (picEl) ctx.root.appendChild(picEl);
     ctx.root.appendChild(storyBox);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_passage_hear_instructions }),
@@ -206,6 +206,7 @@ module.exports = {
       // After a right answer, once the praise is over, the story is read back line by line (the app's payoff).
       payoff: function () { if (item.readBack && item.readBack.length) readBack(true); },
       reveal: function () {
+        if (picEl) picEl.setAttribute('alt', ctx.fmt(ctx.L.read_passage_picture_clue, { word: item.target }));
         // Every blank fills with the word as written in its sentence.
         blanks.forEach(function (b) {
           b.node.textContent = b.answer;

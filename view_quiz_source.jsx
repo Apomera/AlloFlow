@@ -50,9 +50,16 @@ var _QUIZ_MD_RULES = [
   { re: /(?<![\w*])\*(?=[^\s*])([^*\n]*?[^\s*])\*(?![\w*])/, tag: 'em', nest: true },
   { re: /(?<![\w_])_(?=[^\s_])([^_\n]*?[^\s_])_(?![\w_])/, tag: 'em', nest: true }
 ];
+function _quizBionicText(s) {
+  if (typeof s !== 'string' || !s) return s;
+  if (typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicReact === 'function') {
+    return window.__alloBionicReact(s);
+  }
+  return s;
+}
 function _quizInlineNodes(text, keyBase) {
   var out = [], rest = String(text == null ? '' : text), k = 0;
-  function pushText(s) { s.split('\n').forEach(function (line, i) { if (i) out.push(React.createElement('br', { key: keyBase + 'b' + k++ })); if (line) out.push(line); }); }
+  function pushText(s) { s.split('\n').forEach(function (line, i) { if (i) out.push(React.createElement('br', { key: keyBase + 'b' + k++ })); if (line) out.push(_quizBionicText(line)); }); }
   while (rest) {
     var best = null;
     _QUIZ_MD_RULES.forEach(function (rule) { var m = rule.re.exec(rest); if (m && (!best || m.index < best.m.index)) best = { m: m, rule: rule }; });
@@ -64,11 +71,11 @@ function _quizInlineNodes(text, keyBase) {
   }
   return out;
 }
-// Inline text: unchanged string when there is nothing to format.
+// Inline text: unchanged string when there is nothing to format (and bionic is off).
 function _quizRich(text) {
   if (text == null) return '';
   var value = String(text);
-  if (!/[*_`\n]/.test(value)) return value;
+  if (!/[*_`\n]/.test(value)) return _quizBionicText(value);
   var nodes = _quizInlineNodes(value, 'md');
   return nodes.length === 1 && typeof nodes[0] === 'string' ? nodes[0] : React.createElement(React.Fragment, null, nodes);
 }
@@ -240,16 +247,32 @@ var _lazyIcon = function (name) {
   function _quizIsComposingText(event) {
     return _quizComposingFields.has(event.currentTarget) || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229;
   }
+  var _quizDirectAudio = null;
+  function _quizStopDirectAudio() {
+    if (_quizDirectAudio) {
+      try { _quizDirectAudio.pause(); } catch (_) {}
+      _quizDirectAudio = null;
+    }
+  }
   function _quizSpeakAloud(text, callTTSFn) {
     var clean = _quizPlain(text).replace(/\s+/g, ' ').trim();
     if (!clean) return;
+    _quizStopDirectAudio();
     try {
       if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
         window.AlloSpeechPlayer.speak(clean);
-      } else if (typeof callTTSFn === 'function') {
-        callTTSFn(clean);
-      } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
-        window.callTTS(clean);
+      } else if (typeof callTTSFn === 'function' || (typeof window !== 'undefined' && typeof window.callTTS === 'function')) {
+        var tts = typeof callTTSFn === 'function' ? callTTSFn : window.callTTS;
+        Promise.resolve(tts(clean)).then(function (url) {
+          if (typeof url === 'string' && /^(?:blob:|data:audio\/|https?:)/i.test(url) && typeof Audio === 'function') {
+            _quizStopDirectAudio();
+            var audio = new Audio(url);
+            _quizDirectAudio = audio;
+            audio.onended = function () { if (_quizDirectAudio === audio) _quizDirectAudio = null; };
+            audio.onerror = function () { if (_quizDirectAudio === audio) _quizDirectAudio = null; };
+            try { Promise.resolve(audio.play()).catch(function () {}); } catch (_) {}
+          }
+        }).catch(function () {});
       } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(clean));
@@ -285,10 +308,42 @@ var _lazyIcon = function (name) {
   }
   function QuizListenButton(p) {
     var listenLabel = _quizGradedCopy('common.listen', 'Listen');
+    var loadingLabel = _quizGradedCopy('common.loading', 'Loading…');
+    var stopLabel = _quizGradedCopy('common.stop', 'Stop');
     var ariaBase = _quizGradedCopy('a11y.read_aloud', 'Listen to question');
     var num = p.itemNumber != null ? p.itemNumber : (typeof p.questionIdx === 'number' ? p.questionIdx + 1 : null);
     var ariaLabel = num != null ? ariaBase + ' ' + num : ariaBase;
-    return <button type="button" data-quiz-listen={p.questionIdx} onClick={function () { _quizSpeakAloud(p.text != null ? p.text : _quizReadAloudText(p.q), p.callTTS); }} aria-label={ariaLabel} title={ariaBase} className="no-print shrink-0 inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none"><span aria-hidden="true">🔊</span><span>{listenLabel}</span></button>;
+    var spokenText = _quizPlain(p.text != null ? p.text : _quizReadAloudText(p.q)).replace(/\s+/g, ' ').trim();
+    var [speechStatus, setSpeechStatus] = React.useState('idle');
+    var ownTextRef = React.useRef('');
+    React.useEffect(function () {
+      if (typeof window === 'undefined') return undefined;
+      var sync = function (detail) {
+        var st = detail && typeof detail === 'object' ? detail : (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.getState === 'function' ? window.AlloSpeechPlayer.getState() : null);
+        if (!st || !st.isPlaying || !ownTextRef.current || st.currentText !== ownTextRef.current) {
+          setSpeechStatus('idle');
+          return;
+        }
+        setSpeechStatus(st.status === 'generating' ? 'generating' : 'playing');
+      };
+      var onState = function (ev) { sync(ev && ev.detail); };
+      window.addEventListener('allo-speech-state', onState);
+      return function () { window.removeEventListener('allo-speech-state', onState); };
+    }, []);
+    var isActive = speechStatus === 'generating' || speechStatus === 'playing';
+    var handleClick = function () {
+      if (isActive && typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') {
+        ownTextRef.current = '';
+        setSpeechStatus('idle');
+        window.AlloSpeechPlayer.stop();
+        return;
+      }
+      ownTextRef.current = spokenText;
+      _quizSpeakAloud(spokenText, p.callTTS);
+    };
+    var icon = speechStatus === 'generating' ? '⏳' : speechStatus === 'playing' ? '⏹' : '🔊';
+    var textLabel = speechStatus === 'generating' ? loadingLabel : speechStatus === 'playing' ? stopLabel : listenLabel;
+    return <button type="button" data-quiz-listen={p.questionIdx} aria-pressed={isActive} aria-busy={speechStatus === 'generating' || undefined} onClick={handleClick} aria-label={isActive ? stopLabel + ': ' + ariaLabel : ariaLabel} title={isActive ? stopLabel : ariaBase} className={'no-print shrink-0 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none ' + (isActive ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'border-slate-200 bg-slate-50 text-indigo-700 hover:bg-indigo-50')}><span aria-hidden="true">{icon}</span><span>{textLabel}</span></button>;
   }
   function AssessmentReasoningInput(p) {
     var q = p.q || {};
@@ -1753,12 +1808,57 @@ var _lazyIcon = function (name) {
     }, [stage]);
     return targetRef;
   }
+  function _quizAcceptedSequencePrinciples(q) {
+    var list = [];
+    var seen = {};
+    var primary = q && q.orderingPrinciple ? String(q.orderingPrinciple).trim() : 'chronological';
+    if (primary) {
+      seen[primary.toLowerCase()] = true;
+      list.push(primary);
+    }
+    var extras = q && Array.isArray(q.acceptablePrinciples) ? q.acceptablePrinciples : [];
+    extras.forEach(function (val) {
+      var trimmed = String(val == null ? '' : val).trim();
+      var key = trimmed.toLowerCase();
+      if (trimmed && !seen[key]) {
+        seen[key] = true;
+        list.push(trimmed);
+      }
+    });
+    return list;
+  }
+  function _quizSequencePrincipleMatches(answer, q) {
+    var norm = String(answer == null ? '' : answer).trim().toLowerCase();
+    if (!norm) return false;
+    return _quizAcceptedSequencePrinciples(q).some(function (p) {
+      return p.toLowerCase() === norm;
+    });
+  }
+  function _quizSequencePrincipleOverlapNote(picked, acceptedList) {
+    var normPicked = String(picked == null ? '' : picked).trim().toLowerCase();
+    if (!normPicked || !Array.isArray(acceptedList) || acceptedList.length === 0) return '';
+    var overlapGroups = [
+      ['chronological', 'process', 'cause-effect'],
+      ['size', 'hierarchy']
+    ];
+    for (var i = 0; i < overlapGroups.length; i++) {
+      var group = overlapGroups[i];
+      if (group.indexOf(normPicked) >= 0) {
+        var matchedAccepted = acceptedList.find(function (a) { return group.indexOf(String(a).toLowerCase()) >= 0; });
+        if (matchedAccepted) {
+          return '"' + picked + '" and "' + matchedAccepted + '" can often overlap for sequences like this.';
+        }
+      }
+    }
+    return '';
+  }
   function SequenceSenseCard(p) {
     var q = p.q;
     var shortSequence = q.sequenceMode === 'arrange-explain';
     var canonicalItems = Array.isArray(q.items) ? q.items.filter(Boolean) : [];
     var intentionallyWrongIndex = typeof q.intentionallyWrongIndex === 'number' ? q.intentionallyWrongIndex : null;
     var orderingPrinciple = q.orderingPrinciple || 'chronological';
+    var acceptedPrinciples = _quizAcceptedSequencePrinciples(q);
     var principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 2 ? q.principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
     var modeStrat = p.modeStrategy || null;
     var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
@@ -1933,7 +2033,8 @@ var _lazyIcon = function (name) {
       setStep(4);
     }
     function answerPrinciple(p2) {
-      setPrincipleAnswer(p2);
+      var chosen = p2 == null || p2 === '' ? null : p2;
+      setPrincipleAnswer(chosen);
       var step1Correct = verifyAnswer === 'yes' ? actualOrderIsCorrect : !actualOrderIsCorrect;
       var step2Correct;
       if (verifyAnswer === 'yes') {
@@ -1942,9 +2043,11 @@ var _lazyIcon = function (name) {
         step2Correct = misplacedPositions.indexOf(clickedIdx) >= 0;
       }
       var arrangeCorrect = orderAnswer.every(function (canonicalIdx, position) { return canonicalIdx === position; });
-      var step3Correct = p2 === orderingPrinciple;
-      var maxScore = shortSequence ? 2 : 4;
-      var rawScore = (shortSequence ? 0 : (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0)) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
+      var step3Skipped = !chosen;
+      var step3Correct = !step3Skipped && _quizSequencePrincipleMatches(chosen, q);
+      var bonusScore = step3Correct ? 1 : 0;
+      var maxScore = shortSequence ? 1 : 3;
+      var rawScore = (shortSequence ? 0 : (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0)) + (arrangeCorrect ? 1 : 0);
       var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
       var score = partialCredit ? rawScore : (rawScore === maxScore ? maxScore : 0);
       var status = score === maxScore ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
@@ -1953,10 +2056,12 @@ var _lazyIcon = function (name) {
         step2Correct: step2Correct,
         arrangeCorrect: arrangeCorrect,
         step3Correct: step3Correct,
+        step3Skipped: step3Skipped,
+        bonusScore: bonusScore,
         status: status,
         score: score, maxScore: maxScore
       };
-      _quizRecordPracticeAttempt(p, { orderAnswer: orderAnswer, principleAnswer: p2 }, confidence);
+      _quizRecordPracticeAttempt(p, { orderAnswer: orderAnswer, principleAnswer: chosen }, confidence);
       setGrade(gradeResult);
       setStep('done');
       if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
@@ -1969,7 +2074,8 @@ var _lazyIcon = function (name) {
               verifyAnswer: verifyAnswer,
               clickedIdx: clickedIdx,
               orderAnswer: orderAnswer.slice(),
-              principleAnswer: p2,
+              principleAnswer: chosen,
+              bonusScore: bonusScore,
               score: score,
               status: status
             },
@@ -2063,21 +2169,30 @@ var _lazyIcon = function (name) {
           if (!moveOrderItem(movePosition, move[2] === 'up' ? -1 : 1)) return { ok: false, state: 'invalid-choice', message: 'Item ' + (movePosition + 1) + ' cannot move ' + move[2] + '.' };
           return { ok: true, state: 'sequence-step', step: 3, message: 'Moved ' + arrangedItems[movePosition] + ' ' + move[2] + '. Say done when the order is right.' };
         }
-        var principleIdx = _quizVoiceNamedChoiceIndex(choice, principleOptions);
-        if (step !== 4 || principleIdx < 0) return { ok: false, state: 'invalid-choice', message: 'Choose an available ordering principle by number or exact name.' };
-        var result = answerPrinciple(principleOptions[principleIdx]);
+        var principleText = String(choice == null ? '' : choice).trim().toLowerCase().replace(/[?!.,]+$/g, '').replace(/\s+/g, ' ');
+        var result;
+        if (step === 4 && /^(?:skip|skip bonus|no bonus|pass|done)$/.test(principleText)) {
+          result = answerPrinciple(null);
+        } else {
+          var principleIdx = _quizVoiceNamedChoiceIndex(choice, principleOptions);
+          if (step !== 4 || principleIdx < 0) return { ok: false, state: 'invalid-choice', message: 'Choose an available ordering principle by number or exact name, or say skip.' };
+          result = answerPrinciple(principleOptions[principleIdx]);
+        }
+        var bonusSuffix = result.bonusScore ? ' Plus 1 bonus point!' : '';
         var resultMessage = result.status === 'correct'
-          ? 'Sequence response checked. All four parts are correct.'
+          ? 'Sequence response checked. All sequence steps are correct.' + bonusSuffix
           : result.status === 'partially-correct'
-            ? 'Sequence response checked. You earned ' + result.score + ' of 4 points.'
-            : 'Sequence response checked. This sequence needs review.';
-        return { ok: true, state: 'checked', correct: result.status === 'correct', score: result.score, message: resultMessage };
+            ? 'Sequence response checked. You earned ' + result.score + ' of ' + result.maxScore + ' points.' + bonusSuffix
+            : 'Sequence response checked. This sequence needs review.' + bonusSuffix;
+        return { ok: true, state: 'checked', correct: result.status === 'correct', score: result.score, bonusScore: result.bonusScore, message: resultMessage };
       }
     });
-    var stageAnnouncement = step === 1 ? 'Step 1 of 4. Is this order correct?' : step === 2 ? 'Step 2 of 4. Choose an item that is out of place.' : step === 3 ? (shortSequence ? 'Step 1 of 2. Arrange the items using the Move up and Move down buttons, then choose Done arranging.' : 'Step 3 of 4. Arrange the items using the Move up and Move down buttons, then choose Done arranging.') : step === 4 ? (shortSequence ? 'Step 2 of 2. Choose the ordering principle.' : 'Step 4 of 4. Choose the ordering principle.') : '';
+    var stageAnnouncement = step === 1 ? 'Step 1 of 3. Is this order correct?' : step === 2 ? 'Step 2 of 3. Choose an item that is out of place.' : step === 3 ? (shortSequence ? 'Arrange the items using the Move up and Move down buttons, then choose Done arranging.' : 'Step 3 of 3. Arrange the items using the Move up and Move down buttons, then choose Done arranging.') : step === 4 ? 'Optional bonus point. Choose the ordering principle, or skip bonus to check your sequence.' : '';
     if (canonicalItems.length === 0) return null;
     var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
-    var sequenceTrail = shortSequence ? [{ id: 3, label: 'Arrange' }, { id: 4, label: 'Principle' }] : [{ id: 1, label: 'Verify' }, { id: 2, label: 'Diagnose' }, { id: 3, label: 'Arrange' }, { id: 4, label: 'Principle' }];
+    var sequenceTrail = shortSequence ? [{ id: 3, label: 'Arrange' }, { id: 4, label: 'Bonus (+1)' }] : [{ id: 1, label: 'Verify' }, { id: 2, label: 'Diagnose' }, { id: 3, label: 'Arrange' }, { id: 4, label: 'Bonus (+1)' }];
+    var overlapNote = grade && !grade.step3Correct && !grade.step3Skipped ? _quizSequencePrincipleOverlapNote(principleAnswer, acceptedPrinciples) : '';
+    var acceptedLabel = acceptedPrinciples.map(function (a) { return '"' + a + '"'; }).join(' or ');
     return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><p data-assessment-step-status role="status" aria-live="polite" aria-atomic="true" className="sr-only">{stageAnnouncement}</p><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><div className="flex items-center justify-between gap-2 flex-wrap mb-1"><span className="inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700">Sequence Sense</span><div className="flex items-center gap-1.5 shrink-0"><QuizListenButton q={q} questionIdx={p.questionIdx} itemNumber={p.itemNumber} callTTS={p.callTTS} />{p.flagButton}</div></div><p className="text-sm text-slate-800 leading-relaxed">{_quizRich(q.question || 'Below is a sequence. Verify and explain.')}</p><AssessmentQuestionSupport q={q} /></div></div>{!grade && <div data-assessment-sequence-steps role="group" className="mb-3 flex items-center gap-1.5 flex-wrap text-xs" aria-label="Sequence progress">{sequenceTrail.map(function (st, stIdx) { var active = step === st.id; var done = step === 'done' || (typeof step === 'number' && step > st.id) || (st.id === 2 && verifyAnswer === 'yes' && step >= 3); return <React.Fragment key={st.id}>{stIdx > 0 && <span className="text-slate-400" aria-hidden="true">→</span>}<span className={'px-2 py-0.5 rounded-full font-semibold ' + (active ? 'bg-indigo-600 text-white' : done ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600')}>{(done && !active ? '✓ ' : '') + st.label}</span></React.Fragment>; })}</div>}{step !== 3 && <ol className="space-y-1.5 mb-3">{presentedOrder.map(function (canonicalIdx, displayIdx) {
           var item = canonicalItems[canonicalIdx];
           var isClickable = step === 2;
@@ -2095,21 +2210,21 @@ var _lazyIcon = function (name) {
           return <li key={displayIdx} className={'rounded-lg border ' + rowClass}>{isClickable ? <button type="button" ref={displayIdx === 0 ? stageFocusRef : null} onClick={function () {
             answerMisplaced(displayIdx);
           }} className="w-full flex items-center gap-2 px-3 py-2 text-left rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{displayIdx + 1 + '.'}</span><AssessmentChoiceContent q={q} field="items" index={canonicalIdx} text={item} />{showCorrectness && thisIsActuallyMisplaced && <span className="text-xs font-bold text-amber-700">↔ misplaced</span>}{showCorrectness && isClicked && !thisIsActuallyMisplaced && <span className="text-xs font-bold text-rose-700">✗</span>}</button> : <div className="flex items-center gap-2 px-3 py-2"><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{displayIdx + 1 + '.'}</span><AssessmentChoiceContent q={q} field="items" index={canonicalIdx} text={item} />{showCorrectness && thisIsActuallyMisplaced && <span className="text-xs font-bold text-amber-700">↔ misplaced</span>}{showCorrectness && isClicked && !thisIsActuallyMisplaced && <span className="text-xs font-bold text-rose-700">✗</span>}</div>}</li>;
-        })}</ol>}{step === 1 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 1 of 4 — Is this order correct?</div><div className="flex gap-2 flex-wrap"><button type="button" ref={stageFocusRef} onClick={function () {
+        })}</ol>}{step === 1 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 1 of 3 — Is this order correct?</div><div className="flex gap-2 flex-wrap"><button type="button" ref={stageFocusRef} onClick={function () {
             answerVerify('yes');
           }} className="flex-1 px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold transition-colors motion-reduce:transition-none">✓ Yes, correct</button><button type="button" onClick={function () {
             answerVerify('no');
-          }} className="flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">✗ No, something is off</button>{allowIDK && <button type="button" onClick={markIDK} className="px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain")}><span aria-hidden="true">🤔 </span>{_quizGradedCopy('ui_common.i_dont_know', "I don't know")}</button>}</div></div>}{step === 2 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-between gap-2 flex-wrap"><div className="text-sm font-semibold text-indigo-900">Step 2 of 4 — Click an item that's out of place above.</div><button type="button" data-assessment-sequence-back onClick={goBackStep} className="min-h-9 rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50">← Back</button></div>}{shortSequence && step === 3 && allowIDK && <button type="button" onClick={markIDK} className="mb-2 min-h-9 rounded border border-sky-300 bg-sky-50 px-3 text-sky-900">I don’t know</button>}{step === 3 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="flex items-center justify-between gap-2 flex-wrap mb-2"><div className="text-sm font-semibold text-indigo-900">{shortSequence ? 'Step 1 of 2 — Arrange the items.' : 'Step 3 of 4 — Put the items in the correct order. If they are already right, leave them.'}</div>{!shortSequence && <button type="button" data-assessment-sequence-back onClick={goBackStep} className="min-h-9 rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50">← Back</button>}</div><p data-assessment-order-status role="status" aria-live="polite" aria-atomic="true" className="sr-only">{orderAnnouncement}</p><ol className="space-y-1.5 mb-2" aria-label="Your order">{orderAnswer.map(function (canonicalIdx, position) {
+          }} className="flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">✗ No, something is off</button>{allowIDK && <button type="button" onClick={markIDK} className="px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain")}><span aria-hidden="true">🤔 </span>{_quizGradedCopy('ui_common.i_dont_know', "I don't know")}</button>}</div></div>}{step === 2 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-between gap-2 flex-wrap"><div className="text-sm font-semibold text-indigo-900">Step 2 of 3 — Click an item that's out of place above.</div><button type="button" data-assessment-sequence-back onClick={goBackStep} className="min-h-9 rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50">← Back</button></div>}{shortSequence && step === 3 && allowIDK && <button type="button" onClick={markIDK} className="mb-2 min-h-9 rounded border border-sky-300 bg-sky-50 px-3 text-sky-900">I don’t know</button>}{step === 3 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="flex items-center justify-between gap-2 flex-wrap mb-2"><div className="text-sm font-semibold text-indigo-900">{shortSequence ? 'Arrange the items.' : 'Step 3 of 3 — Put the items in the correct order. If they are already right, leave them.'}</div>{!shortSequence && <button type="button" data-assessment-sequence-back onClick={goBackStep} className="min-h-9 rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50">← Back</button>}</div><p data-assessment-order-status role="status" aria-live="polite" aria-atomic="true" className="sr-only">{orderAnnouncement}</p><ol className="space-y-1.5 mb-2" aria-label="Your order">{orderAnswer.map(function (canonicalIdx, position) {
             return <li key={canonicalIdx} className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-white border-indigo-200"><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{position + 1 + '.'}</span><AssessmentChoiceContent q={q} field="items" index={canonicalIdx} /><button type="button" ref={function (node) { var controls = orderButtonRefs.current[canonicalIdx] || (orderButtonRefs.current[canonicalIdx] = {}); controls[-1] = node; }} disabled={position === 0} aria-label={'Move up: ' + _quizPlain(canonicalItems[canonicalIdx])} onClick={function () {
               moveOrderItem(position, -1, true);
             }} className="min-h-11 min-w-11 inline-flex items-center justify-center rounded border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-40">▲</button><button type="button" ref={function (node) { var controls = orderButtonRefs.current[canonicalIdx] || (orderButtonRefs.current[canonicalIdx] = {}); controls[1] = node; if (position === 0) stageFocusRef.current = node; }} disabled={position === orderAnswer.length - 1} aria-label={'Move down: ' + _quizPlain(canonicalItems[canonicalIdx])} onClick={function () {
               moveOrderItem(position, 1, true);
             }} className="min-h-11 min-w-11 inline-flex items-center justify-center rounded border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-40">▼</button></li>;
-          })}</ol><button type="button" ref={orderAnswer.length < 2 ? stageFocusRef : null} onClick={finishArrange} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">Done arranging</button></div>}{step === 4 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="flex items-center justify-between gap-2 flex-wrap mb-2"><div className="text-sm font-semibold text-indigo-900">{shortSequence ? 'Step 2 of 2 — Identify the ordering principle.' : "Step 4 of 4 — What's the ordering principle?"}</div><button type="button" data-assessment-sequence-back onClick={goBackStep} className="min-h-9 rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50">← Back</button></div><div className="grid grid-cols-2 md:grid-cols-3 gap-2">{principleOptions.map(function (opt) {
+          })}</ol><button type="button" ref={orderAnswer.length < 2 ? stageFocusRef : null} onClick={finishArrange} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">Done arranging</button></div>}{step === 4 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="flex items-center justify-between gap-2 flex-wrap mb-1"><div className="text-sm font-semibold text-indigo-900">Bonus (+1, optional) — What's the ordering principle?</div><button type="button" data-assessment-sequence-back onClick={goBackStep} className="min-h-9 rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50">← Back</button></div><p className="text-xs text-indigo-800 mb-2">Optional bonus point — skipping or choosing a different label will not lower your sequence score.</p><div className="grid grid-cols-2 md:grid-cols-3 gap-2">{principleOptions.map(function (opt) {
             return <button key={opt} type="button" ref={principleOptions.indexOf(opt) === 0 ? stageFocusRef : null} onClick={function () {
               answerPrinciple(opt);
             }} className="min-h-11 px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors motion-reduce:transition-none"><AssessmentChoiceContent q={q} field="principleOptions" index={principleOptions.indexOf(opt)} text={opt} /></button>;
-          })}</div></div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300'} role="status" aria-live="polite"><div className="flex items-center gap-2 mb-2 flex-wrap"><span ref={stageFocusRef} tabIndex={-1} data-assessment-stage-result className={'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-xs uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'}>{grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / ' + (shortSequence ? 2 : 4) + ' — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review')}</span></div>{grade.status !== 'idk' && <ul className={'space-y-1 text-sm text-' + statusColor + '-900'}>{!shortSequence && <li>{(grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (actualOrderIsCorrect ? 'order was correct' : describeSequenceMisplaced(misplacedPositions)) + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')}</li>}{!shortSequence && verifyAnswer === 'no' && <li>{(grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found a misplaced item' : (actualOrderIsCorrect ? 'nothing was misplaced' : describeSequenceMisplaced(misplacedPositions) + (misplacedPositions.length > 1 ? ' (either one counts)' : '')))}</li>}<li>{(grade.arrangeCorrect ? '✓ ' : '✗ ') + 'Arrange: ' + (grade.arrangeCorrect ? 'your order matched' : 'correct order is ' + canonicalItems.join(' → '))}</li><li>{(grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")')}</li></ul>}<div className="mt-2 flex items-center gap-2 flex-wrap"><button type="button" onClick={reset} className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300">Try again</button>{aiExplainerEnabled && !explainer.open && <button type="button" onClick={requestExplainer} className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">🤖 Explain this concept</button>}</div></div>}{grade && grade.status !== 'idk' && <AssessmentTransferPractice {...p} />}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}{explainer.open && <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"><div className="text-xs uppercase font-bold tracking-wider text-indigo-700 mb-1">🤖 Quick explanation</div>{explainer.loading && <p className="text-sm text-indigo-700 italic">Generating explanation…</p>}{explainer.text && <div className="text-sm text-slate-800 leading-relaxed">{_quizRichBlock(explainer.text)}</div>}{explainer.error && <p className="text-sm text-rose-700">{explainer.error}</p>}{explainer.text && typeof p.callTTS === 'function' && <button type="button" onClick={function () {
+          })}</div><div className="mt-2.5 flex justify-end"><button type="button" data-sequence-skip-bonus onClick={function () { answerPrinciple(null); }} className="min-h-9 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors motion-reduce:transition-none">Skip bonus &amp; check</button></div></div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300'} role="status" aria-live="polite"><div className="flex items-center gap-2 mb-2 flex-wrap"><span ref={stageFocusRef} tabIndex={-1} data-assessment-stage-result className={'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-xs uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'}>{grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / ' + (grade.maxScore || (shortSequence ? 1 : 3)) + (grade.bonusScore ? ' (+' + grade.bonusScore + ' bonus)' : '') + ' — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review')}</span></div>{grade.status !== 'idk' && <ul className={'space-y-1 text-sm text-' + statusColor + '-900'}>{!shortSequence && <li>{(grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (actualOrderIsCorrect ? 'order was correct' : describeSequenceMisplaced(misplacedPositions)) + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')}</li>}{!shortSequence && verifyAnswer === 'no' && <li>{(grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found a misplaced item' : (actualOrderIsCorrect ? 'nothing was misplaced' : describeSequenceMisplaced(misplacedPositions) + (misplacedPositions.length > 1 ? ' (either one counts)' : '')))}</li>}<li>{(grade.arrangeCorrect ? '✓ ' : '✗ ') + 'Arrange: ' + (grade.arrangeCorrect ? 'your order matched' : 'correct order is ' + canonicalItems.join(' → '))}</li><li>{grade.step3Correct ? '★ Bonus (+1): "' + principleAnswer + '"' : grade.step3Skipped ? '☆ Bonus (skipped): suggested principle is ' + acceptedLabel + ' (no penalty)' : '☆ Bonus (0): suggested ' + acceptedLabel + ' (you picked "' + principleAnswer + '" — no penalty' + (overlapNote ? '; ' + overlapNote : '') + ')'}</li></ul>}<div className="mt-2 flex items-center gap-2 flex-wrap"><button type="button" onClick={reset} className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300">Try again</button>{aiExplainerEnabled && !explainer.open && <button type="button" onClick={requestExplainer} className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">🤖 Explain this concept</button>}</div></div>}{grade && grade.status !== 'idk' && <AssessmentTransferPractice {...p} />}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}{explainer.open && <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"><div className="text-xs uppercase font-bold tracking-wider text-indigo-700 mb-1">🤖 Quick explanation</div>{explainer.loading && <p className="text-sm text-indigo-700 italic">Generating explanation…</p>}{explainer.text && <div className="text-sm text-slate-800 leading-relaxed">{_quizRichBlock(explainer.text)}</div>}{explainer.error && <p className="text-sm text-rose-700">{explainer.error}</p>}{explainer.text && typeof p.callTTS === 'function' && <button type="button" onClick={function () {
           // p.callTTS returns the audio URL without playing — never wired up
           // a playback step here, so the original button silently fetched and
           // discarded the audio. Route through AlloSpeechPlayer instead: it
@@ -5331,7 +5446,7 @@ var _lazyIcon = function (name) {
         patch(_quizAuthoringListPatch(q, 'items', values, operation));
       }} /><div data-quiz-sequence-visual-order className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 space-y-2"><div className="flex items-center justify-between gap-2 flex-wrap"><span className="text-xs font-bold text-slate-700">What students see (displayed order)</span><div className="flex items-center gap-1.5 flex-wrap">{safePresented.length >= 2 && <button type="button" onClick={function () { swapPresented(0, 1); }} className="rounded border border-indigo-200 bg-white px-2 py-0.5 text-xs font-semibold text-indigo-800 hover:bg-indigo-50">Swap 1 &amp; 2</button>}<button type="button" onClick={function () { patch({ presentedOrder: items.map(function (_, idx) { return idx; }), intentionallyWrongIndex: null }); }} className="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700 hover:bg-slate-100">Reset to canonical</button></div></div><ol className="space-y-1">{safePresented.map(function (canonicalIdx, pos) { return <li key={canonicalIdx + '-' + pos} className="flex items-center gap-2 rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800"><span className="font-bold text-slate-500 w-4">{pos + 1}.</span><span className="flex-1 truncate">{items[canonicalIdx] || ('Step ' + (canonicalIdx + 1))}</span>{canonicalIdx !== pos && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-bold text-amber-900">moved</span>}<button type="button" disabled={pos === 0} aria-label={'Move displayed position ' + (pos + 1) + ' up'} onClick={function () { swapPresented(pos, pos - 1); }} className="min-h-7 min-w-7 rounded border border-slate-300 bg-slate-50 text-xs font-bold text-slate-700 disabled:opacity-40">↑</button><button type="button" disabled={pos === safePresented.length - 1} aria-label={'Move displayed position ' + (pos + 1) + ' down'} onClick={function () { swapPresented(pos, pos + 1); }} className="min-h-7 min-w-7 rounded border border-slate-300 bg-slate-50 text-xs font-bold text-slate-700 disabled:opacity-40">↓</button></li>; })}</ol></div><label className="block text-xs font-bold text-slate-700">Displayed order <span className="font-normal text-slate-600">(1-based, comma-separated)</span><AssessmentSequenceOrderInput presentedOrder={q.presentedOrder || []} onChangeOrder={function (order) {
         patch({ presentedOrder: order });
-      }} /></label><label className="block text-xs font-bold text-slate-700">Misplaced displayed position<select value={q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? '' : q.intentionallyWrongIndex} onChange={function (event) { patch({ intentionallyWrongIndex: event.target.value === '' ? null : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Order is correct</option>{items.map(function (_, index) { return <option key={index} value={index}>Position {index + 1}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Ordering principle<input value={q.orderingPrinciple || ''} onChange={function (event) { patch({ orderingPrinciple: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Principle choices" itemLabel="choice" values={q.principleOptions || []} minimum={3} onChange={function (values, operation) { patch(_quizAuthoringListPatch(q, 'principleOptions', values, operation)); }} /></>;
+      }} /></label><label className="block text-xs font-bold text-slate-700">Misplaced displayed position<select value={q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? '' : q.intentionallyWrongIndex} onChange={function (event) { patch({ intentionallyWrongIndex: event.target.value === '' ? null : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Order is correct</option>{items.map(function (_, index) { return <option key={index} value={index}>Position {index + 1}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Ordering principle <span className="font-normal text-slate-600">(optional +1 bonus)</span><input value={q.orderingPrinciple || ''} onChange={function (event) { patch({ orderingPrinciple: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label>{Array.isArray(q.principleOptions) && q.principleOptions.filter(function (opt) { return opt && String(opt).trim().toLowerCase() !== String(q.orderingPrinciple || '').trim().toLowerCase(); }).length > 0 && <div className="rounded-lg border border-slate-200 bg-slate-50 p-2"><div className="text-xs font-bold text-slate-700 mb-1">Also accept as valid bonus principles <span className="font-normal text-slate-600">(when categories overlap)</span></div><div className="flex flex-wrap gap-2">{q.principleOptions.filter(function (opt) { return opt && String(opt).trim().toLowerCase() !== String(q.orderingPrinciple || '').trim().toLowerCase(); }).map(function (opt) { var extras = Array.isArray(q.acceptablePrinciples) ? q.acceptablePrinciples : []; var checked = extras.some(function (x) { return String(x).trim().toLowerCase() === String(opt).trim().toLowerCase(); }); return <label key={opt} className="inline-flex items-center gap-1.5 text-xs text-slate-700 bg-white border border-slate-200 rounded px-2 py-1"><input type="checkbox" checked={checked} onChange={function (event) { var next = extras.filter(function (x) { return String(x).trim().toLowerCase() !== String(opt).trim().toLowerCase(); }); if (event.target.checked) next.push(opt); patch({ acceptablePrinciples: next }); }} />{opt}</label>; })}</div></div>}<AssessmentTextListEditor label="Principle choices" itemLabel="choice" values={q.principleOptions || []} minimum={3} onChange={function (values, operation) { patch(_quizAuthoringListPatch(q, 'principleOptions', values, operation)); }} /></>;
     }
     if (type === 'relation-mismatch') return <><div className="space-y-1.5"><div className="text-xs font-bold text-slate-700">Displayed pairs</div>{pairs.map(function (pair, index) {
       return <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2"><input aria-label={'Pair ' + (index + 1) + ' left'} value={pair.left || ''} onChange={function (event) {
@@ -5364,6 +5479,13 @@ var _lazyIcon = function (name) {
     return <div className="bg-white p-5 rounded-xl border-2 border-indigo-300 shadow-sm">
       <div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">{p.itemNumber}</span><div className="flex-1"><span className="inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 mb-2">{labels[type] || type}</span><textarea aria-label="Edit question prompt" value={q.question || ''} onChange={function (event) { patch({ question: event.target.value }); }} rows="2" className="w-full text-sm font-semibold border-slate-300 rounded-md p-2 resize-y" /></div></div>
       <div className="ml-9 space-y-3">
+        {q.imageUrl && <div className="rounded-lg border border-slate-200 bg-slate-50 p-2">
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <span className="text-xs font-bold text-slate-700">Question picture</span>
+            <button type="button" data-quiz-remove-image={'question-' + p.questionIdx} onClick={function () { patch({ imageUrl: '', imageAltText: '' }); }} aria-label="Remove picture" className="inline-flex items-center gap-1 rounded-md border border-rose-300 bg-white px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50 transition-colors motion-reduce:transition-none"><span aria-hidden="true">🗑️</span> Remove picture</button>
+          </div>
+          <img src={q.imageUrl} alt={_quizAuthoredImageAlt(q.imageAltText)} loading="lazy" className="max-h-48 w-full rounded object-contain bg-white border border-slate-200" />
+        </div>}
         <label className="block text-xs font-bold text-slate-700">Concept label<input value={q.conceptLabel || ''} onChange={function (event) { patch({ conceptLabel: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" placeholder="e.g. fraction equivalents" /></label>
         <AssessmentCoreFields q={q} patch={patch} />
         <AssessmentDiagnosticFields q={q} patch={patch} />
@@ -6331,8 +6453,8 @@ var _lazyIcon = function (name) {
     }
     if (type === 'sequence-sense') {
       var orderOk = Array.isArray(answer.orderAnswer) && answer.orderAnswer.length > 0 && answer.orderAnswer.every(function (cIdx, pos) { return cIdx === pos; });
-      var principleOk = _quizAnswerMatches(answer.principleAnswer, q.orderingPrinciple);
-      return { status: orderOk && principleOk ? 'matched' : (orderOk || principleOk) ? 'partial' : 'needs-review', confidence: confidence, answer: answer };
+      var principleOk = !!answer.principleAnswer && _quizSequencePrincipleMatches(answer.principleAnswer, q);
+      return { status: orderOk ? 'matched' : (principleOk ? 'partial' : 'needs-review'), bonusEarned: principleOk, confidence: confidence, answer: answer };
     }
     return { status: 'teacher-review', confidence: confidence, answer: answer };
   }
@@ -6565,7 +6687,7 @@ var _lazyIcon = function (name) {
       {type === 'multi-select' && choices('Choose all that apply', q.options || [], selected, setSelected, true, 'options')}
       {type === 'answer-evidence' && <div className="space-y-4"><p id={controlId + '-evidence-instructions'} data-assessment-answer-evidence-instructions className="text-sm text-slate-600">Choose an answer, then evidence that supports it. If you change your answer, choose the evidence again.</p><p data-assessment-answer-evidence-progress role="status" aria-live="polite" aria-atomic="true" className="text-sm font-semibold text-indigo-900">{answerEvidenceProgress}</p>{choices('Choose an answer', q.answerOptions || q.options || [], answerIdx, chooseAnswerEvidenceAnswer, false, q.answerOptions ? 'answerOptions' : 'options')}{answerIdx !== null && <button type="button" data-assessment-continue-evidence aria-controls={controlId + '-evidence-choices'} onClick={() => (evidenceGroupRef.current?.querySelector('input:checked') || evidenceGroupRef.current?.querySelector('input:not(:disabled)'))?.focus()} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-indigo-900">Go to supporting evidence</button>}{q.evidencePrompt_en && <QuizTranslationText as="p" className="text-sm italic text-slate-600">{q.evidencePrompt_en}</QuizTranslationText>}{choices(q.evidencePrompt || 'Choose supporting evidence', q.evidenceOptions || [], evidenceIdx, chooseAnswerEvidence, false, 'evidenceOptions')}</div>}
       {['numeric-response','fill-blank','short-answer','self-explanation'].includes(type) && <label className="block text-sm font-semibold">Your response{responseInstruction && <span id={controlId + '-instruction'} data-assessment-response-instruction className="block mt-1 text-sm font-normal text-slate-600">{responseInstruction}</span>}{['numeric-response','fill-blank'].includes(type) ? <input aria-label={"Your response to question " + p.itemNumber} aria-describedby={responseDescription} className={inputClass} value={response} onChange={e => setResponse(e.target.value)} /> : <textarea aria-label={"Your response to question " + p.itemNumber} aria-describedby={responseDescription} className={inputClass + ' resize-y'} rows={type === 'self-explanation' ? 5 : 3} value={response} onChange={e => setResponse(e.target.value)} />}<QuizVoiceInputButton value={response} onChange={setResponse} allowDictation={p.allowDictation} /></label>}
-      {type === 'sequence-sense' && <div className="space-y-4"><ol className="list-decimal ps-6 text-sm space-y-1">{initialOrder.map(i => <li key={i}><AssessmentChoiceContent q={q} field="items" index={i} /></li>)}</ol>{q.sequenceMode !== 'arrange-explain' && choices('Is the displayed order correct?', ['Yes','No'], verifyAnswer === 'yes' ? 0 : verifyAnswer === 'no' ? 1 : null, i => setVerifyAnswer(i === 0 ? 'yes' : 'no'))}{q.sequenceMode !== 'arrange-explain' && verifyAnswer === 'no' && choices('Choose an item that is out of place', initialOrder.map(i => q.items[i]), clickedIdx, setClickedIdx, false, 'items', initialOrder)}<fieldset><legend className="text-sm font-semibold mb-2">{_quizGradedCopy('quiz.student.arrange_answer', 'Arrange your answer')}</legend><p data-assessment-reorder-status role="status" aria-live="polite" aria-atomic="true" className="sr-only">{moveNotice}</p><ol className="space-y-2">{orderAnswer.map((i, position) => <li key={i} className="flex items-center gap-2 rounded border border-slate-300 p-2"><AssessmentChoiceContent q={q} field="items" index={i} />{[-1,1].map(delta => <button key={delta} type="button" ref={node => { moveButtonsRef.current[i + ':' + delta] = node; }} aria-label={(delta < 0 ? 'Move up: ' : 'Move down: ') + q.items[i]} disabled={position + delta < 0 || position + delta >= orderAnswer.length} onClick={() => moveDeferredItem(i, delta)} className="min-h-11 min-w-11 rounded border border-slate-400 text-slate-800 disabled:opacity-40">{delta < 0 ? '↑' : '↓'}</button>)}</li>)}</ol></fieldset><label className="block text-sm font-semibold">Ordering principle<select className={inputClass} value={principleAnswer} onChange={e => setPrincipleAnswer(e.target.value)}><option value="">Choose a principle</option>{(q.principleOptions || ['chronological','cause-effect','process','size','hierarchy']).map((v, i) => <option key={v} value={v}>{v}{q.principleOptions_en?.[i] ? ' — ' + q.principleOptions_en[i] : ''}</option>)}</select></label></div>}
+      {type === 'sequence-sense' && <div className="space-y-4"><ol className="list-decimal ps-6 text-sm space-y-1">{initialOrder.map(i => <li key={i}><AssessmentChoiceContent q={q} field="items" index={i} /></li>)}</ol>{q.sequenceMode !== 'arrange-explain' && choices('Is the displayed order correct?', ['Yes','No'], verifyAnswer === 'yes' ? 0 : verifyAnswer === 'no' ? 1 : null, i => setVerifyAnswer(i === 0 ? 'yes' : 'no'))}{q.sequenceMode !== 'arrange-explain' && verifyAnswer === 'no' && choices('Choose an item that is out of place', initialOrder.map(i => q.items[i]), clickedIdx, setClickedIdx, false, 'items', initialOrder)}<fieldset><legend className="text-sm font-semibold mb-2">{_quizGradedCopy('quiz.student.arrange_answer', 'Arrange your answer')}</legend><p data-assessment-reorder-status role="status" aria-live="polite" aria-atomic="true" className="sr-only">{moveNotice}</p><ol className="space-y-2">{orderAnswer.map((i, position) => <li key={i} className="flex items-center gap-2 rounded border border-slate-300 p-2"><AssessmentChoiceContent q={q} field="items" index={i} />{[-1,1].map(delta => <button key={delta} type="button" ref={node => { moveButtonsRef.current[i + ':' + delta] = node; }} aria-label={(delta < 0 ? 'Move up: ' : 'Move down: ') + q.items[i]} disabled={position + delta < 0 || position + delta >= orderAnswer.length} onClick={() => moveDeferredItem(i, delta)} className="min-h-11 min-w-11 rounded border border-slate-400 text-slate-800 disabled:opacity-40">{delta < 0 ? '↑' : '↓'}</button>)}</li>)}</ol></fieldset><label className="block text-sm font-semibold">Ordering principle (optional bonus)<select className={inputClass} value={principleAnswer} onChange={e => setPrincipleAnswer(e.target.value)}><option value="">Skip or choose a principle</option>{(q.principleOptions || ['chronological','cause-effect','process','size','hierarchy']).map((v, i) => <option key={v} value={v}>{v}{q.principleOptions_en?.[i] ? ' — ' + q.principleOptions_en[i] : ''}</option>)}</select></label></div>}
       {type === 'relation-mismatch' && <div className="space-y-4">{choices('Choose the mismatched pair', (q.pairs || []).map(pair => pair.left + ' → ' + pair.right), clickedPairIdx, setClickedPairIdx, false, 'pairs')}{q.candidatePartners && q.candidatePartners.length ? choices('Replacement partner', q.candidatePartners, q.candidatePartners.indexOf(partnerAnswer), i => setPartnerAnswer(q.candidatePartners[i]), false, 'candidatePartners') : <label className="block text-sm font-semibold">Replacement partner<input aria-label={"Replacement partner for question " + p.itemNumber} className={inputClass} value={partnerAnswer} onChange={e => setPartnerAnswer(e.target.value)} /></label>}</div>}
       {type === 'likert' && <div className="space-y-2"><div className="flex justify-between text-xs text-slate-600 font-medium"><span>{q.lowLabel || String(likertMin)}</span><span>{q.highLabel || String(likertMax)}</span></div>{choices('Choose your rating (no right or wrong answer)', likertNums.map(String), likertNums.indexOf(pollValue), i => setPollValue(likertNums[i]), false, 'likert')}</div>}
       {type === 'opinion-mcq' && choices('Choose the option that best matches your view', q.options || [], pollOptionIdx, setPollOptionIdx, false, 'options')}
@@ -7527,6 +7649,35 @@ var _lazyIcon = function (name) {
         if (failures === 0) addToast(t('toasts.rewrote') + updates.length + ' distractor' + (updates.length === 1 ? '' : 's') + '.', 'success');else addToast(t('toasts.rewrote') + updates.length + ' / ' + tasks.length + ' (' + failures + ' failed — try again).', failures > updates.length ? 'error' : 'success');
       }
     }
+    function removeQuizImage(qIdx, target, optIdx) {
+      var key = refineKey(qIdx, target, optIdx);
+      setRefineOpen(function (prev) {
+        if (!prev[key]) return prev;
+        var next = Object.assign({}, prev);
+        next[key] = false;
+        return next;
+      });
+      if (typeof handleQuizImageRefine === 'function') {
+        handleQuizImageRefine(qIdx, target, optIdx, null);
+      } else if (typeof props.handleQuizQuestionAction === 'function') {
+        if (target === 'question') {
+          props.handleQuizQuestionAction(qIdx, 'patch', { imageUrl: '', imageAltText: '' });
+        } else if (target === 'option' && typeof optIdx === 'number') {
+          var q = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions) ? generatedContent.data.questions[qIdx] : null;
+          var nextUrls = Array.isArray(q && q.optionImageUrls) ? q.optionImageUrls.slice() : [];
+          nextUrls[optIdx] = null;
+          var allEmpty = nextUrls.every(function (u) { return !u; });
+          var patchPayload = { optionImageUrls: allEmpty ? [] : nextUrls };
+          if (Array.isArray(q && q.optionImageAltTexts)) {
+            var nextAlts = q.optionImageAltTexts.slice();
+            nextAlts[optIdx] = '';
+            patchPayload.optionImageAltTexts = allEmpty ? [] : nextAlts;
+          }
+          props.handleQuizQuestionAction(qIdx, 'patch', patchPayload);
+        }
+      }
+      if (typeof addToast === 'function') addToast('Picture removed.', 'info');
+    }
     function renderImageRefineOverlay(qIdx, target, optIdx, isCompact) {
       if (!isEditingQuiz) return null;
       var key = refineKey(qIdx, target, optIdx);
@@ -7534,12 +7685,18 @@ var _lazyIcon = function (name) {
       var isLoading = !!isRefiningQuizImage[key];
       var inputValue = quizImageRefineInputs[key] || '';
       var btnSize = isCompact ? 'h-6 w-6 text-xs' : 'h-7 w-7 text-xs';
-      return <><button type="button" onClick={function (e) {
+      var removeId = target + '-' + qIdx + (optIdx != null ? '-' + optIdx : '');
+      return <><div className="absolute top-1 right-1 flex items-center gap-1"><button type="button" onClick={function (e) {
           e.stopPropagation();
           toggleRefinePanel(key);
-        }} disabled={isLoading || !!_quizAiDoor(t, 'imageEdit')?.disabled} className={'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50'} title={isLoading ? 'Refining…' : _quizAiDoor(t, 'imageEdit')?.title || 'Refine this image'} aria-label={t("a11y.refine_image")} data-help-key="quiz_image_refine_btn">{isLoading ? '⋯' : '✏️'}</button>{isOpen && <div className="mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs"><div className="flex items-center gap-2 mb-1.5 flex-wrap"><button type="button" onClick={function () {
+        }} disabled={isLoading || !!_quizAiDoor(t, 'imageEdit')?.disabled} className={btnSize + ' rounded-full bg-white/95 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50'} title={isLoading ? 'Refining…' : _quizAiDoor(t, 'imageEdit')?.title || 'Refine this image'} aria-label={t("a11y.refine_image")} data-help-key="quiz_image_refine_btn">{isLoading ? '⋯' : '✏️'}</button><button type="button" data-quiz-remove-image={removeId} onClick={function (e) {
+          e.stopPropagation();
+          removeQuizImage(qIdx, target, optIdx);
+        }} disabled={isLoading} className={(isCompact ? 'h-6 w-6 justify-center' : 'h-7 px-2 gap-1') + ' rounded-full bg-white/95 hover:bg-rose-50 border border-rose-300 text-rose-700 text-xs font-bold shadow-sm inline-flex items-center transition-colors motion-reduce:transition-none disabled:opacity-50'} title="Remove picture" aria-label="Remove picture"><span aria-hidden="true">🗑️</span>{!isCompact && <span>Remove</span>}</button></div>{isOpen && <div className="mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs"><div className="flex items-center gap-2 mb-1.5 flex-wrap"><button type="button" onClick={function () {
               refineQuizImage(qIdx, target, optIdx, 'Remove all text and labels from this image. Keep everything else identical.');
-            }} disabled={isLoading} className="text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50" aria-label="Remove text from this image" title={t("tooltips.one_click_remove_text")}><span aria-hidden="true">🧹 </span>{t("ui_common.remove_text")}</button></div><textarea aria-label="Image refinement instructions" value={inputValue} {..._quizCompositionEvents} onChange={function (e) {
+            }} disabled={isLoading} className="text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50" aria-label="Remove text from this image" title={t("tooltips.one_click_remove_text")}><span aria-hidden="true">🧹 </span>{t("ui_common.remove_text")}</button><button type="button" onClick={function () {
+              removeQuizImage(qIdx, target, optIdx);
+            }} disabled={isLoading} className="text-xs font-bold px-2 py-0.5 rounded bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 disabled:opacity-50" aria-label="Remove this picture"><span aria-hidden="true">🗑️ </span>Remove picture</button></div><textarea aria-label="Image refinement instructions" value={inputValue} {..._quizCompositionEvents} onChange={function (e) {
             var v = e.target.value;
             setQuizImageRefineInputs(function (prev) {
               var next = Object.assign({}, prev);

@@ -85,8 +85,8 @@ module.exports = {
       }).filter(function (l) { return String(l).trim(); }).join(', ') });
     };
     var shownWord = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(ctx.L.missing_letter_word_is, { word: wordText }) });
-    var showButton = ctx.el('button', { type: 'button', 'aria-pressed': 'false', on: { click: function () {
-      if (ctx.isDone()) return;
+    var showButton = ctx.el('button', { type: 'button', hidden: true, 'aria-disabled': 'true', 'aria-pressed': 'false', on: { click: function () {
+      if (ctx.isDone() || ctx.check || ctx.attempts() <= 0) return;
       var on = shownWord.hidden;
       shownWord.hidden = !on;
       showButton.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -94,6 +94,12 @@ module.exports = {
       // The app records this support once per item.
       if (on && !shownOnce) { shownOnce = true; ctx.support('wordShown'); }
     } }, text: ctx.L.missing_letter_show_word });
+    var syncShowButton = function () {
+      var unlocked = !ctx.check && typeof ctx.attempts === 'function' && ctx.attempts() > 0;
+      showButton.hidden = !unlocked;
+      if (ctx.isDone() || !unlocked) showButton.setAttribute('aria-disabled', 'true');
+      else showButton.removeAttribute('aria-disabled');
+    };
     var doc = ctx.root.ownerDocument;
     var cards = [];
     var check = ctx.el('button', { type: 'button', class: 'primary', 'aria-disabled': 'true', on: { click: function () {
@@ -105,6 +111,7 @@ module.exports = {
       });
       // A retry marks the wrong letter as tried (matching all other choice adapters) and clears the slot.
       if (outcome === 'retry') {
+        syncShowButton();
         var missed = answer.trim().toLowerCase();
         cards.forEach(function (c) {
           if (c.letter === missed) {
@@ -170,6 +177,7 @@ module.exports = {
       });
     }
     updateWord('');
+    syncShowButton();
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.missing_letter_question }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),

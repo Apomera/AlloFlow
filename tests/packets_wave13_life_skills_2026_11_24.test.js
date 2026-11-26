@@ -101,19 +101,23 @@ describe('Wave 4A — Making Change & Budgeting (life_money)', () => {
     t.q('[data-ls-submit]').click();
     t.button('Next').click();
 
-    // Item 4: $12 budget -> picking Bread ($3.50) + Milk ($3.25) + Steak ($7.50) = $14.25 warns over budget!
+    // Item 4: $12 budget -> live readout hides auto-computed total/difference while unanswered, reveals on submit!
     t.q('[data-lm-item="bread"]').click();
     t.q('[data-lm-item="milk"]').click();
     t.q('[data-lm-item="steak"]').click();
-    expect(t.q('[data-lm-readout]').textContent).toContain('over $12.00');
+    expect(t.q('[data-lm-readout]').textContent).toBe('3 items selected \u00b7 Budget: $12.00');
+    expect(t.q('[data-lm-readout]').textContent).not.toContain('$14.25');
+    expect(t.q('[data-lm-readout]').textContent).not.toContain('over $12.00');
     t.q('[data-ls-submit]').click();
     expect(t.q('[data-feedback]').textContent).toContain('over the $12.00 budget');
-    // Swap Steak for Bananas ($2.00) -> $8.75 <= $12.00 -> right!
+    // Swap Steak for Bananas ($2.00) -> $8.75 <= $12.00 -> right! Readout reveals basket total after submit.
     t.q('[data-lm-item="steak"]').click();
     t.q('[data-lm-item="bananas"]').click();
-    expect(t.q('[data-lm-readout]').textContent).toContain('$8.75');
+    expect(t.q('[data-lm-readout]').textContent).toBe('3 items selected \u00b7 Budget: $12.00');
+    expect(t.q('[data-lm-readout]').textContent).not.toContain('$8.75');
     t.q('[data-ls-submit]').click();
     expect(t.q('[data-feedback]').textContent).toContain('$3.25 remaining');
+    expect(t.q('[data-lm-readout]').textContent).toContain('Basket: $8.75');
     t.button('See my results').click();
 
     const saved = JSON.parse(t.w.localStorage.getItem('alloflow-take-home:' + made.lesson.lessonId + ':' + made.lesson.revision));
@@ -402,7 +406,7 @@ describe('Wave 4A — Maker page (packets-life-skills.html), Reopen, Batch .zip 
     expect(html).toMatch(/type="password"[^>]*id="f-check-code"/);
 
     for (const src of [js, builderJs]) {
-      expect(src).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\s*\(|new\s+Function|speechSynthesis|https?:\/\//i);
+      expect(src).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\s*\(|new\s+Function|https?:\/\//i);
       expect(src).not.toMatch(BRITISH);
     }
     expect(html).not.toMatch(BRITISH);

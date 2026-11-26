@@ -25,7 +25,7 @@ const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src '
 // 2026-11-12, deliberately: the picture list, the Word Sounds builder (for its picture credits and its drawing check) and
 // the loader of recordings and pictures (packets_vocab_media.js). Without fetch (jsdom) the page makes files without them.
 const SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_zip.js', 'packets_handoff.js', 'packets_my_words.js', BANK_FILE,
-  'word_sounds_symbols_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-print-cards.js', 'packets_word_starters.js', SCRIPT];
+  'word_sounds_symbols_en.js', 'reading_symbols_ext_en.js', 'word_picture_semantic_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-print-cards.js', 'packets_word_starters.js', SCRIPT];
 const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick(?:ed|s)?\b|USB stick|\bwhilst\b|\bmaths\b|favour|behaviour|\bcentre\b/i;
 const ALLOWED_AI_SENTENCES = ['Runs without AI.', 'This page runs without AI.', 'This page runs without AI. No account. Nothing you choose leaves your device.', 'Run AI.',
   // 2026-11-13 (teacher-journey pass): where AI was used ahead of time, said plainly, as the Word Sounds pages name their AI voices.

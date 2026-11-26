@@ -159,7 +159,10 @@ module.exports = {
     ctx.root.appendChild(ctx.el('p', { text: ctx.L.manipulation_prompt }));
     // The app prints the task card (type + instruction) for every learner.
     ctx.root.appendChild(ctx.el('p', { class: 'muted', text: item.type === 'deletion' ? ctx.L.manipulation_type_deletion : ctx.L.manipulation_type_substitution }));
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', text: item.instructionText }));
+    var cueLine = !ctx.showLetters ? ctx.el('p', { class: 'muted', 'data-manipulation-audio-cue': '', text: 'Listen to the instruction, then choose the new word.' }) : null;
+    var instLine = ctx.el('p', { class: 'letters', lang: 'en', hidden: !ctx.showLetters, text: item.instructionText });
+    if (cueLine) ctx.root.appendChild(cueLine);
+    ctx.root.appendChild(instLine);
     // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. The opening already plays them.
     var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, auto: false,
       list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
@@ -193,6 +196,8 @@ module.exports = {
       replay: function () { run(instructionSteps(0)); },
       reveal: function () {
         halt();
+        if (cueLine) cueLine.hidden = true;
+        instLine.hidden = false;
         cards.forEach(function (c) {
           c.choose.setAttribute('aria-disabled', 'true');
           if (c.right && !c.box.classList.contains('right')) {

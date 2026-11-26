@@ -20,6 +20,9 @@
 <script src="word_sounds_take_home_loader.js" defer></script>
 <script src="word_sounds_packet_builder.js" defer></script>
 <script src="word_sounds_symbols_en.js" defer></script>
+<script src="reading_symbols_ext_en.js" defer></script>
+<script src="word_picture_semantic_en.js" defer></script>
+<script src="word_picture_matcher.js" defer></script>
 <script src="packets_my_words.js" defer></script>
 <script src="packets-words.js" defer></script>
 <script src="packets_verify_core.js" defer></script>
@@ -504,6 +507,7 @@
           <div class="block">
             <label class="radio"><input type="checkbox" id="f-pictures" aria-describedby="pictures-line"> <span>Include pictures</span></label>
             <span class="hint" id="pictures-line"></span>
+            <p class="row" id="find-missing-pictures-row" hidden><a class="btn btn-small" id="find-missing-pictures" href="packets-pictures.html" target="_blank" rel="noopener" hidden>Find pictures for missing words</a></p>
           </div>
 
           <div class="block">
@@ -544,6 +548,7 @@
           <button type="button" class="btn btn-small" id="worksheet-audio" hidden>Worksheet audio player</button>
           <button type="button" class="btn btn-small" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
         </p>
+        <p class="hint" id="bundle-hint">The classroom bundle (.zip) packages the interactive file, scaffolded, independent, and answer-key worksheets (HTML and editable Word .docx), cut-out word cards (.docx), and the offline audio player when recordings are ready.</p>
       </div>
 
       <details class="batch" id="batch">

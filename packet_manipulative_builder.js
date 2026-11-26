@@ -90,8 +90,12 @@
     '.bal-solve-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}',
     '.bal-solve-row input{width:96px;min-height:44px;text-align:center;font-size:1.15rem;font-weight:700}',
     '@media (prefers-reduced-motion:reduce){.nl-marker,.bal-beam{transition:none}}',
-    '@media (forced-colors:active){.b10-flat,.b10-rod,.b10-cube,.fb-part[aria-pressed=true],.fb-part.fb-on,.nl-marker,.bal-xbox{forced-color-adjust:none;background:Highlight;color:HighlightText;border-color:CanvasText}.fb-strip,.b10-col,.nl-stage,.bal-stage,.bal-pan{border:2px solid CanvasText}.nl-rail{background:CanvasText}.bal-beam{border-bottom-color:CanvasText}.bal-fulcrum{border-bottom-color:CanvasText}}',
-    '@media print{.mn-actions button,.b10-ctrls,.b10-trades,.fb-denoms,.nl-hop-btns,.bal-ops{display:none!important}}',
+    '@media (forced-colors:active){.b10-flat,.b10-rod,.b10-cube,.fb-part[aria-pressed=true],.fb-part.fb-on,.nl-marker,.bal-xbox{forced-color-adjust:none;background:Highlight;color:HighlightText;border-color:CanvasText}.fb-strip,.b10-col,.nl-stage,.bal-stage,.bal-pan{border:2px solid CanvasText}.nl-rail{background:CanvasText}.bal-beam{border-bottom-color:CanvasText}.bal-fulcrum{border-bottom-color:CanvasText}[data-read-aloud-btn][aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText;border:2px solid Highlight}}',
+    '.mn-read-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}',
+    '[data-read-aloud-btn]{min-height:44px;min-width:44px;padding:6px 12px;font-size:.92rem;border-radius:10px}',
+    '[data-read-aloud-btn][aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;outline:none}',
+    '[data-read-aloud-btn]:focus-visible{outline:3px solid var(--focus);outline-offset:2px}',
+    '@media print{.mn-actions button,.mn-read-row,[data-read-aloud-btn],.b10-ctrls,.b10-trades,.fb-denoms,.nl-hop-btns,.bal-ops{display:none!important}}',
   ].join('\n');
 
   function str(v, max) {
@@ -157,6 +161,35 @@
     }
   }
 
+  function withSpeechManifest(html) {
+    var tag = '<script type="application/json" id="packet-manifest">';
+    var start = typeof html === 'string' ? html.indexOf(tag) : -1;
+    if (start < 0) return html;
+    var bodyStart = start + tag.length;
+    var end = html.indexOf('</script>', bodyStart);
+    if (end < 0) return html;
+    try {
+      var obj = JSON.parse(html.slice(bodyStart, end), function (k, v) {
+        return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v;
+      });
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return html;
+      obj.speech = {
+        engine: 'speechSynthesis',
+        localOnly: true,
+        when: 'only when the learner presses Read aloud',
+      };
+      var json = JSON.stringify(obj)
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
+      return html.slice(0, bodyStart) + json + html.slice(end);
+    } catch (_) {
+      return html;
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Adapter 1: Base-Ten Blocks (manip_base_ten)
   // ---------------------------------------------------------------------------
@@ -169,6 +202,7 @@
       o: Math.max(0, Math.min(maxO, Math.floor(Number(init.ones) || 0))),
     };
     var exact = item.match === 'exact';
+    var hideTotal = !!ctx.check || item.hideTotal !== false;
     var targetVal = Math.max(0, Math.floor(Number(item.targetValue != null ? item.targetValue : item.target) || 0));
     var targetH = item.targetBlocks ? Math.floor(Number(item.targetBlocks.hundreds) || 0) : Math.floor(targetVal / 100);
     var targetT = item.targetBlocks ? Math.floor(Number(item.targetBlocks.tens) || 0) : Math.floor((targetVal % 100) / 10);
@@ -311,13 +345,13 @@
         var ok = exact
           ? (state.h === targetH && state.t === targetT && state.o === targetO)
           : (val === targetVal);
-        var retryMsg = 'Your mat shows ' + val + '.';
+        var retryMsg = 'Check your hundreds, tens, and ones columns and try again.';
         if (!ok && exact && val === targetVal) {
-          retryMsg = 'Your total is ' + val + ', which is right! Now use a Trade button so each column has fewer than 10 blocks.';
+          retryMsg = 'Your blocks match the target value, but they are not regrouped yet. Use a Trade button so each column has fewer than 10 blocks.';
         } else if (!ok && val < targetVal) {
-          retryMsg = 'Your mat shows ' + val + ', which is ' + (targetVal - val) + ' less than the target. Add blocks and try again.';
+          retryMsg = 'Your mat needs more value. Check your hundreds, tens, and ones columns, add blocks, and try again.';
         } else if (!ok && val > targetVal) {
-          retryMsg = 'Your mat shows ' + val + ', which is ' + (val - targetVal) + ' more than the target. Remove blocks and try again.';
+          retryMsg = 'Your mat has too much value. Check your hundreds, tens, and ones columns, remove blocks, and try again.';
         }
         var targetLabel = targetVal + ' (' + targetH + ' hundreds, ' + targetT + ' tens, ' + targetO + ' ones)';
         ctx.answer(summary, ok, {
@@ -356,9 +390,10 @@
           : submitBtn;
         try { if (nextFocus && !nextFocus.disabled) nextFocus.focus(); else submitBtn.focus(); } catch (_) {}
       }
-      var line = item.hideTotal
-        ? ('Mat: ' + state.h + ' hundreds, ' + state.t + ' tens, ' + state.o + ' ones')
-        : ('Total shown: ' + totalOf() + ' (' + state.h + ' hundreds, ' + state.t + ' tens, ' + state.o + ' ones)');
+      var showTotal = !hideTotal || (locked && !ctx.check);
+      var line = showTotal
+        ? ('Total shown: ' + totalOf() + ' (' + state.h + ' hundreds, ' + state.t + ' tens, ' + state.o + ' ones)')
+        : ('Mat: ' + state.h + ' hundreds, ' + state.t + ' tens, ' + state.o + ' ones');
       readout.textContent = line;
       if (say) ctx.announce(line);
     };
@@ -641,6 +676,12 @@
     var cur = startVal;
     var hops = [];
     var locked = false;
+    var promptAndWord = String(item.word || '') + ' ' + String(item.prompt || '');
+    var isExprTask = item.hidePosition === true
+      || (item.hidePosition !== false && (
+        /[+\u2212]|\s-\s|\b(?:add|subtract|plus|minus|sum|difference|hop\s+[+-]?\d|start at .+ (?:hop|jump|add|subtract|move\s+[+-]?\d))/i.test(promptAndWord)
+      ));
+    var hideLivePos = !!ctx.check || isExprTask;
 
     var formatNum = function (v) {
       if (denom > 1) {
@@ -805,9 +846,13 @@
         var ans = formatNum(cur);
         if (ctx.check) { ctx.answer(ans); return; }
         var ok = Math.abs(cur - targetVal) < 0.01;
-        var retryText = cur < targetVal
-          ? ('Your point is at ' + ans + '. Hop right (positive) to get closer and try again.')
-          : ('Your point is at ' + ans + '. Hop left (negative) to get closer and try again.');
+        var retryText = hideLivePos
+          ? (cur < targetVal
+            ? 'Your point landed too low. Hop right (positive) to get closer and try again.'
+            : 'Your point landed too high. Hop left (negative) to get closer and try again.')
+          : (cur < targetVal
+            ? ('Your point is at ' + ans + '. Hop right (positive) to get closer and try again.')
+            : ('Your point is at ' + ans + '. Hop left (negative) to get closer and try again.'));
         ctx.answer(ans, ok, {
           correctText: 'Right! Your point landed on ' + ans + '.',
           retryText: retryText,
@@ -857,7 +902,10 @@
         var altHop = hopBtns.find(function (entry) { return !entry.btn.disabled; });
         try { (altHop ? altHop.btn : submitBtn).focus(); } catch (_) {}
       }
-      var line = 'Point at ' + formatNum(cur) + (hops.length ? (' (started at ' + formatNum(startVal) + ', ' + hops.length + (hops.length === 1 ? ' hop)' : ' hops)')) : (' (start: ' + formatNum(startVal) + ')'));
+      var showPos = !hideLivePos || (locked && !ctx.check);
+      var line = showPos
+        ? ('Point at ' + formatNum(cur) + (hops.length ? (' (started at ' + formatNum(startVal) + ', ' + hops.length + (hops.length === 1 ? ' hop)' : ' hops)')) : (' (start: ' + formatNum(startVal) + ')')))
+        : ('Started at ' + formatNum(startVal) + (hops.length ? (', ' + hops.length + (hops.length === 1 ? ' hop taken (' : ' hops taken (') + hops.map(formatHop).join(', ') + ')') : ' (0 hops taken)'));
       readout.textContent = line;
       if (say) ctx.announce(line);
     };
@@ -915,7 +963,6 @@
       history.push({ a: curA, b: curB, c: curC, label: label });
       curA = nextA; curB = nextB; curC = nextC;
       ctx.support('balanceStep');
-      if (curA === 1 && curB === 0) xInput.value = String(curC);
       paint(true);
     };
 
@@ -939,7 +986,7 @@
         var d = curA;
         applyOp('\u00f7' + d + ' both sides', 1, 0, curC / d);
       } },
-      text: 'Split into ' + initA + ' equal groups (\u00f7 ' + initA + ')',
+      text: ctx.check ? 'Split into equal groups' : ('Split into ' + initA + ' equal groups (\u00f7 ' + initA + ')'),
     });
     var undoBtn = ctx.el('button', {
       type: 'button',
@@ -1005,9 +1052,9 @@
       on: { click: function () {
         if (locked || ctx.isDone()) return;
         var raw = String(xInput.value || '').trim();
-        var guessed = raw !== '' ? Number(raw) : (curA === 1 && curB === 0 ? curC : NaN);
+        var guessed = raw !== '' ? Number(raw) : NaN;
         if (!isFinite(guessed)) {
-          var balMsg = 'Isolate x on the balance scale or type a number for x first.';
+          var balMsg = 'Isolate x on the balance scale, then type a number for x first.';
           if (typeof ctx.feedback === 'function') ctx.feedback(balMsg);
           else { readout.textContent = balMsg; ctx.announce(balMsg); }
           xInput.focus();
@@ -1076,7 +1123,7 @@
       sub1Btn.disabled = locked || curB <= -12 || curC <= -24;
       add1Btn.disabled = locked || curB >= 18 || curC >= 36;
       divBtn.hidden = initA <= 1;
-      divBtn.textContent = 'Split into ' + curA + ' equal groups (\u00f7 ' + curA + ')';
+      divBtn.textContent = ctx.check ? 'Split into equal groups' : ('Split into ' + curA + ' equal groups (\u00f7 ' + curA + ')');
       divBtn.disabled = locked || curA <= 1 || curB !== 0 || (curC % curA !== 0);
       undoBtn.disabled = locked || !history.length;
       resetBtn.disabled = locked || !history.length;
@@ -1084,10 +1131,10 @@
       submitBtn.disabled = locked;
       var activeBal = ctx.root.ownerDocument && ctx.root.ownerDocument.activeElement;
       if (activeBal && activeBal.disabled && ctx.root.contains(activeBal) && !locked) {
-        try { (curA === 1 && curB === 0 ? submitBtn : (!sub1Btn.disabled ? sub1Btn : submitBtn)).focus(); } catch (_) {}
+        try { (curA === 1 && curB === 0 ? xInput : (!sub1Btn.disabled ? sub1Btn : submitBtn)).focus(); } catch (_) {}
       }
       var isolated = curA === 1 && curB === 0;
-      var line = 'Scale balanced: ' + eqText(curA, curB, curC) + (isolated ? (ctx.check ? ' (x is isolated. Press Submit x.)' : ' (x is isolated. Press Check balance.)') : '');
+      var line = 'Scale balanced: ' + eqText(curA, curB, curC) + (isolated ? (ctx.check ? ' (x is isolated. Type the value of x and press Submit x.)' : ' (x is isolated. Type the value of x and press Check balance.)') : '');
       readout.textContent = line;
       if (say) ctx.announce(line);
     };
@@ -1103,6 +1150,192 @@
         paint(false);
       },
     };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Self-contained Read Aloud wrapper (ZERO outer closures for serialization!)
+  // ---------------------------------------------------------------------------
+  function manipReadAloudWrapper(origRender, activityId) {
+    return function (item, ctx) {
+      var handle = origRender(item, ctx) || {};
+      var root = ctx && ctx.root;
+      if (!root) return handle;
+      var L = (ctx && ctx.L) || {};
+      var doc = root.ownerDocument;
+      var view = doc && doc.defaultView;
+      var synth = view && view.speechSynthesis && typeof view.speechSynthesis.speak === 'function' ? view.speechSynthesis : null;
+      var speaking = false;
+      var gen = 0;
+      var obs = null;
+      var readBtn = null;
+
+      var disconnectObs = function () {
+        if (obs) { try { obs.disconnect(); } catch (_) {} obs = null; }
+      };
+
+      var setBtnState = function (active) {
+        speaking = !!active;
+        if (readBtn) {
+          readBtn.setAttribute('aria-pressed', speaking ? 'true' : 'false');
+          readBtn.textContent = speaking ? 'Stop reading' : 'Read aloud';
+        }
+        if (!speaking) disconnectObs();
+      };
+
+      var stopSpeech = function () {
+        gen++;
+        var was = speaking;
+        setBtnState(false);
+        if (synth && (was || synth.speaking || synth.pending)) {
+          try { if (typeof synth.cancel === 'function') synth.cancel(); } catch (_) {}
+        }
+      };
+
+      var readRate = function () {
+        var attr = doc && doc.documentElement ? String(doc.documentElement.getAttribute('data-audio-speed') || '').trim().toLowerCase() : '';
+        if (attr === 'slow') return 0.75;
+        var n = Number(attr);
+        if (attr && isFinite(n) && n >= 0.5 && n <= 2) return n;
+        if (typeof ctx.speedRate === 'function') {
+          var sr = Number(ctx.speedRate());
+          if (isFinite(sr) && sr > 0 && sr !== 1) return sr;
+        }
+        if (typeof ctx.slow === 'function' && ctx.slow()) return 0.75;
+        return 1.0;
+      };
+
+      var getVisiblePromptText = function () {
+        var parts = [];
+        var add = function (s) {
+          var t = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+          if (t && parts.indexOf(t) < 0) parts.push(t);
+        };
+        var promptEl = root.querySelector('[data-mn-prompt]');
+        add((promptEl && promptEl.textContent) || (item && item.prompt) || '');
+        var subEl = root.querySelector('.mn-sub');
+        if (subEl && !subEl.hidden) add(subEl.textContent);
+        add(L[activityId + '_directions']);
+        return parts.map(function (p) { return /[.!?]$/.test(p) ? p : p + '.'; }).join(' ');
+      };
+
+      var cleanup = function () {
+        disconnectObs();
+        if (doc) {
+          doc.removeEventListener('keydown', onKeyDown);
+          doc.removeEventListener('click', onDocClick, true);
+        }
+        if (view) {
+          view.removeEventListener('pagehide', onUnload);
+          view.removeEventListener('beforeunload', onUnload);
+        }
+      };
+
+      var onKeyDown = function (ev) {
+        if (!root.isConnected) { cleanup(); return; }
+        var k = ev && ev.key;
+        if ((k === 'Escape' || k === 'Esc') && speaking) stopSpeech();
+      };
+
+      var onDocClick = function (ev) {
+        if (!root.isConnected) { cleanup(); return; }
+        if (!speaking || !ev || !ev.target) return;
+        var t = ev.target.closest ? ev.target.closest('button') : null;
+        if (!t || t === readBtn) return;
+        if (t.hasAttribute('data-stop-audio') || /stop audio/i.test(String(t.textContent || ''))) {
+          stopSpeech();
+        }
+      };
+
+      var onUnload = function () {
+        stopSpeech();
+        cleanup();
+      };
+
+      if (synth && doc) {
+        doc.addEventListener('keydown', onKeyDown);
+        doc.addEventListener('click', onDocClick, true);
+      }
+      if (synth && view) {
+        view.addEventListener('pagehide', onUnload);
+        view.addEventListener('beforeunload', onUnload);
+      }
+
+      var speakNow = function () {
+        if (!synth) return;
+        if (speaking) { stopSpeech(); return; }
+        var text = getVisiblePromptText();
+        if (!text) return;
+        if (typeof ctx.support === 'function') ctx.support('readAloud');
+        gen++;
+        var mine = gen;
+        try { if (typeof synth.cancel === 'function') synth.cancel(); } catch (_) {}
+        var Utter = typeof view.SpeechSynthesisUtterance === 'function' ? view.SpeechSynthesisUtterance : null;
+        var u = Utter ? new Utter(text) : { text: text, rate: 1.0, lang: 'en-US' };
+        u.rate = readRate();
+        var lang = (doc && doc.documentElement && doc.documentElement.lang) || 'en-US';
+        u.lang = lang;
+        try {
+          if (typeof synth.getVoices === 'function') {
+            var voices = synth.getVoices() || [];
+            var want = String(lang).toLowerCase().split('-')[0];
+            var local = voices.filter(function (v) {
+              return v && v.localService === true && String(v.lang || '').toLowerCase().replace('_', '-').indexOf(want) === 0;
+            })[0];
+            if (local) { u.voice = local; u.lang = local.lang || lang; }
+          }
+        } catch (_) {}
+        u.onend = function () { if (mine === gen) setBtnState(false); };
+        u.onerror = function () { if (mine === gen) setBtnState(false); };
+        setBtnState(true);
+        if (view && typeof view.MutationObserver === 'function' && doc && doc.body) {
+          disconnectObs();
+          obs = new view.MutationObserver(function () {
+            if (!root.isConnected) { stopSpeech(); cleanup(); }
+          });
+          try { obs.observe(doc.getElementById('app') || doc.body, { childList: true, subtree: true }); } catch (_) {}
+        }
+        try {
+          synth.speak(u);
+        } catch (_) {
+          if (mine === gen) setBtnState(false);
+        }
+      };
+
+      readBtn = ctx.el('button', {
+        type: 'button',
+        'data-read-aloud-btn': '',
+        'aria-pressed': 'false',
+        hidden: !synth,
+        on: { click: speakNow },
+        text: 'Read aloud',
+      });
+
+      var row = ctx.el('div', { class: 'mn-read-row' }, [readBtn]);
+      var wrap = root.querySelector('.mn-wrap') || root;
+      var anchor = wrap.querySelector('.mn-sub') || wrap.querySelector('[data-mn-prompt]');
+      if (anchor && anchor.parentNode === wrap) {
+        wrap.insertBefore(row, anchor.nextSibling);
+      } else {
+        wrap.insertBefore(row, wrap.firstChild);
+      }
+
+      var origReveal = handle && typeof handle.reveal === 'function' ? handle.reveal : null;
+      return Object.assign({}, handle, {
+        reveal: function () {
+          stopSpeech();
+          if (origReveal) return origReveal.apply(handle, arguments);
+        },
+      });
+    };
+  }
+
+  function wrapManipRender(origRender, activityId) {
+    var wrapped = function (item, ctx) {
+      return manipReadAloudWrapper(origRender, activityId)(item, ctx);
+    };
+    var src = '(' + manipReadAloudWrapper.toString() + ')(' + origRender.toString() + ',' + JSON.stringify(activityId) + ')';
+    wrapped.toString = function () { return src; };
+    return wrapped;
   }
 
   // ---------------------------------------------------------------------------
@@ -1130,7 +1363,7 @@
           prompt: str(raw.prompt || ('Build ' + tv + ' with base-ten blocks.'), 220),
           match: exact ? 'exact' : 'value',
           allowRegroup: raw.allowRegroup !== false,
-          hideTotal: !!raw.hideTotal,
+          hideTotal: raw.hideTotal !== false,
           answer: ans,
         };
         if (raw.start && typeof raw.start === 'object') clean.start = { hundreds: Number(raw.start.hundreds) || 0, tens: Number(raw.start.tens) || 0, ones: Number(raw.start.ones) || 0 };
@@ -1147,7 +1380,7 @@
         }
         return { correct: String(val) === exp };
       },
-      render: renderBaseTen,
+      render: wrapManipRender(renderBaseTen, 'manip_base_ten'),
     },
     manip_fraction_bars: {
       id: 'manip_fraction_bars',
@@ -1197,7 +1430,7 @@
         if (forbid && gd === forbid) return { correct: false };
         return { correct: gn * td === tn * gd };
       },
-      render: renderFractionBars,
+      render: wrapManipRender(renderFractionBars, 'manip_fraction_bars'),
     },
     manip_number_line: {
       id: 'manip_number_line',
@@ -1235,7 +1468,7 @@
         var ev = parseVal(expected), gv = parseVal(given);
         return { correct: isFinite(ev) && isFinite(gv) && Math.abs(ev - gv) < 0.01 };
       },
-      render: renderNumberLine,
+      render: wrapManipRender(renderNumberLine, 'manip_number_line'),
     },
     manip_balance_scale: {
       id: 'manip_balance_scale',
@@ -1272,7 +1505,7 @@
         var ev = parseX(expected), gv = parseX(given);
         return { correct: isFinite(ev) && isFinite(gv) && Math.abs(ev - gv) < 0.001 };
       },
-      render: renderBalanceScale,
+      render: wrapManipRender(renderBalanceScale, 'manip_balance_scale'),
     },
   };
 
@@ -1823,7 +2056,7 @@
       stationBilingual: opts.stationBilingual || root.AlloPacketStationBilingual,
     };
 
-    var baseHtml = loader.buildHtml(lesson, buildOpts);
+    var baseHtml = withSpeechManifest(loader.buildHtml(lesson, buildOpts));
     var cleanLearner = codeName(opts.learner || '');
     var html = cleanLearner ? withCodeName(baseHtml, cleanLearner) : baseHtml;
     var activity = lesson.blocks[0] ? lesson.blocks[0].activity : 'manip_base_ten';

@@ -111,6 +111,10 @@ describe('main Reading Ruler actual host lifecycle',()=>{
   act(()=>{toggle.focus();toggle.click();});expect(localStorage.getItem('allo_reading_ruler')).toBe('1');expect(band()).toBeNull();
   await render({showTools:false});flushFrames();expect(band()).not.toBeNull();expect(y()).toBe(400);
  });
+ it('uses useLayoutEffect so enabling from an exempt toolbar/dialog suspends before paint without flashing',()=>{
+  const lifecycle=section('  // Reading Ruler input lifecycle:','  // End Reading Ruler input lifecycle.');
+  expect(lifecycle).toContain('React.useLayoutEffect(() => {');
+ });
  it('keeps a focused modal unmasked over its backdrop and resumes on modal removal',async()=>{
   await savedOn({showModal:true});const modalControl=host.querySelector('[data-modal-control]');
   act(()=>modalControl.focus());expect(band()).toBeNull();move(host.querySelector('[data-reading]'),650);flushFrames();expect(band()).toBeNull();

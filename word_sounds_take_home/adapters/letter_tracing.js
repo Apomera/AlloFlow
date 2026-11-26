@@ -120,6 +120,18 @@ module.exports = {
     // 2026-11-13: a tip, never a fail: the first stroke started far from the start dot.
     letter_tracing_start_one: 'Start at the green dot 1.',
     letter_tracing_start_more: 'Start at the green dot 1.',
+    // 2026-11-25 (Wave 39): stroke-by-stroke coaching, directionality tips, Show how model, and missed-spot cues.
+    letter_tracing_demo: 'Show how',
+    letter_tracing_demo_playing: 'Watch how to trace the letter {letter}.',
+    letter_tracing_stroke_of: 'Stroke {n} of {total}',
+    letter_tracing_stroke_ok: 'Nice stroke {n}! Now start at green dot {next}.',
+    letter_tracing_stroke_start_n: 'For stroke {n}, start at green dot {n}.',
+    letter_tracing_dir_down: 'Try starting at the top and pulling down from dot {n}.',
+    letter_tracing_dir_right: 'Try going from left to right from dot {n}.',
+    letter_tracing_dir_curve: 'Curve around to the left from dot {n}, following the arrow.',
+    letter_tracing_dir_arrow: 'Follow the arrow from dot {n}.',
+    letter_tracing_ready: 'Looks good! Press I traced it when you are ready.',
+    letter_tracing_missed_spots: 'Keep going. Trace over the highlighted spots.',
   },
   prepare: function (w, env) {
     var word = String((w && (w.targetWord || w.word || w.term)) || '').trim();
@@ -253,16 +265,38 @@ module.exports = {
         line: cv('--line', '#94a3b8'),
         accent: cv('--accent', '#3d3aa8'),
         ok: cv('--ok', '#1d6b3a'),
+        warn: cv('--warn', '#8a4b00'),
       };
     };
-    var drawGuide = function () {
+    var missedHighlight = null;
+    var demoTimer = null, demoRaf = 0, demoRunning = false;
+    var stopDemo = function () {
+      demoRunning = false;
+      if (ink && ink.style) ink.style.opacity = '';
+      if (demoTimer) { try { win.clearTimeout(demoTimer); } catch (_) {} demoTimer = null; }
+      if (demoRaf && win.cancelAnimationFrame) { try { win.cancelAnimationFrame(demoRaf); } catch (_) {} demoRaf = 0; }
+    };
+    var drawMissed = function (pal) {
+      if (!missedHighlight || !missedHighlight.length) return;
+      gg.save();
+      gg.strokeStyle = pal.warn; gg.fillStyle = pal.warn; gg.lineWidth = 2.5; gg.setLineDash([4, 3]);
+      missedHighlight.forEach(function (pt) {
+        gg.globalAlpha = 0.2; gg.beginPath(); gg.arc(pt.x, pt.y, 14, 0, Math.PI * 2); gg.fill();
+        gg.globalAlpha = 0.94; gg.beginPath(); gg.arc(pt.x, pt.y, 14, 0, Math.PI * 2); gg.stroke();
+      });
+      gg.restore();
+    };
+    var drawGuide = function (demoFrame) {
       if (!gg) return;
       var pal = palette();
       gg.save();
       gg.globalAlpha = pal.hc ? 0.42 : 0.24;
       paint(gg, pal.muted, 0);
       gg.restore();
-      if (!shape) return;
+      if (!shape) {
+        drawMissed(pal);
+        return;
+      }
       // Writing lines behind the letter: top, a dashed middle, the base line.
       gg.globalCompositeOperation = 'destination-over';
       [[0, pal.hc ? 0.55 : 0.7, []], [50, pal.hc ? 0.55 : 0.7, [8, 7]], [100, pal.hc ? 0.9 : 0.85, []]].forEach(function (row) {
@@ -274,18 +308,53 @@ module.exports = {
       });
       gg.globalCompositeOperation = 'source-over';
       gg.setLineDash([]);
+      // Highlight missed letter regions right on the stroke centroids when student taps "I traced it" early.
+      drawMissed(pal);
       // A thin dashed line down the middle of each stroke, then a numbered start dot and an arrow.
-      gg.save();
-      gg.globalAlpha = pal.hc ? 0.9 : 0.85;
-      gg.lineWidth = 2; gg.strokeStyle = pal.muted; gg.setLineDash([5, 6]);
-      shape.strokes.forEach(function (st) {
+      var sLenNow = Array.isArray(strokes) ? strokes.length : 0;
+      var activeIdx = demoFrame ? demoFrame.strokeIdx : Math.min(sLenNow, shape.strokes.length - 1);
+      shape.strokes.forEach(function (st, si) {
         if (st.dot) return;
+        gg.save();
+        var isCur = si === activeIdx;
+        gg.globalAlpha = isCur ? (pal.hc ? 1 : 0.95) : (si < activeIdx ? 0.4 : (pal.hc ? 0.85 : 0.75));
+        gg.lineWidth = isCur ? 3 : 2;
+        gg.strokeStyle = isCur ? pal.accent : pal.muted;
+        gg.setLineDash([5, 6]);
         gg.beginPath(); gg.moveTo(st.pts[0][0], st.pts[0][1]);
         st.pts.slice(1).forEach(function (p) { gg.lineTo(p[0], p[1]); });
         gg.stroke();
+        gg.restore();
       });
-      gg.restore();
       gg.setLineDash([]);
+      // Animated / stepped stroke demonstration overlay ("Show how").
+      if (demoFrame && shape.strokes[demoFrame.strokeIdx]) {
+        var dst = shape.strokes[demoFrame.strokeIdx];
+        gg.save();
+        gg.strokeStyle = pal.accent; gg.fillStyle = pal.accent;
+        gg.lineWidth = pen * 0.68; gg.lineCap = 'round'; gg.lineJoin = 'round';
+        gg.globalAlpha = 0.55;
+        if (dst.dot) {
+          gg.beginPath(); gg.arc(dst.pts[0][0], dst.pts[0][1], pen * 0.45, 0, Math.PI * 2); gg.fill();
+        } else {
+          var totalLen = 0;
+          for (var di = 1; di < dst.pts.length; di++) totalLen += Math.hypot(dst.pts[di][0] - dst.pts[di - 1][0], dst.pts[di][1] - dst.pts[di - 1][1]);
+          var drawDist = totalLen * Math.max(0, Math.min(1, demoFrame.t));
+          var leftD = drawDist, tipX = dst.pts[0][0], tipY = dst.pts[0][1];
+          gg.beginPath(); gg.moveTo(tipX, tipY);
+          for (var di2 = 1; di2 < dst.pts.length; di2++) {
+            var sdx = dst.pts[di2][0] - dst.pts[di2 - 1][0], sdy = dst.pts[di2][1] - dst.pts[di2 - 1][1], slen = Math.hypot(sdx, sdy);
+            if (!slen) continue;
+            if (leftD >= slen) { tipX = dst.pts[di2][0]; tipY = dst.pts[di2][1]; gg.lineTo(tipX, tipY); leftD -= slen; }
+            else { var sf = leftD / slen; tipX = dst.pts[di2 - 1][0] + sdx * sf; tipY = dst.pts[di2 - 1][1] + sdy * sf; gg.lineTo(tipX, tipY); break; }
+          }
+          gg.stroke();
+          gg.globalAlpha = 0.95;
+          gg.beginPath(); gg.arc(tipX, tipY, 9, 0, Math.PI * 2); gg.fill();
+          gg.lineWidth = 2.5; gg.strokeStyle = pal.card; gg.stroke();
+        }
+        gg.restore();
+      }
       // 2026-11-13: no dot, number or arrow covers another. Dot 1 is at its real start. Each later stroke takes the
       // cheapest place for its dot (its real start; a little way along the stroke; beside or behind the start, with
       // a short line to it) that is 36 px from every earlier dot and 24 px from every earlier arrow, inside the box,
@@ -334,24 +403,38 @@ module.exports = {
         if (best.a) arrows.push(best.a);
       });
       // Short lines from moved dots to their real starts, then the arrows, then the dots.
-      dots.forEach(function (m) {
+      dots.forEach(function (m, ni) {
         if (!m.lead) return;
+        gg.save();
+        gg.globalAlpha = ni < activeIdx ? 0.45 : 1;
         gg.beginPath(); gg.lineWidth = 2; gg.strokeStyle = pal.ok; gg.moveTo(m.lead[0], m.lead[1]); gg.lineTo(m.p[0], m.p[1]); gg.stroke();
         gg.beginPath(); gg.arc(m.lead[0], m.lead[1], 4, 0, Math.PI * 2); gg.fillStyle = pal.ok; gg.fill();
+        gg.restore();
       });
-      arrows.forEach(function (a) {
+      arrows.forEach(function (a, ai) {
+        gg.save();
+        gg.globalAlpha = ai < activeIdx ? 0.45 : 1;
         gg.beginPath(); gg.fillStyle = pal.ok;
         gg.moveTo(a.x + a.ux * 10, a.y + a.uy * 10);
         gg.lineTo(a.x - a.ux * 6 - a.uy * 8, a.y - a.uy * 6 + a.ux * 8);
         gg.lineTo(a.x - a.ux * 6 + a.uy * 8, a.y - a.uy * 6 - a.ux * 8);
         gg.closePath(); gg.fill();
+        gg.restore();
       });
       // The dots, last first, so dot 1 is on top. Always number dot 1 so start cues never rely on color alone (WCAG 1.4.1).
       for (var n = dots.length - 1; n >= 0; n--) {
         var p = dots[n].p;
+        var isAct = shape.strokes.length > 1 && n === activeIdx;
+        gg.save();
+        gg.globalAlpha = n < activeIdx ? 0.55 : 1;
+        if (isAct) {
+          gg.beginPath(); gg.arc(p[0], p[1], R + 4, 0, Math.PI * 2);
+          gg.lineWidth = 3; gg.strokeStyle = pal.accent; gg.stroke();
+        }
         gg.beginPath(); gg.arc(p[0], p[1], R, 0, Math.PI * 2); gg.fillStyle = pal.ok; gg.fill();
         gg.lineWidth = 2; gg.strokeStyle = pal.card; gg.stroke();
         gg.fillStyle = pal.card; gg.font = 'bold 14px system-ui, sans-serif'; gg.textAlign = 'center'; gg.textBaseline = 'middle'; gg.fillText(String(n + 1), p[0], p[1] + 1);
+        gg.restore();
       }
     };
     var retintInk = function () {
@@ -395,10 +478,11 @@ module.exports = {
       undo.disabled = !has;
       undo.setAttribute('aria-disabled', has ? 'false' : 'true');
     };
-    var wipe = function () { first = null; firstDone = false; drawing = false; activeId = null; last = null; strokes = []; curStroke = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } updateUndo(); };
+    var wipe = function () { stopDemo(); missedHighlight = null; first = null; firstDone = false; drawing = false; activeId = null; last = null; strokes = []; curStroke = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } updateUndo(); drawGuide(); };
     ink.addEventListener('pointerdown', function (e) {
       // Ignore secondary touches (palm rest / second finger on iPad) and non-left mouse buttons.
       if (ctx.isDone() || drawing || e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      if (demoRunning || missedHighlight) { stopDemo(); missedHighlight = null; drawGuide(); }
       drawing = true; activeId = e.pointerId != null ? e.pointerId : null; last = spot(e);
       curStroke = [last]; strokes.push(curStroke);
       line(last, last);
@@ -414,17 +498,98 @@ module.exports = {
       if (first && !firstDone) first.len += Math.sqrt((p.x - last.x) * (p.x - last.x) + (p.y - last.y) * (p.y - last.y));
       line(last, p); last = p; e.preventDefault();
     });
-    // A stroke longer than 24 px is the first stroke (a tap is not); far from dot 1 (35 px, as the app), a tip.
-    var startTip = function () {
-      if (firstDone || !first || first.len <= 24) return;
-      firstDone = true;
-      var dot = shape && shape.strokes[0] && shape.strokes[0].pts[0];
-      if (!dot || Math.sqrt((first.x - dot[0]) * (first.x - dot[0]) + (first.y - dot[1]) * (first.y - dot[1])) <= 35) return;
-      note.textContent = shape.strokes.length > 1 ? (L.letter_tracing_start_more || '') : (L.letter_tracing_start_one || '');
+    // Stroke path & directionality coaching (gentle, never punitive).
+    var strokePathLen = function (pts) {
+      var t = 0;
+      for (var i = 1; i < pts.length; i++) t += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+      return t;
+    };
+    var signedTurnArea = function (pts, isArr) {
+      var n = pts.length;
+      if (n < 4) return 0;
+      var cx = 0, cy = 0;
+      for (var i = 0; i < n; i++) { cx += isArr ? pts[i][0] : pts[i].x; cy += isArr ? pts[i][1] : pts[i].y; }
+      cx /= n; cy /= n;
+      var sum = 0;
+      for (var j = 1; j < n; j++) {
+        var x1 = (isArr ? pts[j - 1][0] : pts[j - 1].x) - cx, y1 = (isArr ? pts[j - 1][1] : pts[j - 1].y) - cy;
+        var x2 = (isArr ? pts[j][0] : pts[j].x) - cx, y2 = (isArr ? pts[j][1] : pts[j].y) - cy;
+        sum += x1 * y2 - y1 * x2;
+      }
+      return sum;
+    };
+    var coachStroke = function (pts, idx) {
+      if (!shape || !pts || !pts.length) return;
+      var slen = strokePathLen(pts);
+      var gIdx = Math.min(idx, shape.strokes.length - 1);
+      var gst = shape.strokes[gIdx];
+      if (!gst) return;
+      // 1. Directionality check first (catches bottom-to-top, right-to-left, and clockwise vs counterclockwise curves)
+      if (slen > 24 && !gst.dot && gst.pts.length >= 2 && pts.length >= 2 && idx < shape.strokes.length) {
+        var gStart = gst.pts[0], gEnd = gst.pts[gst.pts.length - 1];
+        var gDx = gEnd[0] - gStart[0], gDy = gEnd[1] - gStart[1];
+        var gChord = Math.hypot(gDx, gDy);
+        var gLen = 0;
+        for (var gi = 1; gi < gst.pts.length; gi++) gLen += Math.hypot(gst.pts[gi][0] - gst.pts[gi - 1][0], gst.pts[gi][1] - gst.pts[gi - 1][1]);
+        if (gLen > 40 && gChord < gLen * 0.45) {
+          var gWind = signedTurnArea(gst.pts, true);
+          var sWind = signedTurnArea(pts, false);
+          if (Math.abs(gWind) > 600 && Math.abs(sWind) > 400 && (gWind * sWind < 0)) {
+            firstDone = true;
+            note.textContent = ctx.fmt(L.letter_tracing_dir_curve || 'Curve around to the left from dot {n}, following the arrow.', { n: idx + 1 });
+            return;
+          }
+        } else if (gChord >= 28) {
+          var sDx = pts[pts.length - 1].x - pts[0].x, sDy = pts[pts.length - 1].y - pts[0].y;
+          var sChord = Math.hypot(sDx, sDy);
+          if (sChord >= 22) {
+            var cos = (sDx * gDx + sDy * gDy) / (sChord * gChord);
+            if (cos < -0.45) {
+              firstDone = true;
+              if (gDy > Math.abs(gDx) * 1.1) note.textContent = ctx.fmt(L.letter_tracing_dir_down || 'Try starting at the top and pulling down from dot {n}.', { n: idx + 1 });
+              else if (gDx > Math.abs(gDy) * 1.1) note.textContent = ctx.fmt(L.letter_tracing_dir_right || 'Try going from left to right from dot {n}.', { n: idx + 1 });
+              else note.textContent = ctx.fmt(L.letter_tracing_dir_arrow || 'Follow the arrow from dot {n}.', { n: idx + 1 });
+              return;
+            }
+          }
+        }
+      }
+      // 2. Stroke 0 start check (keeps exact original 24 px / 35 px rule)
+      if (!firstDone && slen > 24) {
+        firstDone = true;
+        var dot0 = shape.strokes[0] && shape.strokes[0].pts[0];
+        if (dot0 && Math.hypot(pts[0].x - dot0[0], pts[0].y - dot0[1]) > 35) {
+          note.textContent = shape.strokes.length > 1 ? (L.letter_tracing_start_more || '') : (L.letter_tracing_start_one || '');
+          return;
+        }
+      }
+      if (slen <= 24 && !gst.dot) return;
+      // 3. Subsequent stroke start check on multi-stroke letters
+      if (idx > 0 && idx < shape.strokes.length && !gst.dot) {
+        var dotN = gst.pts[0];
+        if (dotN && Math.hypot(pts[0].x - dotN[0], pts[0].y - dotN[1]) > 44) {
+          note.textContent = ctx.fmt(L.letter_tracing_stroke_start_n || 'For stroke {n}, start at green dot {n}.', { n: idx + 1 });
+          return;
+        }
+      }
+      // 4. Positive progress cue for multi-stroke letters or ready-to-check completion
+      if (strokes.length < shape.strokes.length) {
+        note.textContent = ctx.fmt(L.letter_tracing_stroke_ok || 'Nice stroke {n}! Now start at green dot {next}.', { n: strokes.length, next: strokes.length + 1 });
+      } else {
+        var chk = measure();
+        if (chk.done >= 0.6 && chk.stray <= 0.5) {
+          note.textContent = L.letter_tracing_ready || 'Looks good! Press I traced it when you are ready.';
+        }
+      }
     };
     var stop = function (e) {
       if (!drawing || (e && activeId != null && e.pointerId !== activeId)) return;
-      startTip(); drawing = false; activeId = null; last = null; curStroke = null; updateUndo();
+      var finishedStroke = curStroke;
+      var finishedIdx = strokes.length - 1;
+      drawing = false; activeId = null; last = null; curStroke = null;
+      coachStroke(finishedStroke, finishedIdx);
+      updateUndo();
+      drawGuide();
     };
     ink.addEventListener('pointerup', stop);
     ink.addEventListener('pointercancel', stop);
@@ -432,6 +597,7 @@ module.exports = {
     var themeObs = null, schemeMq = null;
     var onTheme = function () {
       if (!ctx.root.isConnected) {
+        stopDemo();
         if (themeObs) { try { themeObs.disconnect(); } catch (_) {} themeObs = null; }
         if (schemeMq && schemeMq.removeEventListener) { try { schemeMq.removeEventListener('change', onTheme); } catch (_) {} schemeMq = null; }
         return;
@@ -451,35 +617,83 @@ module.exports = {
     // the strokes cover, and how much ink lands well away from the letter (scribbling over
     // the whole box is not tracing). Every other pixel is enough.
     var measure = function () {
-      if (!gg || !pg) return { done: 1, stray: 0 };
+      if (!gg || !pg) return { done: 1, stray: 0, missed: [] };
       var mask = doc.createElement('canvas'); mask.width = px; mask.height = px;
       var mg = mask.getContext('2d'); paint(mg, '#000', shape ? pen * 1.25 : 0);
       var halo = doc.createElement('canvas'); halo.width = px; halo.height = px;
       var hg = halo.getContext('2d'); paint(hg, '#000', shape ? pen * 2.6 : size * 0.14);
       var m = mg.getImageData(0, 0, px, px).data, h = hg.getImageData(0, 0, px, px).data, p = pg.getImageData(0, 0, px, px).data;
-      var G = 7, cell = px / G, want = [], got = [], all = 0, away = 0;
+      var G = 7, cell = px / G, want = [], got = [], cxSum = [], cySum = [], all = 0, away = 0;
       for (var y = 0; y < px; y += 2 * k) {
         for (var x = 0; x < px; x += 2 * k) {
           var i = (y * px + x) * 4 + 3, c = Math.floor(y / cell) * G + Math.floor(x / cell), on = p[i] > 0;
-          if (m[i] > 128) { want[c] = (want[c] || 0) + 1; if (on) got[c] = (got[c] || 0) + 1; }
+          if (m[i] > 128) {
+            want[c] = (want[c] || 0) + 1;
+            cxSum[c] = (cxSum[c] || 0) + x / k;
+            cySum[c] = (cySum[c] || 0) + y / k;
+            if (on) got[c] = (got[c] || 0) + 1;
+          }
           if (on) { all++; if (h[i] <= 128) away++; }
         }
       }
-      var cells = 0, covered = 0;
-      for (var c2 = 0; c2 < G * G; c2++) if ((want[c2] || 0) >= 6) { cells++; if ((got[c2] || 0) / want[c2] >= 0.35) covered++; }
-      return { done: cells ? covered / cells : 0, stray: all ? away / all : 0 };
+      var cells = 0, covered = 0, missed = [];
+      for (var c2 = 0; c2 < G * G; c2++) if ((want[c2] || 0) >= 6) {
+        cells++;
+        if ((got[c2] || 0) / want[c2] >= 0.35) covered++;
+        else {
+          var mx = cxSum[c2] / want[c2], my = cySum[c2] / want[c2];
+          if (!missed.some(function (q) { return Math.hypot(q.x - mx, q.y - my) < 26; })) missed.push({ x: mx, y: my });
+        }
+      }
+      return { done: cells ? covered / cells : 0, stray: all ? away / all : 0, missed: missed };
+    };
+    var playDemo = function () {
+      if (ctx.isDone() || !shape || !shape.strokes.length) return;
+      stopDemo();
+      missedHighlight = null;
+      demoRunning = true;
+      if (ink && ink.style) ink.style.opacity = '0.2';
+      ctx.support('traceDemo');
+      note.textContent = ctx.fmt(L.letter_tracing_demo_playing || 'Watch how to trace the letter {letter}.', { letter: parts[at].letter });
+      var reduced = (doc.documentElement && doc.documentElement.getAttribute('data-lt-motion') === '1')
+        || !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches)
+        || typeof win.requestAnimationFrame !== 'function';
+      var si = 0;
+      var nextStroke = function () {
+        if (!demoRunning || !ctx.root.isConnected) { stopDemo(); return; }
+        if (si >= shape.strokes.length) { stopDemo(); drawGuide(); return; }
+        if (reduced) {
+          drawGuide({ strokeIdx: si, t: 1 });
+          si++;
+          demoTimer = win.setTimeout(nextStroke, 680);
+          return;
+        }
+        var t0 = Date.now(), dur = shape.strokes[si].dot ? 320 : 780;
+        var stepFrame = function () {
+          if (!demoRunning || !ctx.root.isConnected) { stopDemo(); return; }
+          var f = Math.min(1, (Date.now() - t0) / dur);
+          drawGuide({ strokeIdx: si, t: f });
+          if (f < 1) { demoRaf = win.requestAnimationFrame(stepFrame); }
+          else { si++; demoTimer = win.setTimeout(nextStroke, 240); }
+        };
+        demoRaf = win.requestAnimationFrame(stepFrame);
+      };
+      nextStroke();
     };
     var question = ctx.el('p', { class: 'letters', 'data-trace-question': '', style: 'margin:0 0 2px' });
     var tools = ctx.el('p', { class: 'muted', style: 'margin:0;font-size:0.875rem', text: L.letter_tracing_tools || '' });
     var stepLine = ctx.el('p', { class: 'muted', 'data-trace-part': '', style: 'margin:0;font-size:0.9rem' });
     var how = ctx.el('p', { class: 'muted', 'data-trace-how': '', style: 'margin:4px 0 0;font-size:0.9rem' });
-    var note = ctx.el('p', { class: 'letters', 'aria-live': 'polite', style: 'margin:4px 0 0;min-height:1.2em' });
+    var note = ctx.el('p', { class: 'letters', 'data-trace-note': '', 'aria-live': 'polite', style: 'margin:4px 0 0;min-height:1.2em' });
     var skipLower = ctx.el('button', { type: 'button', 'data-trace-skip-lowercase': '', hidden: true, on: { click: function () {
       if (ctx.isDone()) return;
       ctx.support('lowercaseSkipped');
       ctx.practice('traced', L.letter_tracing_traced);
     } }, text: L.letter_tracing_skip_lowercase });
+    var demoBtn = ctx.el('button', { type: 'button', 'data-trace-demo': '', on: { click: playDemo }, text: L.letter_tracing_demo || 'Show how' });
     var showPart = function () {
+      stopDemo();
+      missedHighlight = null;
       var part = parts[at];
       shape = layout(part);
       var named = { letter: part.letter };
@@ -491,21 +705,29 @@ module.exports = {
       stepLine.hidden = parts.length < 2;
       how.textContent = !shape ? '' : shape.strokes.length > 1 ? L.letter_tracing_how_more : L.letter_tracing_how_one;
       how.hidden = !shape;
+      demoBtn.hidden = !shape;
       skipLower.hidden = !(at > 0 && part.kind === 'lowercase');
       // 2026-11-18: on the lowercase part only its own skip shows: "Skip (not traced)" there marked the capital, traced
       // already, as not traced (the app hides it too).
       if (skip) skip.hidden = !skipLower.hidden;
-      drawGuide();
       wipe();
     };
     var buttons = [];
     if (item.letterAudio) buttons.push(ctx.el('button', { type: 'button', on: { click: function () { ctx.support('letterReplays'); ctx.play(item.letterAudio); } }, text: L.letter_tracing_hear_letter }));
     if (item.wordAudio || item.promptAudio) buttons.push(ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio || item.promptAudio); } }, text: L.hear_word }));
+    buttons.push(demoBtn);
     var done = ctx.el('button', { type: 'button', class: 'primary', 'data-trace-done': '', on: { click: function () {
       if (ctx.isDone()) return;
+      stopDemo();
       var m = measure();
-      if (m.stray > 0.5) { note.textContent = L.letter_tracing_stay; return; }
-      if (m.done < 0.6) { note.textContent = L.letter_tracing_more; return; }
+      if (m.stray > 0.5) { missedHighlight = null; drawGuide(); note.textContent = L.letter_tracing_stay; return; }
+      if (m.done < 0.6) {
+        missedHighlight = m.missed && m.missed.length ? m.missed : null;
+        drawGuide();
+        note.textContent = missedHighlight ? (L.letter_tracing_missed_spots || L.letter_tracing_more) : L.letter_tracing_more;
+        return;
+      }
+      missedHighlight = null;
       if (at < parts.length - 1) {
         at++;
         showPart();
@@ -518,13 +740,16 @@ module.exports = {
     } }, text: L.letter_tracing_done });
     undo = ctx.el('button', { type: 'button', 'data-trace-undo': '', hidden: true, disabled: true, 'aria-disabled': 'true', on: { click: function () {
       if (ctx.isDone() || !strokes.length) return;
+      stopDemo();
+      missedHighlight = null;
       strokes.pop();
       if (!strokes.length) { first = null; firstDone = false; note.textContent = ''; }
       redrawInk();
+      drawGuide();
       updateUndo();
     } }, text: L.letter_tracing_undo || 'Undo stroke' });
     var clear = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; wipe(); note.textContent = ''; } }, text: L.letter_tracing_clear });
-    var skip = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.practice('skipped', L.letter_tracing_skipped); } }, text: L.letter_tracing_skip });
+    var skip = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; stopDemo(); ctx.practice('skipped', L.letter_tracing_skipped); } }, text: L.letter_tracing_skip });
     ctx.root.appendChild(question);
     var metaKids = [];
     if (item.word) metaKids.push(ctx.el('p', { class: 'letters', 'data-trace-word': '', style: 'font-size:1.1rem;margin:0' }, String(L.letter_tracing_word || '{word}').split('{word}').reduce(function (out, bit, i) { if (i) out.push(ctx.el('span', { lang: 'en', dir: 'ltr', text: item.word })); if (bit) out.push(bit); return out; }, [])));
@@ -538,7 +763,7 @@ module.exports = {
     ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:6px;gap:8px' }, [done, undo, clear, skipLower, skip]));
     showPart();
     return {
-      reveal: function () { [done, undo, clear, skipLower, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); if (undo) undo.disabled = true; },
+      reveal: function () { stopDemo(); [done, undo, clear, skipLower, skip, demoBtn].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); if (undo) undo.disabled = true; },
     };
   },
 };

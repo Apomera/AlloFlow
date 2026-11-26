@@ -34,6 +34,9 @@ module.exports = {
     word_scramble_dropped: '{letter} put back.',
     word_scramble_placed: '{letter} is in box {n}.',
     word_scramble_removed: '{letter} taken out of box {n}.',
+    word_scramble_put_back: '↩ Put back',
+    word_scramble_put_back_label: 'Put back in letter pool',
+    word_scramble_selected: '{letter} selected. Choose another box to move it, or tap Put back.',
     word_scramble_cleared: 'All the boxes are empty again.',
     word_scramble_clear: 'Clear',
     word_scramble_check: 'Check',
@@ -80,7 +83,7 @@ module.exports = {
     if (!prompt) missing.push('question');
     if (missing.length) return { missing: missing };
     var item = { target: word, letters: letters, wordAudio: wordAudio, promptAudio: prompt,
-      introAudio: [prompt], answerAudio: [wordAudio] };
+      introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
     // A word written with a capital (a name): how it is written.
     if (written !== word && written.length === word.length) item.shown = written;
     return { item: item };
@@ -109,7 +112,12 @@ module.exports = {
       return String(letter);
     });
     var picked = null;
+    var pickedFrom = -1;
     var lastSubmitted = null;
+    var defaultOldHow = 'Tap a letter to pick it up, then tap a box to put it there. Tap a filled box to take the letter out.';
+    var howText = (!L.word_scramble_how || L.word_scramble_how === defaultOldHow)
+      ? 'Tap a letter to pick it up, then tap a box to put it there. Tap a filled box to move it, or tap Put back to return it.'
+      : L.word_scramble_how;
     var locked = function () { return ctx.isDone(); };
     var up = function (ti) { return shownOf[ti]; };
     var answerText = function () { return boxes.filter(function (x) { return x != null; }).map(function (ti) { return item.letters[ti]; }).join(''); };
@@ -120,6 +128,7 @@ module.exports = {
       return target.split('').map(function (ch) { return fixed(ch) ? ch : item.letters[boxes[k++]]; }).join('');
     };
     var own = function (text) { return String(text || '').split('').filter(function (ch) { return !fixed(ch); }).join(''); };
+    var byKey = function (e) { return !e || e.detail === 0; };
 
     var drag = null, dragEndedAt = 0;
     var dragged = function () { return Date.now() - dragEndedAt < 400; };
@@ -144,7 +153,8 @@ module.exports = {
         doc.body.appendChild(g);
         drag.ghost = g;
         drag.w = r.width; drag.h = r.height;
-        if (drag.from === 'tray') { picked = drag.ti; draw(); }
+        if (drag.from === 'tray') { picked = drag.ti; pickedFrom = -1; draw(); }
+        else if (drag.from === 'box') { picked = drag.ti; pickedFrom = drag.bi; draw(); }
       }
       drag.ghost.style.left = (e.clientX - drag.w / 2) + 'px';
       drag.ghost.style.top = (e.clientY - drag.h / 2) + 'px';
@@ -166,25 +176,27 @@ module.exports = {
       if (boxNode && ctx.root.contains(boxNode)) {
         var to = Number(boxNode.getAttribute('data-ws-box'));
         if (d.from === 'tray') {
-          picked = null; boxes[to] = d.ti; lastSubmitted = null;
+          picked = null; pickedFrom = -1; boxes[to] = d.ti; lastSubmitted = null;
           draw();
           ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(d.ti), n: to + 1 }));
         } else if (to !== d.bi) {
           var other = boxes[to];
-          boxes[to] = d.ti; boxes[d.bi] = other; picked = null; lastSubmitted = null;
+          boxes[to] = d.ti; boxes[d.bi] = other; picked = null; pickedFrom = -1; lastSubmitted = null;
           draw();
           ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(d.ti), n: to + 1 }));
+        } else {
+          picked = null; pickedFrom = -1; draw();
         }
       } else if (trayNode && d.from === 'box') {
-        boxes[d.bi] = null; lastSubmitted = null;
+        boxes[d.bi] = null; picked = null; pickedFrom = -1; lastSubmitted = null;
         draw();
         ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(d.ti), n: d.bi + 1 }));
-      } else if (d.from === 'tray') {
-        picked = null; draw();
+      } else {
+        picked = null; pickedFrom = -1; draw();
       }
     };
 
-    var tray = ctx.el('ul', { class: 'row', 'data-ws-tray': '', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:10px' });
+    var tray = ctx.el('ul', { class: 'row', 'data-ws-tray': '', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:6px 0;margin:16px 0;gap:10px' });
     var tiles = item.letters.map(function (letter, ti) {
       var btn = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-ws-tile': String(ti), 'aria-label': ctx.fmt(L.word_scramble_pick, { letter: up(ti) }),
         style: 'min-width:var(--ws-tile,56px);min-height:var(--ws-tile,56px);font-size:1.5rem;font-weight:700;touch-action:none',
@@ -193,6 +205,18 @@ module.exports = {
       tray.appendChild(li);
       return { li: li, btn: btn };
     });
+    var putBackBtn = ctx.el('button', { type: 'button', 'data-ws-put-back': '', 'aria-label': L.word_scramble_put_back_label || 'Put back in letter pool',
+      style: 'min-width:var(--ws-tile,56px);min-height:var(--ws-tile,56px);padding:0 16px;border-radius:16px;font-size:1.05rem;font-weight:800;border:3px dashed var(--accent);background:var(--soft);color:var(--accent);box-shadow:0 0 0 3px var(--accent)',
+      on: { click: function (e) {
+        if (locked() || picked == null || pickedFrom < 0) return;
+        var out = picked, fromBi = pickedFrom;
+        boxes[fromBi] = null; picked = null; pickedFrom = -1; lastSubmitted = null;
+        draw();
+        ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(out), n: fromBi + 1 }));
+        if (byKey(e) && tiles[out] && tiles[out].btn) { try { tiles[out].btn.focus(); } catch (_) {} }
+      } } }, [L.word_scramble_put_back || '↩ Put back']);
+    var putBackLi = ctx.el('li', { 'data-ws-put-back-item': '', hidden: true }, [putBackBtn]);
+    tray.appendChild(putBackLi);
     var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.word_scramble_boxes });
     var boxEls = [];
     target.split('').forEach(function (ch, i) {
@@ -204,14 +228,14 @@ module.exports = {
       boxEls.push(btn);
     });
     var wordLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.word_scramble_word, { word: written }) });
-    var showWord = ctx.el('button', { type: 'button', 'aria-pressed': 'false', on: { click: function () {
-      if (locked()) return;
+    var showWord = ctx.el('button', { type: 'button', hidden: true, 'aria-disabled': 'true', 'aria-pressed': 'false', on: { click: function () {
+      if (locked() || ctx.check || ctx.attempts() <= 0) return;
       var on = wordLine.hidden;
       if (on) ctx.support('wordShown');
       wordLine.hidden = !on;
       showWord.setAttribute('aria-pressed', on ? 'true' : 'false');
     } }, text: L.word_scramble_show_word });
-    var clearAll = function () { picked = null; for (var i = 0; i < n; i++) boxes[i] = null; };
+    var clearAll = function () { picked = null; pickedFrom = -1; for (var i = 0; i < n; i++) boxes[i] = null; };
     var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
       if (locked()) return;
       clearAll(); lastSubmitted = null; draw(); ctx.announce(L.word_scramble_cleared);
@@ -221,30 +245,48 @@ module.exports = {
 
     var draw = function () {
       var holding = picked != null && !locked();
+      var holdingFromBox = holding && pickedFrom >= 0;
+      putBackLi.hidden = !holdingFromBox;
+      tray.style.outline = holdingFromBox ? '2px dashed var(--accent)' : '';
+      tray.style.borderRadius = holdingFromBox ? '16px' : '';
       tiles.forEach(function (t, ti) {
         t.li.hidden = boxes.indexOf(ti) >= 0;
-        t.btn.setAttribute('aria-pressed', picked === ti ? 'true' : 'false');
+        t.btn.setAttribute('aria-pressed', picked === ti && pickedFrom < 0 ? 'true' : 'false');
         if (locked()) t.btn.setAttribute('aria-disabled', 'true');
       });
       boxEls.forEach(function (btn, bi) {
         var ti = boxes[bi];
+        var lifted = holdingFromBox && pickedFrom === bi && ti != null;
         btn.textContent = ti == null ? '' : up(ti);
+        if (ti != null) btn.setAttribute('aria-pressed', lifted ? 'true' : 'false');
+        else btn.removeAttribute('aria-pressed');
         btn.style.borderStyle = ti == null ? 'dashed' : 'solid';
         btn.style.borderColor = ti == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--accent)';
-        btn.style.background = ti == null && holding ? 'var(--soft)' : '';
-        btn.style.boxShadow = ti == null && holding ? '0 0 0 3px var(--accent)' : '';
+        btn.style.background = lifted ? 'var(--accent)' : (ti == null && holding ? 'var(--soft)' : '');
+        btn.style.color = lifted ? 'var(--accent-ink)' : '';
+        btn.style.transform = lifted ? 'translateY(-6px) scale(1.08)' : '';
+        btn.style.boxShadow = lifted ? '0 0 0 3px var(--card), 0 0 0 7px var(--accent)'
+          : (ti == null && holding ? '0 0 0 3px var(--accent)' : (holdingFromBox && ti != null ? '0 0 0 2px var(--accent)' : ''));
         btn.style.touchAction = ti == null ? 'manipulation' : 'none';
         btn.setAttribute('aria-label', ti == null ? ctx.fmt(L.word_scramble_box_empty, { n: bi + 1 }) : ctx.fmt(L.word_scramble_box_filled, { n: bi + 1, letter: up(ti) }));
         if (locked()) btn.setAttribute('aria-disabled', 'true');
       });
       checkBtn.setAttribute('aria-disabled', locked() || !answerText() ? 'true' : 'false');
+      var canShowWord = !ctx.check && ctx.attempts() > 0 && !locked();
+      showWord.hidden = !!ctx.check || ctx.attempts() <= 0;
+      if (!canShowWord) showWord.setAttribute('aria-disabled', 'true');
+      else showWord.removeAttribute('aria-disabled');
       if (locked()) { clearBtn.setAttribute('aria-disabled', 'true'); showWord.setAttribute('aria-disabled', 'true'); }
     };
-    var byKey = function (e) { return !e || e.detail === 0; };
+    var nextFocus = function () {
+      if (boxes.indexOf(null) < 0) return checkBtn;
+      for (var k = 0; k < tiles.length; k++) if (boxes.indexOf(k) < 0) return tiles[k].btn;
+      return checkBtn;
+    };
     var onTile = function (ti, e) {
       if (locked() || boxes.indexOf(ti) >= 0) return;
-      if (picked === ti) { picked = null; draw(); ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(ti) })); return; }
-      picked = ti;
+      if (picked === ti && pickedFrom < 0) { picked = null; pickedFrom = -1; draw(); ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(ti) })); return; }
+      picked = ti; pickedFrom = -1;
       draw();
       ctx.announce(ctx.fmt(L.word_scramble_picked, { letter: up(ti) }));
       var empty = boxes.indexOf(null);
@@ -253,21 +295,37 @@ module.exports = {
     var onBox = function (bi, e) {
       if (locked()) return;
       if (picked == null) {
-        var out = boxes[bi];
-        if (out == null) { ctx.announce(L.word_scramble_how); return; }
-        boxes[bi] = null; lastSubmitted = null;
+        var inBox = boxes[bi];
+        if (inBox == null) { ctx.announce(howText); return; }
+        picked = inBox;
+        pickedFrom = bi;
         draw();
-        ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(out), n: bi + 1 }));
+        ctx.announce(ctx.fmt(L.word_scramble_selected || '{letter} selected. Choose another box to move it, or tap Put back.', { letter: up(inBox) }));
+        return;
+      }
+      if (pickedFrom >= 0) {
+        if (bi === pickedFrom) {
+          var stayed = picked;
+          picked = null; pickedFrom = -1;
+          draw();
+          ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(stayed), n: bi + 1 }));
+          return;
+        }
+        var moved = picked, fromBi = pickedFrom, other = boxes[bi];
+        boxes[bi] = moved;
+        boxes[fromBi] = other;
+        picked = null; pickedFrom = -1; lastSubmitted = null;
+        draw();
+        ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(moved), n: bi + 1 }));
+        if (byKey(e)) nextFocus().focus();
         return;
       }
       var ti = picked;
-      picked = null;
+      picked = null; pickedFrom = -1;
       boxes[bi] = ti; lastSubmitted = null;
       draw();
       ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(ti), n: bi + 1 }));
-      if (!byKey(e)) return;
-      if (boxes.indexOf(null) < 0) { checkBtn.focus(); return; }
-      for (var k = 0; k < tiles.length; k++) if (boxes.indexOf(k) < 0) { tiles[k].btn.focus(); return; }
+      if (byKey(e)) nextFocus().focus();
     };
     var onCheck = function () {
       if (locked()) return;
@@ -291,18 +349,30 @@ module.exports = {
         var k = String(key == null ? '' : key);
         if (k === 'Escape' || k === 'Esc') {
           if (picked == null) return false;
-          var drop = picked;
-          picked = null;
+          var drop = picked, wasBox = pickedFrom;
+          picked = null; pickedFrom = -1;
           draw();
-          ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(drop) }));
-          if (tiles[drop] && tiles[drop].btn) { try { tiles[drop].btn.focus(); } catch (_) {} }
+          if (wasBox >= 0) {
+            ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(drop), n: wasBox + 1 }));
+            if (boxEls[wasBox]) { try { boxEls[wasBox].focus(); } catch (_) {} }
+          } else {
+            ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(drop) }));
+            if (tiles[drop] && tiles[drop].btn) { try { tiles[drop].btn.focus(); } catch (_) {} }
+          }
           return true;
         }
         if (k === 'Backspace') {
+          if (picked != null && pickedFrom >= 0) {
+            var selOut = boxes[pickedFrom], selBi = pickedFrom;
+            boxes[selBi] = null; picked = null; pickedFrom = -1; lastSubmitted = null;
+            draw();
+            ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(selOut), n: selBi + 1 }));
+            return true;
+          }
           for (var bi = n - 1; bi >= 0; bi--) {
             if (boxes[bi] != null) {
               var out = boxes[bi];
-              boxes[bi] = null; picked = null; lastSubmitted = null;
+              boxes[bi] = null; picked = null; pickedFrom = -1; lastSubmitted = null;
               draw();
               ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(out), n: bi + 1 }));
               return true;
@@ -324,7 +394,7 @@ module.exports = {
           if (emptyAt < 0) return false;
           for (var ti = 0; ti < item.letters.length; ti++) {
             if (item.letters[ti] === lc && boxes.indexOf(ti) < 0) {
-              picked = null; boxes[emptyAt] = ti; lastSubmitted = null;
+              picked = null; pickedFrom = -1; boxes[emptyAt] = ti; lastSubmitted = null;
               draw();
               ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(ti), n: emptyAt + 1 }));
               return true;
@@ -336,7 +406,7 @@ module.exports = {
     }
 
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.word_scramble_question }));
-    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.word_scramble_how }));
+    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: howText }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: L.hear_question }),
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
@@ -349,7 +419,7 @@ module.exports = {
     draw();
     return {
       reveal: function (correct) {
-        picked = null;
+        picked = null; pickedFrom = -1;
         if (!correct) {
           var used = [];
           for (var i = 0; i < n; i++) {
@@ -361,7 +431,7 @@ module.exports = {
         }
         wordLine.hidden = false;
         draw();
-        boxEls.forEach(function (btn) { btn.style.borderColor = 'var(--ok)'; btn.style.background = 'var(--ok-bg)'; });
+        boxEls.forEach(function (btn) { btn.style.borderColor = 'var(--ok)'; btn.style.background = 'var(--ok-bg)'; btn.style.color = ''; btn.style.boxShadow = ''; });
       },
     };
   },

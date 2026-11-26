@@ -331,8 +331,14 @@ describe('Item #4 — Picture the Sentence per-slot retry feedback hold + early 
     const f = openFile(makeSentenceFile());
     f.start();
     await wait(20);
-    const tile = (w) => [...f.d.querySelectorAll('#app ul.choices button')].find((b) => b.getAttribute('aria-label') === 'Picture of ' + w);
+    const tileOrder = f.lesson.blocks[0].items[0].tiles.map((t) => t.text);
+    const tileIdx = (w) => tileOrder.indexOf(w);
+    const tile = (w) => [...f.d.querySelectorAll('#app ul.choices button')][tileIdx(w)];
     const slots = () => [...f.d.querySelectorAll('#app ul.slots button')];
+
+    // Before answering, tiles carry neutral numbered labels (no word giveaway).
+    expect(tile('cat').getAttribute('aria-label')).toBe('Picture ' + (tileIdx('cat') + 1));
+    expect(tile('dog').getAttribute('aria-label')).toBe('Picture ' + (tileIdx('dog') + 1));
 
     // Place cat (right) in slot 0, sun (wrong) in slot 1 -> triggers retry hold.
     tile('cat').click();
@@ -347,19 +353,23 @@ describe('Item #4 — Picture the Sentence per-slot retry feedback hold + early 
     // Tapping 'cat' immediately during the hold cancels the hold, clears old slots, and places 'cat' into slot 0!
     tile('cat').click();
     expect(slots()[0].getAttribute('data-retry-mark')).toBeNull();
-    expect(slots()[0].getAttribute('aria-label')).toContain('cat');
+    expect(slots()[0].getAttribute('aria-label')).toContain('Picture ' + (tileIdx('cat') + 1));
+    expect(slots()[0].getAttribute('aria-label')).not.toContain('cat');
     expect(slots()[1].getAttribute('aria-label')).toContain('empty');
 
-    // Finish with 'dog' -> correct!
+    // Finish with 'dog' -> correct & revealed!
     tile('dog').click();
     expect(f.btn('See my results')).toBeTruthy();
+    expect(tile('cat').getAttribute('aria-label')).toBe('Picture of cat');
+    expect(slots()[0].getAttribute('aria-label')).toContain('cat');
   });
 
   it('clears retry marks automatically after the brief hold timer', async () => {
     const f = openFile(makeSentenceFile(), { captureWaits: true });
     f.start();
     await wait(20);
-    const tile = (w) => [...f.d.querySelectorAll('#app ul.choices button')].find((b) => b.getAttribute('aria-label') === 'Picture of ' + w);
+    const tileOrder = f.lesson.blocks[0].items[0].tiles.map((t) => t.text);
+    const tile = (w) => [...f.d.querySelectorAll('#app ul.choices button')][tileOrder.indexOf(w)];
     const slots = () => [...f.d.querySelectorAll('#app ul.slots button')];
     f.waits.length = 0;
     tile('sun').click();

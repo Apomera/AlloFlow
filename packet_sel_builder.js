@@ -77,8 +77,12 @@
     '.sel-consent{display:flex;align-items:center;min-height:48px;gap:12px;padding:10px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--soft);font-size:.94rem;line-height:1.4;cursor:pointer}',
     '.sel-consent input{width:22px;height:22px;min-width:22px;min-height:22px;flex:0 0 auto;margin:0;accent-color:var(--accent)}',
     '@media (prefers-reduced-motion:reduce){.ft-bar-fill,.tm-bar-fill,.cm-breath-fill{transition:none}}',
-    '@media (forced-colors:active){.ft-box,.tm-stage,.cm-panel,.cm-break-card,.sel-privacy,.sel-consent{border:2px solid CanvasText}.ft-step-btn,.cm-state-btn,.ur-chip{border:2px solid ButtonText}.ft-step-btn[aria-pressed=true]{border-color:Highlight}.ft-bar,.tm-bar,.cm-breath-meter{border:1px solid CanvasText}.ft-bar-fill,.tm-bar-fill,.cm-breath-fill,.cm-state-btn[aria-pressed=true],.ft-step-btn[aria-pressed=true] .ft-check,.cm-tabs button[aria-pressed=true],.ur-chip[aria-pressed=true],.tm-presets button[aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText}}',
-    '@media print{.progress,.ft-bar,.sel-readout,.sel-privacy,.sel-actions button,.ft-add-row,.tm-presets,.cm-tabs,.sel-consent{display:none!important}.card{border:0;box-shadow:none;padding:0;margin:0}.ft-board,.ft-steps,.cm-break-card{break-inside:avoid}}',
+    '@media (forced-colors:active){.ft-box,.tm-stage,.cm-panel,.cm-break-card,.sel-privacy,.sel-consent{border:2px solid CanvasText}.ft-step-btn,.cm-state-btn,.ur-chip{border:2px solid ButtonText}.ft-step-btn[aria-pressed=true]{border-color:Highlight}.ft-bar,.tm-bar,.cm-breath-meter{border:1px solid CanvasText}.ft-bar-fill,.tm-bar-fill,.cm-breath-fill,.cm-state-btn[aria-pressed=true],.ft-step-btn[aria-pressed=true] .ft-check,.cm-tabs button[aria-pressed=true],.ur-chip[aria-pressed=true],.tm-presets button[aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText}[data-read-aloud-btn][aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText;border:2px solid Highlight}}',
+    '.sel-read-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}',
+    '[data-read-aloud-btn]{min-height:44px;min-width:44px;padding:6px 12px;font-size:.92rem;border-radius:10px}',
+    '[data-read-aloud-btn][aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;outline:none}',
+    '[data-read-aloud-btn]:focus-visible{outline:3px solid var(--focus);outline-offset:2px}',
+    '@media print{.progress,.ft-bar,.sel-readout,.sel-privacy,.sel-read-row,[data-read-aloud-btn],.sel-actions button,.ft-add-row,.tm-presets,.cm-tabs,.sel-consent{display:none!important}.card{border:0;box-shadow:none;padding:0;margin:0}.ft-board,.ft-steps,.cm-break-card{break-inside:avoid}}',
   ].join('\n');
 
   function str(v, max) {
@@ -132,6 +136,35 @@
     try {
       var obj = JSON.parse(html.slice(bodyStart, end));
       obj.learner = clean;
+      var json = JSON.stringify(obj)
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
+      return html.slice(0, bodyStart) + json + html.slice(end);
+    } catch (_) {
+      return html;
+    }
+  }
+
+  function withSpeechManifest(html) {
+    var tag = '<script type="application/json" id="packet-manifest">';
+    var start = typeof html === 'string' ? html.indexOf(tag) : -1;
+    if (start < 0) return html;
+    var bodyStart = start + tag.length;
+    var end = html.indexOf('</script>', bodyStart);
+    if (end < 0) return html;
+    try {
+      var obj = JSON.parse(html.slice(bodyStart, end), function (k, v) {
+        return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v;
+      });
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return html;
+      obj.speech = {
+        engine: 'speechSynthesis',
+        localOnly: true,
+        when: 'only when the learner presses Read aloud',
+      };
       var json = JSON.stringify(obj)
         .replace(/</g, '\\u003c')
         .replace(/>/g, '\\u003e')
@@ -916,30 +949,252 @@
     };
   }
 
+  // ---------------------------------------------------------------------------
+  // Self-contained Read Aloud wrapper (ZERO outer closures for serialization!)
+  // ---------------------------------------------------------------------------
+  function selReadAloudWrapper(origRender, activityId) {
+    return function (item, ctx) {
+      var handle = origRender(item, ctx) || {};
+      var root = ctx && ctx.root;
+      if (!root) return handle;
+      var doc = root.ownerDocument;
+      var view = doc && doc.defaultView;
+      var synth = view && view.speechSynthesis && typeof view.speechSynthesis.speak === 'function' ? view.speechSynthesis : null;
+      var speaking = false;
+      var gen = 0;
+      var obs = null;
+      var readBtn = null;
+
+      var disconnectObs = function () {
+        if (obs) { try { obs.disconnect(); } catch (_) {} obs = null; }
+      };
+
+      var setBtnState = function (active) {
+        speaking = !!active;
+        if (readBtn) {
+          readBtn.setAttribute('aria-pressed', speaking ? 'true' : 'false');
+          readBtn.textContent = speaking ? 'Stop reading' : 'Read aloud';
+        }
+        if (!speaking) disconnectObs();
+      };
+
+      var stopSpeech = function () {
+        gen++;
+        var was = speaking;
+        setBtnState(false);
+        if (synth && (was || synth.speaking || synth.pending)) {
+          try { if (typeof synth.cancel === 'function') synth.cancel(); } catch (_) {}
+        }
+      };
+
+      var readRate = function () {
+        var attr = doc && doc.documentElement ? String(doc.documentElement.getAttribute('data-audio-speed') || '').trim().toLowerCase() : '';
+        if (attr === 'slow') return 0.75;
+        var n = Number(attr);
+        if (attr && isFinite(n) && n >= 0.5 && n <= 2) return n;
+        if (typeof ctx.speedRate === 'function') {
+          var sr = Number(ctx.speedRate());
+          if (isFinite(sr) && sr > 0 && sr !== 1) return sr;
+        }
+        if (typeof ctx.slow === 'function' && ctx.slow()) return 0.75;
+        return 1.0;
+      };
+
+      var getVisiblePromptText = function () {
+        var parts = [];
+        var add = function (s) {
+          var t = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+          if (t && parts.indexOf(t) < 0) parts.push(t);
+        };
+        var promptEl = root.querySelector('.sel-prompt');
+        add((promptEl && promptEl.textContent) || (item && item.prompt) || '');
+        if (activityId === 'sel_first_then') {
+          add('First: ' + ((item && item.firstLabel) || 'Finish my task steps'));
+          add('Then: ' + ((item && item.thenLabel) || 'Take a short break or choice time'));
+        } else if (activityId === 'sel_focus_timer') {
+          var phaseEl = root.querySelector('[data-tm-phase]');
+          if (phaseEl && phaseEl.textContent) add(phaseEl.textContent);
+        } else if (activityId === 'sel_calm_toolkit') {
+          var panels = root.querySelectorAll('[data-cm-panel]');
+          for (var i = 0; i < panels.length; i++) {
+            var p = panels[i];
+            if (p.hidden) continue;
+            var pid = p.getAttribute('data-cm-panel');
+            if (pid === 'breath') {
+              var cue = p.querySelector('[data-cm-breath-cue]');
+              if (cue) add(cue.textContent);
+            } else if (pid === 'ground') {
+              add('5-4-3-2-1 grounding');
+              var gs = p.querySelector('.sel-sub');
+              if (gs) add(gs.textContent);
+            } else if (pid === 'stretch') {
+              add('Quiet stretch');
+              var ss = p.querySelector('.sel-sub');
+              if (ss) add(ss.textContent);
+            } else if (pid === 'break_card') {
+              var bt = p.querySelector('.cm-break-title');
+              var bs = p.querySelector('.sel-sub');
+              if (bt) add(bt.textContent);
+              if (bs) add(bs.textContent);
+            }
+          }
+        } else if (activityId === 'sel_udl_reflect') {
+          add((item && item.goalQuestion) || 'What goal did I work on?');
+          add((item && item.supportsQuestion) || 'Which learning support helped me most today?');
+          add((item && item.nextQuestion) || 'My next step');
+        }
+        return parts.map(function (p) { return /[.!?]$/.test(p) ? p : p + '.'; }).join(' ');
+      };
+
+      var cleanup = function () {
+        disconnectObs();
+        if (doc) {
+          doc.removeEventListener('keydown', onKeyDown);
+          doc.removeEventListener('click', onDocClick, true);
+        }
+        if (view) {
+          view.removeEventListener('pagehide', onUnload);
+          view.removeEventListener('beforeunload', onUnload);
+        }
+      };
+
+      var onKeyDown = function (ev) {
+        if (!root.isConnected) { cleanup(); return; }
+        var k = ev && ev.key;
+        if ((k === 'Escape' || k === 'Esc') && speaking) stopSpeech();
+      };
+
+      var onDocClick = function (ev) {
+        if (!root.isConnected) { cleanup(); return; }
+        if (!speaking || !ev || !ev.target) return;
+        var t = ev.target.closest ? ev.target.closest('button') : null;
+        if (!t || t === readBtn) return;
+        if (t.hasAttribute('data-stop-audio') || /stop audio/i.test(String(t.textContent || ''))) {
+          stopSpeech();
+        }
+      };
+
+      var onUnload = function () {
+        stopSpeech();
+        cleanup();
+      };
+
+      if (synth && doc) {
+        doc.addEventListener('keydown', onKeyDown);
+        doc.addEventListener('click', onDocClick, true);
+      }
+      if (synth && view) {
+        view.addEventListener('pagehide', onUnload);
+        view.addEventListener('beforeunload', onUnload);
+      }
+
+      var speakNow = function () {
+        if (!synth) return;
+        if (speaking) { stopSpeech(); return; }
+        var text = getVisiblePromptText();
+        if (!text) return;
+        if (typeof ctx.support === 'function') ctx.support('readAloud');
+        gen++;
+        var mine = gen;
+        try { if (typeof synth.cancel === 'function') synth.cancel(); } catch (_) {}
+        var Utter = typeof view.SpeechSynthesisUtterance === 'function' ? view.SpeechSynthesisUtterance : null;
+        var u = Utter ? new Utter(text) : { text: text, rate: 1.0, lang: 'en-US' };
+        u.rate = readRate();
+        var lang = (doc && doc.documentElement && doc.documentElement.lang) || 'en-US';
+        u.lang = lang;
+        try {
+          if (typeof synth.getVoices === 'function') {
+            var voices = synth.getVoices() || [];
+            var want = String(lang).toLowerCase().split('-')[0];
+            var local = voices.filter(function (v) {
+              return v && v.localService === true && String(v.lang || '').toLowerCase().replace('_', '-').indexOf(want) === 0;
+            })[0];
+            if (local) { u.voice = local; u.lang = local.lang || lang; }
+          }
+        } catch (_) {}
+        u.onend = function () { if (mine === gen) setBtnState(false); };
+        u.onerror = function () { if (mine === gen) setBtnState(false); };
+        setBtnState(true);
+        if (view && typeof view.MutationObserver === 'function' && doc && doc.body) {
+          disconnectObs();
+          obs = new view.MutationObserver(function () {
+            if (!root.isConnected) { stopSpeech(); cleanup(); }
+          });
+          try { obs.observe(doc.getElementById('app') || doc.body, { childList: true, subtree: true }); } catch (_) {}
+        }
+        try {
+          synth.speak(u);
+        } catch (_) {
+          if (mine === gen) setBtnState(false);
+        }
+      };
+
+      readBtn = ctx.el('button', {
+        type: 'button',
+        'data-read-aloud-btn': '',
+        'aria-pressed': 'false',
+        hidden: !synth,
+        on: { click: speakNow },
+        text: 'Read aloud',
+      });
+
+      var row = ctx.el('div', { class: 'sel-read-row' }, [readBtn]);
+      var wrap = root.querySelector('.sel-wrap') || root;
+      var anchor = wrap.querySelector('.sel-prompt');
+      if (anchor && anchor.parentNode === wrap) {
+        wrap.insertBefore(row, anchor.nextSibling);
+      } else {
+        wrap.insertBefore(row, wrap.firstChild);
+      }
+
+      var origReveal = handle && typeof handle.reveal === 'function' ? handle.reveal : null;
+      var origStop = handle && typeof handle.stop === 'function' ? handle.stop : null;
+      return Object.assign({}, handle, {
+        stop: function () {
+          stopSpeech();
+          if (origStop) return origStop.apply(handle, arguments);
+        },
+        reveal: function () {
+          stopSpeech();
+          if (origReveal) return origReveal.apply(handle, arguments);
+        },
+      });
+    };
+  }
+
+  function wrapSelRender(origRender, activityId) {
+    var wrapped = function (item, ctx) {
+      return selReadAloudWrapper(origRender, activityId)(item, ctx);
+    };
+    var src = '(' + selReadAloudWrapper.toString() + ')(' + origRender.toString() + ',' + JSON.stringify(activityId) + ')';
+    wrapped.toString = function () { return src; };
+    return wrapped;
+  }
+
   var ADAPTERS = {
     sel_first_then: {
       id: 'sel_first_then',
       title: 'First-Then & Task Checklist',
       labels: { sel_first_then_title: 'First-Then & Task Checklist' },
-      render: renderFirstThen,
+      render: wrapSelRender(renderFirstThen, 'sel_first_then'),
     },
     sel_focus_timer: {
       id: 'sel_focus_timer',
       title: 'Visual Focus & Break Timer',
       labels: { sel_focus_timer_title: 'Visual Focus & Break Timer' },
-      render: renderFocusTimer,
+      render: wrapSelRender(renderFocusTimer, 'sel_focus_timer'),
     },
     sel_calm_toolkit: {
       id: 'sel_calm_toolkit',
       title: 'Calm-Down Strategy Cards',
       labels: { sel_calm_toolkit_title: 'Calm-Down Strategy Cards' },
-      render: renderCalmToolkit,
+      render: wrapSelRender(renderCalmToolkit, 'sel_calm_toolkit'),
     },
     sel_udl_reflect: {
       id: 'sel_udl_reflect',
       title: 'UDL Reflection & Goal Check',
       labels: { sel_udl_reflect_title: 'UDL Reflection & Goal Check' },
-      render: renderUdlReflect,
+      render: wrapSelRender(renderUdlReflect, 'sel_udl_reflect'),
     },
   };
 
@@ -1186,7 +1441,7 @@
       stationBilingual: opts.stationBilingual || root.AlloPacketStationBilingual,
     };
 
-    var baseHtml = loader.buildHtml(lesson, buildOpts);
+    var baseHtml = withSpeechManifest(loader.buildHtml(lesson, buildOpts));
     var cleanLearner = codeName(opts.learner || '');
     var html = cleanLearner ? withCodeName(baseHtml, cleanLearner) : baseHtml;
     var activity = lesson.blocks.length > 1 ? 'mixed' : (lesson.blocks[0] ? lesson.blocks[0].activity : 'sel_first_then');

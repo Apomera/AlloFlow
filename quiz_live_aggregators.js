@@ -924,7 +924,11 @@
       var arrangeCorrect = orderAnswer
         ? orderAnswer.length === sequenceItemCount && orderAnswer.every(function (value, index) { return value === index; })
         : null;
-      var step3Correct = principleAnswer === normalizeComparable(question.orderingPrinciple);
+      var acceptedPrinciples = [question.orderingPrinciple]
+        .concat(Array.isArray(question.acceptablePrinciples) ? question.acceptablePrinciples : [])
+        .map(normalizeComparable)
+        .filter(Boolean);
+      var step3Correct = acceptedPrinciples.indexOf(principleAnswer) >= 0;
       if (compactSequence && (!orderAnswer || orderAnswer.length !== sequenceItemCount || new Set(orderAnswer).size !== sequenceItemCount
           || orderAnswer.some(function (value) { return !Number.isInteger(value) || value < 0 || value >= sequenceItemCount; }))) return result('submitted', false, null);
       if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });

@@ -6812,7 +6812,8 @@ function projectStudentGuideData(data, mode) {
           : '';
         const rid = _escAttr(item && item.id ? item.id : ('resource-' + idx));
         let wrappedHtml = String(html || '');
-        if (typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function') {
+        const _useDocBionic = cfg.bionicReading === true || (cfg.bionicReading !== false && typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn());
+        if (_useDocBionic && typeof window !== 'undefined' && typeof window.__alloBionicHtml === 'function') {
           wrappedHtml = window.__alloBionicHtml(wrappedHtml, { lang: (item && item.language) || leveledTextLanguage || '' });
         }
         const leadingStylesMatch = wrappedHtml.match(/^\s*((?:<style(?:\s[^>]*)?>[\s\S]*?<\/style>\s*)+)/i);
@@ -7033,6 +7034,7 @@ function projectStudentGuideData(data, mode) {
       const exportFontSize = _reader ? `${Math.max(10, Math.min(48, Number(_reader.baseFontSize) || 16))}px` : cfg.fontSize ? `${cfg.fontSize}px` : '16px';
       // Yields to the page's own font and spacing tools once a reader uses them (data-rt-custom).
       const _readerExportCss = _reader && typeof _readerLib.readerExportCss === 'function' ? _readerLib.readerExportCss(_reader, { scope: 'html:not([data-rt-custom]) body' }) : '';
+      const _builderSpacingCss = !_reader && (Number(cfg.lineHeight) > 0 || Number(cfg.letterSpacing) > 0) ? ('html:not([data-rt-custom]) body, html:not([data-rt-custom]) body :is(p, li, td, th, div, span, blockquote, label, dd, dt):not(svg, svg *, math, math *, .katex, .katex *) {' + (Number(cfg.lineHeight) > 0 ? 'line-height:' + Math.max(1, Math.min(2.5, Number(cfg.lineHeight))) + ' !important;' : '') + (Number(cfg.letterSpacing) > 0 ? 'letter-spacing:' + Math.max(0, Math.min(0.2, Number(cfg.letterSpacing))) + 'em !important;' : '') + '}') : '';
       const _printPageMargin = ['0.5in', '1in', '1.5in'].includes(cfg.pageMargin) ? cfg.pageMargin : '1in';
       const _printMarginInches = parseFloat(_printPageMargin) || 1;
       const _printPageDimensions = ({ letter: [8.5, 11], legal: [8.5, 14], a4: [8.27, 11.69] })[cfg.pageSize] || [8.5, 11];
@@ -7688,6 +7690,7 @@ function projectStudentGuideData(data, mode) {
           ${readerWebFontFaces}
           body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: ${theme.textColor || '#334155'}; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
           ${_readerExportCss}
+          ${_builderSpacingCss}
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
           h1, h2.resource-header { overflow-wrap: anywhere; }

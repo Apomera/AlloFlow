@@ -108,10 +108,10 @@ module.exports = {
     var blank = ctx.el('span', { style: 'display:inline-block;min-width:4.5em;border-bottom:3px dashed var(--muted);text-align:center' }, [
       ctx.el('span', { 'aria-hidden': 'true', text: '\u00a0' }), ctx.el('span', { class: 'sr', text: ctx.L.read_sentence_blank })]);
     var after = ctx.el('div', { class: 'row' });
+    var picEl = picture ? ctx.el('img', { class: 'picture', src: picture, alt: 'Picture clue' }) : null;
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_sentence_prompt }));
-    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : ctx.L.read_sentence_matching_practice }));
-    if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }) }));
-    else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
+    ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : 'Choose the word that fits.' }));
+    if (picEl) ctx.root.appendChild(picEl);
     // data-read: running text, where the shell's reading focus can go.
     // dir: an English sentence keeps its full stop on the right in a right-to-left page.
     ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:clamp(1.25rem,5vw,1.8rem);white-space:pre-wrap;overflow-wrap:anywhere', 'data-read': '' }, [item.before, blank, item.after]));
@@ -139,6 +139,7 @@ module.exports = {
       // button below stays to hear it again.
       payoff: function () { if (item.sentenceAudio) ctx.play(item.sentenceAudio); },
       reveal: function () {
+        if (picEl) picEl.setAttribute('alt', ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }));
         // The blank fills with the word as written in the sentence.
         blank.textContent = item.answer;
         blank.style.borderBottomStyle = 'solid';

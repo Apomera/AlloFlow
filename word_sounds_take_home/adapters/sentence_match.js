@@ -108,7 +108,9 @@ module.exports = {
         b.textContent = '';
         b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-inline-end:6px', text: String(i + 1) }));
         b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:clamp(48px,14vw,72px);height:clamp(48px,14vw,72px);object-fit:contain;background:#fff;border-radius:8px;padding:4px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
-        b.setAttribute('aria-label', word ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
+        b.setAttribute('aria-label', word
+          ? (right || ctx.isDone() ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : 'Slot ' + (i + 1) + ': Picture ' + (slots[i] + 1) + '. Tap to take it out.')
+          : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
         if (!word || ctx.isDone()) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
         if (mark) b.setAttribute('data-retry-mark', mark); else b.removeAttribute('data-retry-mark');
         b.style.borderColor = right || mark === 'ok' ? 'var(--ok)' : mark === 'warn' ? 'var(--warn)' : '';
@@ -146,7 +148,7 @@ module.exports = {
     item.tiles.forEach(function (tile, ti) {
       // The picture's number, the key 1-9 that chooses it.
       var number = ti < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:26px;border-radius:14px;border:1px solid var(--accent-ink);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(ti + 1) }) : null;
-      var pick = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.sentence_match_picture_of, { word: tile.text }),
+      var pick = ctx.el('button', { type: 'button', 'aria-label': 'Picture ' + (ti + 1),
         style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
         on: { click: function () {
           if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true') return;
@@ -157,7 +159,7 @@ module.exports = {
           slots[at] = ti;
           drawSlots(false);
           if (slots.indexOf(null) >= 0) {
-            say(ctx.fmt(ctx.L.sentence_match_placed || '{word} is in slot {n}.', { word: tile.text, n: at + 1 }));
+            say(ctx.fmt(ctx.L.sentence_match_placed || '{word} is in slot {n}.', { word: 'Picture ' + (ti + 1), n: at + 1 }));
           } else {
             grade();
           }
@@ -177,10 +179,10 @@ module.exports = {
             return;
           }
           if (slots[i] == null) return;
-          var removed = wordIn(i);
+          var removedIdx = slots[i];
           slots[i] = null;
           drawSlots(false);
-          say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: removed, n: i + 1 }));
+          say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: 'Picture ' + (removedIdx + 1), n: i + 1 }));
         } } });
       slotButtons.push(b);
       slotRow.appendChild(ctx.el('li', {}, [b]));
@@ -198,10 +200,10 @@ module.exports = {
           }
           for (var bi = slots.length - 1; bi >= 0; bi--) {
             if (slots[bi] != null) {
-              var out = wordIn(bi);
+              var outIdx = slots[bi];
               slots[bi] = null;
               drawSlots(false);
-              say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: out, n: bi + 1 }));
+              say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: 'Picture ' + (outIdx + 1), n: bi + 1 }));
               return true;
             }
           }
@@ -244,7 +246,10 @@ module.exports = {
           return null;
         });
         drawSlots(true);
-        tileCards.forEach(function (c) { if (item.sequence.indexOf(c.text) >= 0) c.box.classList.add('right'); });
+        tileCards.forEach(function (c) {
+          c.pick.setAttribute('aria-label', ctx.fmt(ctx.L.sentence_match_picture_of, { word: c.text }));
+          if (item.sequence.indexOf(c.text) >= 0) c.box.classList.add('right');
+        });
         // The app's payoff: hear the finished sentence read back.
         if (item.sentenceAudio && !after.childNodes.length) {
           after.appendChild(ctx.el('button', { type: 'button', on: { click: function () { ctx.support('sentenceReadBacks'); ctx.play(item.sentenceAudio); } }, text: ctx.L.sentence_match_hear_sentence }));

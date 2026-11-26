@@ -3335,6 +3335,7 @@ function GlossaryPanel(props) {
     handleGenerate,
     hasSourceOrAnalysis,
     includeEtymology,
+    includeExampleSentence,
     isProcessing,
     leveledTextLanguage,
     selectedLanguages,
@@ -3344,6 +3345,7 @@ function GlossaryPanel(props) {
     setGlossaryTier2Count,
     setGlossaryTier3Count,
     setIncludeEtymology,
+    setIncludeExampleSentence,
     t,
     nativeLanguageDefaultsVersion,
     appLanguage,
@@ -3443,7 +3445,16 @@ function GlossaryPanel(props) {
       onChange: (e) => setIncludeEtymology(e.target.checked),
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), "\u{1F4DC} ", t("glossary.settings.include_etymology") || "Include word roots / etymology"), includeEtymology && /* @__PURE__ */ React.createElement("p", { className: `${SIDEBAR_PANEL_UI.help} ml-6` }, t("glossary.settings.etymology_always_all") || "Applied to every term \u2014 shows the actual root morphemes, word history, and related English words that share the root.")), /* @__PURE__ */ React.createElement(
+  ), "\u{1F4DC} ", t("glossary.settings.include_etymology") || "Include word roots / etymology"), includeEtymology && /* @__PURE__ */ React.createElement("p", { className: `${SIDEBAR_PANEL_UI.help} ml-6` }, t("glossary.settings.etymology_always_all") || "Applied to every term \u2014 shows the actual root morphemes, word history, and related English words that share the root.")), /* @__PURE__ */ React.createElement("div", { className: "mb-3", "data-help-key": "glossary_example_sentence_info" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "checkbox",
+      checked: !!includeExampleSentence,
+      disabled: _dictionaryOn,
+      onChange: (e) => typeof setIncludeExampleSentence === "function" && setIncludeExampleSentence(e.target.checked),
+      className: SIDEBAR_PANEL_UI.checkbox
+    }
+  ), "\u{1F4AC} ", t("glossary.settings.include_example_sentence") || "Include example sentence"), includeExampleSentence && /* @__PURE__ */ React.createElement("p", { className: `${SIDEBAR_PANEL_UI.help} ml-6` }, t("glossary.settings.example_sentence_help") || "Generates a grade-appropriate sentence using each word, separate from source quotes.")), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
       premium: true,
@@ -5084,6 +5095,7 @@ function GeneratorActionsView(props) {
     imageStyle,
     includeCharts,
     includeEtymology,
+    includeExampleSentence,
     includeTimelineVisuals,
     inputText,
     interestInput,
@@ -5223,6 +5235,7 @@ function GeneratorActionsView(props) {
     setImageStyle,
     setIncludeCharts,
     setIncludeEtymology,
+    setIncludeExampleSentence,
     setIncludeTimelineVisuals,
     setInterestInput,
     setIsAdventureCloudEnabled,
@@ -5492,6 +5505,7 @@ function GeneratorActionsView(props) {
     handleGenerate,
     hasSourceOrAnalysis,
     includeEtymology,
+    includeExampleSentence,
     isProcessing,
     leveledTextLanguage,
     selectedLanguages,
@@ -5501,6 +5515,7 @@ function GeneratorActionsView(props) {
     setGlossaryTier2Count,
     setGlossaryTier3Count,
     setIncludeEtymology,
+    setIncludeExampleSentence,
     t,
     nativeLanguageDefaultsVersion,
     appLanguage,

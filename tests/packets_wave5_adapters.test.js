@@ -568,28 +568,36 @@ describe('3. Keyboard & screen-reader parity + lang="en" spans', () => {
       tiles: [{ text: 'cat', image: 'i1' }, { text: 'dog', image: 'i2' }, { text: 'sun', image: 'i3' }],
     };
     const m = mountAdapter('sentence_match', smItem);
-    const tile = (w) => [...m.root.querySelectorAll('ul.choices button')].find((b) => b.getAttribute('aria-label') === 'Picture of ' + w);
+    const tileBtns = () => [...m.root.querySelectorAll('ul.choices button')];
+    const tileIndex = (w) => smItem.tiles.findIndex((t) => t.text === w);
+    const tile = (w) => tileBtns()[tileIndex(w)];
     const slots = () => [...m.root.querySelectorAll('ul.slots button')];
+
+    // Pre-answer: tiles use neutral numbered labels (never leaking target words).
+    expect(tile('cat').getAttribute('aria-label')).toBe('Picture 1');
+    expect(tile('dog').getAttribute('aria-label')).toBe('Picture 2');
+    expect(tile('sun').getAttribute('aria-label')).toBe('Picture 3');
 
     // Nothing filled -> Backspace/Escape return false.
     expect(m.sendKey('Backspace')).toBe(false);
     expect(m.sendKey('Escape')).toBe(false);
 
-    // Place 'cat' in slot 1 -> announces placement.
+    // Place 'cat' (Picture 1) in slot 1 -> neutral slot label & placement announcement (no word leak).
     tile('cat').click();
-    expect(slots()[0].getAttribute('aria-label')).toContain('cat');
-    expect(m.announced[m.announced.length - 1]).toBe('cat is in slot 1.');
+    expect(slots()[0].getAttribute('aria-label')).toContain('Picture 1');
+    expect(slots()[0].getAttribute('aria-label')).not.toContain('cat');
+    expect(m.announced[m.announced.length - 1]).toBe('Picture 1 is in slot 1.');
 
-    // Backspace pops slot 1 and announces removal.
+    // Backspace pops slot 1 and announces removal neutrally.
     expect(m.sendKey('Backspace')).toBe(true);
     expect(slots()[0].getAttribute('aria-label')).toContain('empty');
-    expect(m.announced[m.announced.length - 1]).toBe('cat taken out of slot 1.');
+    expect(m.announced[m.announced.length - 1]).toBe('Picture 1 taken out of slot 1.');
 
-    // Place 'cat', click slot 1 to remove -> announces removal.
+    // Place 'cat', click slot 1 to remove -> announces removal neutrally.
     tile('cat').click();
     slots()[0].click();
     expect(slots()[0].getAttribute('aria-label')).toContain('empty');
-    expect(m.announced[m.announced.length - 1]).toBe('cat taken out of slot 1.');
+    expect(m.announced[m.announced.length - 1]).toBe('Picture 1 taken out of slot 1.');
 
     // Place 'cat' -> Escape clears all filled slots and announces clear.
     tile('cat').click();
@@ -612,6 +620,11 @@ describe('3. Keyboard & screen-reader parity + lang="en" spans', () => {
     expect(typeof m.handle.stop).toBe('function');
     m.handle.stop();
     expect(slots()[1].getAttribute('data-retry-mark')).toBe('warn'); // stopRetryHold(false) preserves DOM until unmount while canceling timer
+
+    // After reveal: tile & slot labels reveal the words.
+    m.handle.reveal();
+    expect(tile('cat').getAttribute('aria-label')).toBe('Picture of cat');
+    expect(slots()[0].getAttribute('aria-label')).toContain('cat');
   });
 
   it('missing_letter: Backspace/Escape clears selected letter, retry shifts focus from Check answer (unless noFocus), and reveal() appends (the answer)', () => {

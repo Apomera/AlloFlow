@@ -2872,8 +2872,9 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                             onDrop={(e) => handleDrop(e, bucket.id)}
                             className={`flex-1 min-w-[250px] max-w-sm bg-slate-100 rounded-xl border-2 border-dashed transition-all p-4 flex flex-col ${isChecked ? 'border-slate-300' : draggedItem ? 'border-indigo-400 ring-2 ring-indigo-100' : 'border-slate-300 hover:border-indigo-400 hover:bg-slate-50'}`}
                        >
-                           <div className={`text-center p-3 rounded-lg font-bold mb-4 shadow-sm border ${styles.bg} ${styles.text} ${styles.border}`}>
-                               {bucket.label}
+                           <div className={`flex items-center justify-center gap-2 text-center p-3 rounded-lg font-bold mb-4 shadow-sm border ${styles.bg} ${styles.text} ${styles.border}`}>
+                               <span>{bucket.label}</span>
+                               <SpeakButton text={bucket.label} size={12} />
                            </div>
                            <div className="flex-grow space-y-2 min-h-[100px]">
                                {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment key={item.id}>{renderCard(item)}</React.Fragment>)}
@@ -4720,7 +4721,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
                 onDragLeave={handleDragLeave}
                 className={`flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] relative z-10 bg-white shadow-sm ${!reducedMotion ? 'transition-all' : ''} ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200 ${!reducedMotion ? 'scale-[1.02]' : ''} shadow-md` : `border-${accent}-200`}`}
               >
-                <div className={`text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200`}>{b.title}</div>
+                <div className={`flex items-center justify-center gap-2 text-center font-black uppercase tracking-wider text-sm py-1.5 px-2 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200`}><span>{b.title}</span><SpeakButton text={b.title} size={12} /></div>
                 <div className="flex flex-wrap gap-1.5 justify-center content-start flex-grow p-1">
                   {placed.map(item => renderMultiBucketItem(item, `sorted into ${b.title}`))}
                   {placed.length === 0 && <div className="text-slate-600 italic text-xs mt-3 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>}
@@ -8194,8 +8195,9 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
         aria-label={`Drop zone: ${zone.label}`}
         className={`${c.panel} border-2 ${c.border} rounded-xl p-3 min-h-[140px] ${!reducedMotion ? 'transition-all' : ''} ${isActive ? `ring-4 ${c.ring} ${!reducedMotion ? 'scale-[1.02]' : ''}` : ''}`}
       >
-        <h4 className={`${c.header} font-black text-sm uppercase tracking-wide text-center py-1.5 px-2 rounded-md mb-2`}>
-          {zone.label}
+        <h4 className={`${c.header} flex items-center justify-center gap-2 font-black text-sm uppercase tracking-wide text-center py-1.5 px-2 rounded-md mb-2`}>
+          <span>{zone.label}</span>
+          <SpeakButton text={zone.label} size={12} />
         </h4>
         <div className="space-y-1.5">
           {zoneItems.map(item => renderMultiZoneItem(item, `sorted into ${zone.label}`, c.border))}

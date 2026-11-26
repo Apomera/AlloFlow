@@ -259,15 +259,20 @@ describe('Wave 12 STEM Lab end-to-end JSDOM gameplay (Practice, Check, CSV/JSON/
     app.doc.querySelector('[data-cir-choice="0"]').click();
     app.doc.querySelector('[data-next]').click();
 
-    // Item 2: Close both switches -> Total R: 6 ohms, Total I: 1.00 A
+    // Item 2: Close both switches -> Total R & Total I hidden while unanswered on numeric calculation items
     app.doc.querySelector('[data-cir-sw="sw1"]').click();
     app.doc.querySelector('[data-cir-sw="sw2"]').click();
     expect(app.doc.querySelector('[data-cir-readout]').textContent).toContain('Status: Closed');
-    expect(app.doc.querySelector('[data-cir-readout]').textContent).toContain('6 ohms');
-    expect(app.doc.querySelector('[data-cir-readout]').textContent).toContain('1.00 A');
+    expect(app.doc.querySelector('[data-cir-readout]').textContent).not.toContain('Total R');
+    expect(app.doc.querySelector('[data-cir-readout]').textContent).not.toContain('Total I');
+    expect(app.doc.querySelector('[data-cir-readout]').textContent).not.toContain('6 ohms');
+    expect(app.doc.querySelector('[data-cir-board]').textContent).not.toContain('1.00 A');
     const inp2 = app.doc.querySelector('[data-cir-input]');
     inp2.value = '6';
     app.doc.querySelector('[data-cir-submit]').click();
+    // Revealed after submitting in Practice mode
+    expect(app.doc.querySelector('[data-cir-readout]').textContent).toContain('Total R: 6 ohms');
+    expect(app.doc.querySelector('[data-cir-readout]').textContent).toContain('Total I: 1.00 A');
     app.doc.querySelector('[data-next]').click();
 
     // Item 3: Current = 1 A
@@ -310,12 +315,14 @@ describe('Wave 12 STEM Lab end-to-end JSDOM gameplay (Practice, Check, CSV/JSON/
     chkApp.doc.querySelector('[data-cir-input]').value = '1';
     chkApp.doc.querySelector('[data-cir-submit]').click();
 
-    // Item 2: Close all 3 switches -> 4.00 A
+    // Item 2: Close all 3 switches -> Check mode hides Total R & Total I (keeps status & lit bulb count)
     clock.bump(600);
     chkApp.doc.querySelector('[data-cir-sw="swm"]').click();
     chkApp.doc.querySelector('[data-cir-sw="sw1"]').click();
     chkApp.doc.querySelector('[data-cir-sw="sw2"]').click();
-    expect(chkApp.doc.querySelector('[data-cir-readout]').textContent).toContain('4.00 A');
+    expect(chkApp.doc.querySelector('[data-cir-readout]').textContent).toContain('Lit bulbs: 2 of 2');
+    expect(chkApp.doc.querySelector('[data-cir-readout]').textContent).not.toContain('4.00 A');
+    expect(chkApp.doc.querySelector('[data-cir-readout]').textContent).not.toContain('Total R');
     chkApp.doc.querySelector('[data-cir-input]').value = '4';
     chkApp.doc.querySelector('[data-cir-submit]').click();
 
@@ -435,12 +442,14 @@ describe('Wave 12 STEM Lab end-to-end JSDOM gameplay (Practice, Check, CSV/JSON/
     app.doc.activeElement.dispatchEvent(new app.win.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     expect(app.doc.activeElement.getAttribute('data-geo-tile')).toBe('1-1');
 
-    // Item 1: Shade 3x4 = 12 tiles -> Area 12, Perimeter 14
+    // Item 1: Shade 3x4 = 12 tiles -> live readout hides Area/Perimeter while unanswered, reveals after submit
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < 4; c++) app.doc.querySelector(`[data-geo-tile="${r}-${c}"]`).click();
     }
-    expect(app.doc.querySelector('[data-geo-readout]').textContent).toContain('Shaded Area: 12 sq units | Perimeter: 14 units');
+    expect(app.doc.querySelector('[data-geo-readout]').textContent).not.toContain('Area:');
+    expect(app.doc.querySelector('[data-geo-readout]').textContent).not.toContain('Perimeter:');
     app.doc.querySelector('[data-geo-submit]').click();
+    expect(app.doc.querySelector('[data-geo-readout]').textContent).toContain('Shaded Area: 12 sq units | Perimeter: 14 units');
     app.doc.querySelector('[data-next]').click();
 
     // Item 2: Area 12 AND Perimeter 14
@@ -454,8 +463,10 @@ describe('Wave 12 STEM Lab end-to-end JSDOM gameplay (Practice, Check, CSV/JSON/
     app.doc.querySelector('[data-geo-inc="base"]').click();
     app.doc.querySelector('[data-geo-inc="base"]').click();
     app.doc.querySelector('[data-geo-inc="height"]').click();
-    expect(app.doc.querySelector('[data-geo-readout]').textContent).toContain('Area: 15 sq units');
+    expect(app.doc.querySelector('[data-geo-readout]').textContent).toBe('Right Triangle | Base: 6 | Height: 5');
+    expect(app.doc.querySelector('[data-geo-readout]').textContent).not.toContain('Area:');
     app.doc.querySelector('[data-geo-submit]').click();
+    expect(app.doc.querySelector('[data-geo-readout]').textContent).toContain('Area: 15 sq units');
     app.doc.querySelector('[data-next]').click();
 
     app.doc.querySelector('[data-save-json]').click();
@@ -477,17 +488,26 @@ describe('Wave 12 STEM Lab end-to-end JSDOM gameplay (Practice, Check, CSV/JSON/
     aApp.start('Wren1');
     aApp.doc.querySelector('[data-check-begin]').click();
 
-    // Item 1: 120 deg -> obtuse (key 3)
+    // Item 1: 120 deg -> obtuse (key 3); degree badge, numeric readout, and button rule giveaways are hidden!
     clock.bump(600);
+    expect(aApp.doc.querySelector('[data-geo-deg]').hidden).toBe(true);
+    expect(aApp.doc.querySelector('[data-geo-deg]').textContent).toBe('');
+    expect(aApp.doc.querySelector('[data-geo-readout]').textContent).not.toContain('120');
+    expect(aApp.doc.querySelector('[data-geo-angle-pick="acute"]').textContent).toBe('1. Acute');
+    expect(aApp.doc.querySelector('[data-geo-angle-pick="right"]').textContent).toBe('2. Right');
+    expect(aApp.doc.querySelector('[data-geo-angle-pick="obtuse"]').textContent).toBe('3. Obtuse');
     aApp.doc.dispatchEvent(new aApp.win.KeyboardEvent('keydown', { key: '3', bubbles: true }));
     // Item 2: 45 deg -> acute
     clock.bump(600);
+    expect(aApp.doc.querySelector('[data-geo-deg]').hidden).toBe(true);
     aApp.doc.querySelector('[data-geo-angle-pick="acute"]').click();
-    // Item 3: Build 90 deg from 30 deg (+15 three times = 75, +5 three times = 90 — exercises fine 5-deg steps too!)
+    // Item 3: Build 90 deg from 30 deg — readout does NOT leak (acute)/(right)/(obtuse)
     clock.bump(600);
+    expect(aApp.doc.querySelector('[data-geo-readout]').textContent).not.toMatch(/acute|right|obtuse/i);
     for (let k = 0; k < 3; k++) aApp.doc.querySelector('[data-geo-angle-inc]').click();
     for (let k = 0; k < 3; k++) aApp.doc.querySelector('[data-geo-angle-inc-fine]').click();
     expect(aApp.doc.querySelector('[data-geo-deg]').textContent).toBe('90 deg');
+    expect(aApp.doc.querySelector('[data-geo-readout]').textContent).not.toMatch(/acute|right|obtuse/i);
     aApp.doc.querySelector('[data-geo-submit]').click();
 
     aApp.doc.querySelector('[data-save-json]').click();
@@ -538,9 +558,27 @@ describe('Wave 12 STEM Lab end-to-end JSDOM gameplay (Practice, Check, CSV/JSON/
     dpApp.doc.querySelector('[data-geo-submit]').click();
     expect(dpApp.doc.querySelector('[data-next]').hidden).toBe(true);
     dpApp.doc.querySelector('[data-geo-inc="base"]').click();
-    expect(dpApp.doc.querySelector('[data-geo-readout]').textContent).toContain('Perimeter: 18 units');
+    expect(dpApp.doc.querySelector('[data-geo-readout]').textContent).toBe('Rectangle | Base: 5 | Height: 4');
+    expect(dpApp.doc.querySelector('[data-geo-readout]').textContent).not.toContain('Perimeter:');
     dpApp.doc.querySelector('[data-geo-submit]').click();
+    expect(dpApp.doc.querySelector('[data-geo-readout]').textContent).toContain('Perimeter: 18 units');
     expect(dpApp.doc.querySelector('[data-next]').hidden).toBe(false);
+
+    // Verify Practice angle classify reveals exact degrees AFTER submitting
+    const pracAngle = stem.buildStemLabPacket({
+      title: 'Angle Practice Reveal',
+      activity: 'stem_geometry_grid',
+      mode: 'practice',
+      items: [angleLab.items[0]],
+      loader,
+    });
+    const paApp = bootPacket(pracAngle.html);
+    paApp.start('Jay5');
+    expect(paApp.doc.querySelector('[data-geo-deg]').hidden).toBe(true);
+    expect(paApp.doc.querySelector('[data-geo-readout]').textContent).not.toContain('120');
+    paApp.doc.querySelector('[data-geo-angle-pick="obtuse"]').click();
+    expect(paApp.doc.querySelector('[data-geo-deg]').hidden).toBe(false);
+    expect(paApp.doc.querySelector('[data-geo-deg]').textContent).toBe('120 deg');
   });
 });
 

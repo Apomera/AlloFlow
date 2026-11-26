@@ -267,11 +267,12 @@
         seen[keyOf(f)] = true;
       });
     }
-    var out = { mode: mode, activity: METHODS[mode].activity, method: METHODS[mode].name, factSet: fam ? fam.id : '', familyName: fam ? fam.name : '', familyTitle: fam ? fam.title : '',
+    var recallFirst = !!(o.recallFirst || o.hideAnswersFirst || o.studyFirst === false);
+    var out = { mode: mode, recallFirst: recallFirst, activity: METHODS[mode].activity, method: METHODS[mode].name, factSet: fam ? fam.id : '', familyName: fam ? fam.name : '', familyTitle: fam ? fam.title : '',
       opName: fam ? OP_NAMES[fam.op] : '', facts: facts, newFacts: [], knownFacts: [], addedKnown: [], addedFrom: [], waiting: [], cards: [] };
     if (mode === 'ccc') {
       var order = fam ? mixed(facts, 'ccc|' + fam.id) : facts;
-      out.cards = order.map(function (f) { return { fact: f, role: '', study: true }; });
+      out.cards = order.map(function (f) { return { fact: f, role: '', study: !recallFirst }; });
       // A typed list keeps the teacher's order, except that a fact and its turnaround are moved apart (2026-11-13).
       apart(out.cards);
       return out;
@@ -335,7 +336,7 @@
     var run = function (f) {
       var window = take(STEPS);
       for (var step = 1; step <= STEPS; step++) {
-        cards.push({ fact: f, role: 'new', study: step === 1 });
+        cards.push({ fact: f, role: 'new', study: !recallFirst && step === 1 });
         window.slice(0, step).forEach(function (k) { cards.push({ fact: k, role: 'known', study: false }); });
       }
     };
@@ -400,11 +401,14 @@
       var made = adapter.prepare(raw);
       if (!made || !made.item) throw new Error('Card ' + (i + 1) + ' cannot be used: ' + (made && made.missing ? made.missing.join(', ') : 'no reason given'));
       var n = (i < 9 ? '0' : '') + (i + 1);
-      return Object.assign({ id: plan.activity + '-' + n + (card.role ? '-' + card.role : '') }, made.item);
+      var builtItem = Object.assign({ id: plan.activity + '-' + n + (card.role ? '-' + card.role : '') }, made.item);
+      if (plan.recallFirst) builtItem.study = false;
+      return builtItem;
     });
     // "× 7 facts: cover, copy, compare", "Doubles facts: new and known facts", "My math facts: cover, copy, compare".
     // The results file is named after the title, so a set's two kinds of file save results under different names.
-    var title = text(o.title).replace(/\s+/g, ' ').trim().slice(0, 120) || (plan.factSet ? plan.familyTitle : 'My math facts') + ': ' + METHODS[plan.mode].short;
+    var titleSuffix = plan.recallFirst ? (plan.mode === 'rehearsal' ? 'recall with known facts' : 'recall from memory') : METHODS[plan.mode].short;
+    var title = text(o.title).replace(/\s+/g, ' ').trim().slice(0, 120) || (plan.factSet ? plan.familyTitle : 'My math facts') + ': ' + titleSuffix;
     var source = plan.factSet || 'own-' + fnv(plan.facts.map(keyOf).join(','));
     var lesson = { schema: LESSON_SCHEMA, player: PLAYER, lessonId: 'math-facts-' + source + '-' + plan.mode, revision: '', language: 'en', title: title, showLetters: false,
       mode: 'practice', activityTitles: {}, blocks: [{ activity: plan.activity, items: items }], feedback: { correct: [], retry: null }, audio: {}, images: {}, submit: null };
@@ -448,7 +452,12 @@
       });
     }
     var adapterLabels = loader.CHECK_ADAPTERS[activity] && typeof loader.CHECK_ADAPTERS[activity].labels === 'object' ? loader.CHECK_ADAPTERS[activity].labels : {};
-    if (!labels.intro) labels.intro = labels[activity + '_intro'] || adapterLabels[activity + '_intro'];
+    var allHidden = Array.isArray(firstBlock.items) && firstBlock.items.length > 0 && firstBlock.items.every(function (it) { return it && it.study === false; });
+    if (!labels.intro) {
+      labels.intro = allHidden
+        ? 'Type the answer to each math fact from memory. If an answer is wrong, look at the fact, type it, and try again from memory.'
+        : (labels[activity + '_intro'] || adapterLabels[activity + '_intro']);
+    }
     var html = loader.buildHtml(lesson, { core: WHOLE_NUMBER_ANSWERS, labels: labels });
     // learner (2026-11-13): a student's code name, put in last, exactly as withCodeName adds it to a finished file.
     if (o.learner) html = withCodeName(html, o.learner);

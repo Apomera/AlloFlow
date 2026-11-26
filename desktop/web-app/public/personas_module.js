@@ -1295,7 +1295,19 @@ const createPersonas = deps => {
               ]
             `;
       const _personaAllowSearch = !(typeof window !== 'undefined' && window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.allowExternalSearch === false);
-      const result = await callPersonaModel(prompt, false, _personaAllowSearch, generationRequest, PERSONA_MODEL_TIMEOUTS.candidates);
+      let result;
+      try {
+        result = await callPersonaModel(prompt, false, _personaAllowSearch, generationRequest, PERSONA_MODEL_TIMEOUTS.candidates);
+      } catch (searchErr) {
+        const errCode = String(searchErr && searchErr.code || '');
+        const errMsg = String(searchErr && searchErr.message || '');
+        const isTimeout = searchErr && searchErr.name === 'TimeoutError' || /timeout|timed out|etimedout/i.test(errMsg);
+        const isSearchOnlyFailure = _personaAllowSearch && !isTimeout && (errCode === 'allo/search-no-attribution' || errCode === 'allo/search-unavailable' || /no attributable sources?/i.test(errMsg));
+        if (!isSearchOnlyFailure) throw searchErr;
+        if (!isFreshGeneration()) return;
+        warnLog("Persona Gen: Search returned no sources; retrying directly without web search.");
+        result = await callPersonaModel(prompt, false, false, generationRequest, PERSONA_MODEL_TIMEOUTS.candidates);
+      }
       if (!isFreshGeneration()) return;
       // A current search envelope that explicitly lacks source URLs must
       // refuse publication. Earlier lesson-analysis sources cannot prove
@@ -1326,14 +1338,10 @@ const createPersonas = deps => {
       }
       parsedOptions = normalizePersonaCandidates(parsedOptions);
       if (parsedOptions.length > 0) {
-        if (explicitSearchGrounding && !hasAttributableCandidateSearchSource(explicitSearchGrounding.value)) {
-          const unavailable = new Error('Interview search returned no attributable sources.');
-          unavailable.code = 'allo/search-no-attribution';
-          throw unavailable;
-        }
         if (!isFreshGeneration()) return;
-        const sourceGrounding = explicitSearchGrounding ? explicitSearchGrounding.value : null;
-        const analysisGrounding = latestAnalysis && latestAnalysis.data ? latestAnalysis.data.groundingMetadata || latestAnalysis.data.grounding || latestAnalysis.data.sources || null : null;
+        const hasAttributable = !!(explicitSearchGrounding && hasAttributableCandidateSearchSource(explicitSearchGrounding.value));
+        const sourceGrounding = hasAttributable ? explicitSearchGrounding.value : null;
+        const analysisGrounding = !explicitSearchGrounding && latestAnalysis && latestAnalysis.data ? latestAnalysis.data.groundingMetadata || latestAnalysis.data.grounding || latestAnalysis.data.sources || null : null;
         const personaSource = createPersonaSourceBinding(latestAnalysis, sourceText, topic, sourceGrounding || analysisGrounding);
         const wasRegeneration = generatedContent && generatedContent.type === 'persona';
         const newItem = {

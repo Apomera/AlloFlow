@@ -5224,6 +5224,11 @@ function flashcardExportImageAlt(item) {
                 font-weight: bold;
             }
             .primary-text { font-size: 1.25rem; font-weight: bold; color: #1e293b; margin-bottom: 5px; }
+            .card-details { font-size: 0.75rem; color: #475569; margin: 2px 0 6px; line-height: 1.4; }
+            .card-details .syl-stress { font-weight: 800; color: #0f172a; }
+            .card-details .card-phonetic { font-style: italic; color: #065f46; }
+            .card-details .card-ipa { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+            .card-details .card-pos { font-style: italic; }
             .secondary-text { font-size: 1rem; color: #4f46e5; font-weight: bold; margin-top: 5px; }
             .def-text { font-size: 0.8125rem; color: #475569; line-height: 1.4; }
             .def-trans { font-size: 0.8125rem; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
@@ -5271,17 +5276,57 @@ function flashcardExportImageAlt(item) {
         const fcPracticeLabel = uiText('flashcards.study_needs_practice', 'Needs Practice');
         const fcKnownLabel = uiText('flashcards.study_known', 'Known');
         const fcSummaryTpl = uiText('flashcards.study_summary', '{visible} of {total} shown \u00b7 Known: {known} \u00b7 Needs practice: {practice}');
+        const renderCardDetails = (item) => {
+            if (!item || typeof item !== 'object') return '';
+            const bits = [];
+            const sylParts = Array.isArray(item.syllables) ? item.syllables.map(p => String(p == null ? '' : p).trim()).filter(Boolean) : [];
+            if (sylParts.length) {
+                const stress = Number.isInteger(item.stressedSyllable) && item.stressedSyllable >= 0 && item.stressedSyllable < sylParts.length ? item.stressedSyllable : -1;
+                bits.push('<span class="card-syllables">' + sylParts.map((p, i) => (i > 0 ? '<span aria-hidden="true">·</span>' : '') + (i === stress ? '<strong class="syl-stress">' + cleanText(p) + '</strong>' : cleanText(p))).join('') + '</span>');
+            }
+            const phonetic = typeof item.phoneticSpelling === 'string' ? item.phoneticSpelling.trim() : '';
+            if (phonetic) bits.push('<span class="card-phonetic">/' + cleanText(phonetic.replace(/^\/+|\/+$/g, '')) + '/</span>');
+            const ipa = typeof item.ipa === 'string' ? item.ipa.trim() : '';
+            if (ipa) bits.push('<span class="card-ipa">' + cleanText(ipa) + '</span>');
+            const pos = typeof item.pos === 'string' ? item.pos.trim() : (typeof item.partOfSpeech === 'string' ? item.partOfSpeech.trim() : '');
+            if (pos) bits.push('<span class="card-pos">' + cleanText(pos) + '</span>');
+            return bits.length ? `<div class="card-details fc-field-details" data-fc-field="details">${bits.join(' <span aria-hidden="true">·</span> ')}</div>` : '';
+        };
+        const deckHas = {
+            image: cards.some(c => typeof c.image === 'string' && c.image.trim()),
+            details: cards.some(c => (Array.isArray(c.syllables) && c.syllables.length) || (typeof c.phoneticSpelling === 'string' && c.phoneticSpelling.trim()) || (typeof c.ipa === 'string' && c.ipa.trim()) || (typeof c.pos === 'string' && c.pos.trim()) || (typeof c.partOfSpeech === 'string' && c.partOfSpeech.trim())),
+            translation: cards.some(c => c.translations && typeof c.translations === 'object' && Object.keys(c.translations).some(k => _flashcardTranslation(c, k).usable)),
+            example: cards.some(c => typeof c.example === 'string' && c.example.trim()),
+            context: cards.some(c => typeof c.contextSentence === 'string' && c.contextSentence.trim()),
+            etymology: cards.some(c => (typeof c.etymology === 'string' && c.etymology.trim()) || (c.etymologyByLang && typeof c.etymologyByLang === 'object' && Object.values(c.etymologyByLang).some(v => typeof v === 'string' && v.trim())) || (Array.isArray(c.roots) && c.roots.length > 0)),
+        };
+        const fieldToggles = [
+            { id: 'def', label: uiText('flashcards.field_definitions', 'Definitions'), show: true },
+            { id: 'image', label: uiText('flashcards.field_images', 'Images'), show: deckHas.image },
+            { id: 'details', label: uiText('flashcards.field_pronunciation', 'Pronunciation & POS'), show: deckHas.details },
+            { id: 'translation', label: uiText('flashcards.field_translations', 'Translations'), show: !isLanguageMode && deckHas.translation },
+            { id: 'example', label: uiText('flashcards.field_example', 'Example sentence'), show: !isLanguageMode && deckHas.example },
+            { id: 'context', label: uiText('flashcards.field_context', 'In the text'), show: !isLanguageMode && deckHas.context },
+            { id: 'etymology', label: uiText('flashcards.field_etymology', 'Word roots'), show: !isLanguageMode && deckHas.etymology },
+        ].filter(item => item.show);
+        const startBlackAndWhite = audioOptions.blackAndWhite === true;
         let htmlBody = `
             <div class="no-print" data-flashcard-toolbar data-fc-flip-label="${_escapeExportText(fcFlipLabel)}" data-fc-practice-label="${_escapeExportText(fcPracticeLabel)}" data-fc-known-label="${_escapeExportText(fcKnownLabel)}" data-fc-summary-tpl="${_escapeExportText(fcSummaryTpl)}" style="background: #eef2ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; border: 1px solid #c7d2fe;">
                 <h1${titleLabel.attrs} style="margin-top:0; color: #3730a3; font-family: sans-serif;">${_escapeExportText(titleLabel.text)}</h1>
                 <p${instructionsLabel.attrs} style="color: #4338ca; font-family: sans-serif;">${_escapeExportText(instructionsLabel.text)}</p>
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; font-family: sans-serif;">
                     <button${printLabel.attrs} onclick="window.print()" style="background: #4f46e5; color: white; border: none; padding: 8px 16px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">${_escapeExportText(printLabel.text)}</button>
+                    <button type="button" data-fc-action="toggle-bw" aria-pressed="${startBlackAndWhite ? 'true' : 'false'}" style="background: ${startBlackAndWhite ? '#0f172a' : '#fff'}; color: ${startBlackAndWhite ? '#fff' : '#0f172a'}; border: 1px solid #334155; padding: 8px 14px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer;">${_escapeExportText(uiText('flashcards.black_and_white', 'Black & White'))}</button>
                     <button type="button" data-fc-action="shuffle" style="background: #fff; color: #3730a3; border: 1px solid #818cf8; padding: 8px 14px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer;">${_escapeExportText(uiText('flashcards.study_shuffle', 'Shuffle'))}</button>
                     <button type="button" data-fc-action="flip-all" aria-pressed="false" style="background: #fff; color: #3730a3; border: 1px solid #818cf8; padding: 8px 14px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer;">${_escapeExportText(uiText('flashcards.study_flip_all', 'Flip All'))}</button>
+                    <button type="button" data-fc-action="hide-backs" aria-pressed="false" style="background: #fff; color: #3730a3; border: 1px solid #818cf8; padding: 8px 14px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer;">${_escapeExportText(uiText('flashcards.study_hide_backs', 'Hide Backs'))}</button>
                     <button type="button" data-fc-filter="all" aria-pressed="true" style="background: #3730a3; color: #fff; border: 1px solid #3730a3; padding: 8px 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer;">${_escapeExportText(uiText('flashcards.study_filter_all', 'All'))}</button>
                     <button type="button" data-fc-filter="needs-practice" aria-pressed="false" style="background: #fff; color: #92400e; border: 1px solid #f59e0b; padding: 8px 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer;">${_escapeExportText(uiText('flashcards.study_needs_practice', 'Needs Practice'))}</button>
                     <button type="button" data-fc-filter="known" aria-pressed="false" style="background: #fff; color: #065f46; border: 1px solid #10b981; padding: 8px 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer;">${_escapeExportText(uiText('flashcards.study_known', 'Known'))}</button>
+                </div>
+                <div data-fc-fields-bar role="group" aria-label="${_escapeExportText(uiText('flashcards.show_on_cards', 'Show on cards'))}" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #c7d2fe; font-family: sans-serif;">
+                    <span style="font-size: 12px; font-weight: 700; color: #3730a3; margin-inline-end: 4px;">${_escapeExportText(uiText('flashcards.show_on_cards', 'Show on cards:'))}</span>
+                    ${fieldToggles.map(ft => `<button type="button" class="fc-field-toggle" data-fc-toggle-field="${ft.id}" aria-pressed="true" style="background: #3730a3; color: #fff; border: 1px solid #3730a3; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 999px; cursor: pointer;">✓ ${_escapeExportText(ft.label)}</button>`).join('')}
                 </div>
                 <div data-fc-summary role="status" aria-live="polite" style="margin-top: 8px; font-size: 12px; color: #4338ca; font-family: sans-serif;"></div>
             </div>
@@ -5380,29 +5425,35 @@ function flashcardExportImageAlt(item) {
                     frontContent = `
                         <div class="lang-label">${_escapeExportText(termLabel)}</div>
                         <div class="primary-text"${termAttrs}>${cleanText(item.term)}</div>
-                        ${showDefinitionLanguage ? `<div class="lang-label">${_escapeExportText(definitionLabel)}</div>` : ''}
-                        <div class="def-text"${definitionAttrs}>${cleanText(item.def || item.definition)}</div>
+                        ${renderCardDetails(item)}
+                        ${showDefinitionLanguage ? `<div class="lang-label fc-field-def" data-fc-field="def">${_escapeExportText(definitionLabel)}</div>` : ''}
+                        <div class="def-text fc-field-def" data-fc-field="def"${definitionAttrs}>${cleanText(item.def || item.definition)}</div>
                     `;
                     backContent = `
                         <div class="lang-label">${targetLabelHtml}</div>
                         <div class="primary-text"${tr}>${cleanText(transTerm)}</div>
-                        <div class="def-text"${tr}>${cleanText(transDef)}</div>
+                        <div class="def-text fc-field-def" data-fc-field="def"${tr}>${cleanText(transDef)}</div>
                     `;
                 } else {
                     frontContent = `
                         <div class="lang-label">${_escapeExportText(termLabel)}</div>
                         <div class="primary-text"${termAttrs}>${cleanText(item.term)}</div>
-                        ${transTerm ? `<div class="secondary-text"${tr}>${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${targetLabelHtml}</div>` : ''}
+                        ${renderCardDetails(item)}
+                        ${transTerm ? `<div class="secondary-text fc-field-translation" data-fc-field="translation"${tr}>${cleanText(transTerm)}</div><div class="lang-label fc-field-translation" data-fc-field="translation" style="margin-top:2px;">${targetLabelHtml}</div>` : ''}
                     `;
+                    const exampleSentence = typeof item.example === 'string' ? item.example.trim() : '';
+                    const exampleLabel = exampleSentence ? uiLabel('glossary.example_sentence_label', 'Example sentence:') : null;
+                    const exampleHtml = exampleSentence ? `<div class="def-text fc-field-example" data-example-sentence data-fc-field="example" style="margin-top:8px;"><strong class="lang-label"${exampleLabel.attrs}>${_escapeExportText(exampleLabel.text)}</strong> <span${definitionAttrs}>${cleanText(exampleSentence)}</span></div>` : '';
                     const contextSentence = typeof item.contextSentence === 'string' ? item.contextSentence.trim() : '';
                     const quoteLanguage = typeof item.contextSentenceLanguage === 'string' && item.contextSentenceLanguage.trim() || definitionLanguage;
                     const contextLabel = contextSentence ? uiLabel('glossary.context_sentence_label', 'In the text:') : null;
-                    const quote = contextSentence ? `<div class="def-text" data-context-sentence style="margin-top:8px;"><strong class="lang-label"${contextLabel.attrs}>${_escapeExportText(contextLabel.text)}</strong> <q${sideLangAttrs(quoteLanguage)}>${cleanText(contextSentence)}</q></div>` : '';
+                    const quote = contextSentence ? `<div class="def-text fc-field-context" data-context-sentence data-fc-field="context" style="margin-top:8px;"><strong class="lang-label"${contextLabel.attrs}>${_escapeExportText(contextLabel.text)}</strong> <q${sideLangAttrs(quoteLanguage)}>${cleanText(contextSentence)}</q></div>` : '';
+                    const originHtml = renderWordOrigin(item, definitionLanguage);
+                    const rootsHtml = Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => renderRoot(r, definitionLanguage)).join(' ')}</div>${(() => { const seen = new Set(); const allRel = []; item.roots.forEach(r => { if (Array.isArray(r.related)) r.related.forEach(w => { const k = String(w || '').trim(); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); allRel.push(k); } }); }); const relatedLabel = allRel.length ? uiLabel('export.related_words_label', 'Related words:') : null; return allRel.length > 0 ? `<div class="etym-related"><strong lang="${_escapeExportText(relatedLabel.language)}" dir="auto">${_escapeExportText(relatedLabel.text)}</strong> ${allRel.slice(0, 6).map(w => `<bdi lang="" dir="auto">${cleanText(w)}</bdi>`).join(', ')}</div>` : ''; })()}` : '';
+                    const etymologyBlock = (originHtml || rootsHtml) ? `<div class="fc-field-etymology" data-fc-field="etymology" style="width:100%;">${originHtml}${rootsHtml}</div>` : '';
                     backContent = `
-                        <div class="def-text"><strong class="lang-label">${_escapeExportText(definitionLabel)}:</strong> <span${definitionAttrs}>${cleanText(item.def || item.definition)}</span></div>
-                        ${transDef ? `<div class="def-trans"><strong class="lang-label">${targetLabelHtml}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}${quote}
-                        ${renderWordOrigin(item, definitionLanguage)}
-                        ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => renderRoot(r, definitionLanguage)).join(' ')}</div>${(() => { const seen = new Set(); const allRel = []; item.roots.forEach(r => { if (Array.isArray(r.related)) r.related.forEach(w => { const k = String(w || '').trim(); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); allRel.push(k); } }); }); const relatedLabel = allRel.length ? uiLabel('export.related_words_label', 'Related words:') : null; return allRel.length > 0 ? `<div class="etym-related"><strong lang="${_escapeExportText(relatedLabel.language)}" dir="auto">${_escapeExportText(relatedLabel.text)}</strong> ${allRel.slice(0, 6).map(w => `<bdi lang="" dir="auto">${cleanText(w)}</bdi>`).join(', ')}</div>` : ''; })()}` : ''}
+                        <div class="def-text fc-field-def" data-fc-field="def"><strong class="lang-label">${_escapeExportText(definitionLabel)}:</strong> <span${definitionAttrs}>${cleanText(item.def || item.definition)}</span></div>
+                        ${transDef ? `<div class="def-trans fc-field-translation" data-fc-field="translation"><strong class="lang-label">${targetLabelHtml}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}${exampleHtml}${quote}${etymologyBlock}
                     `;
                 }
                 if (audioIds.size) {
@@ -5430,7 +5481,7 @@ function flashcardExportImageAlt(item) {
                     let imgSource;
                     if (imageIds.has(image)) imgSource = ' data-ci-src="' + imageIds.get(image) + '"';
                     else { const id = 'ci' + imageIds.size; imageIds.set(image, id); imgSource = ' src="' + _escapeExportText(image) + '" data-ci="' + id + '"'; }
-                    frontContent = '<figure class="card-picture"><img' + imgSource + ' alt="' + _escapeExportText(alt) + '"' + (alt ? '' : ' role="presentation"') + '>' + (creditText ? '<figcaption>' + _escapeExportText(creditText) + '</figcaption>' : '') + '</figure>' + frontContent;
+                    frontContent = '<figure class="card-picture fc-field-image" data-fc-field="image"><img' + imgSource + ' alt="' + _escapeExportText(alt) + '"' + (alt ? '' : ' role="presentation"') + '>' + (creditText ? '<figcaption>' + _escapeExportText(creditText) + '</figcaption>' : '') + '</figure>' + frontContent;
                 }
                 htmlBody += `
                     <div class="card-container${isLanguageMode ? '' : ' fold-card'}">
@@ -5478,6 +5529,23 @@ function flashcardExportImageAlt(item) {
                     .card-container.fc-front-hidden .front { display: none; }
                     .card-container.fc-back-hidden .back { display: none; }
                     .card-container[data-fc-filtered="1"] { display: none; }
+                    body.fc-hide-image .fc-field-image, body.fc-hide-image [data-picture-credits] { display: none !important; }
+                    body.fc-hide-def .fc-field-def { display: none !important; }
+                    body.fc-hide-details .fc-field-details { display: none !important; }
+                    body.fc-hide-translation .fc-field-translation { display: none !important; }
+                    body.fc-hide-example .fc-field-example { display: none !important; }
+                    body.fc-hide-context .fc-field-context { display: none !important; }
+                    body.fc-hide-etymology .fc-field-etymology { display: none !important; }
+                    body.fc-bw { background: #fff !important; color: #000 !important; }
+                    body.fc-bw .card-container { background: #fff !important; border-color: #000 !important; box-shadow: none !important; }
+                    body.fc-bw .front { border-color: #000 !important; }
+                    body.fc-bw .set-header { background: #fff !important; color: #000 !important; border: 2px solid #000 !important; }
+                    body.fc-bw .card-side *, body.fc-bw .cut-guide, body.fc-bw .language-alias { color: #000 !important; }
+                    body.fc-bw .def-trans, body.fc-bw .etym-text { border-color: #000 !important; }
+                    body.fc-bw .root-chip { background: #fff !important; border-color: #000 !important; color: #000 !important; }
+                    body.fc-bw .card-picture img { filter: grayscale(100%) contrast(1.15) !important; }
+                    body.fc-bw .card-study-controls { background: #fff !important; border-color: #000 !important; }
+                    body.fc-bw .card-audio { border-color: #000 !important; color: #000 !important; }
                     .card-study-controls { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 6px 8px; border-top: 1px dashed #cbd5e1; background: #f8fafc; font-family: sans-serif; }
                     [data-flashcard-toolbar] button { min-height: 44px; min-width: 44px; }
                     .card-study-btn { min-height: 44px; min-width: 44px; border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 5px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -5490,19 +5558,21 @@ function flashcardExportImageAlt(item) {
                         .card-container .front, .card-container .back { display: block !important; }
                         .card-container, .front { border-color: #777 !important; }
                         .card-side * { color: #000 !important; }
+                        body.fc-bw .card-picture img { filter: grayscale(100%) contrast(1.15) !important; }
                     }
                     ${cardStyle}${audioIds.size ? `
                     .card-audio { min-width: 44px; min-height: 44px; margin: 8px 0; border: 2px solid #4f46e5; border-radius: 999px; background: #fff; color: #3730a3; font-size: 1.25rem; cursor: pointer; }
                     .card-audio:focus-visible { outline: 3px solid #1e1b4b; outline-offset: 2px; }` : ''}
                 </style>${readerSettings ? _FLASHCARD_READER_SLOT : ''}
             </head>
-            <body>
+            <body${startBlackAndWhite ? ' class="fc-bw"' : ''}>
                 ${(readerSettings && (readerSettings.bionic || readerSettings.syllables) && typeof window !== 'undefined' && typeof window.__alloBionicHtml === 'function') ? window.__alloBionicHtml(htmlBody, { bionic: !!readerSettings.bionic, syllables: !!readerSettings.syllables }) : htmlBody}
                 ${htmlBody.includes('data-ci-src=') ? `<script>(function(){var c=document.querySelectorAll('img[data-ci-src]');for(var i=0;i<c.length;i++){var s=document.querySelector('img[data-ci="'+c[i].getAttribute('data-ci-src')+'"]');if(s)c[i].setAttribute('src',s.getAttribute('src'));}})();</script>` : ''}${audioIds.size ? `
                 <script type="application/json" id="card-audio-data">${_jsonForHtmlScript(audioData)}</script><script>(function(){var d=JSON.parse(document.getElementById('card-audio-data').textContent||'{}'),p=null;document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('[data-card-audio]'):null,s=b&&d[b.getAttribute('data-card-audio')];if(!s)return;if(p)p.pause();p=new Audio(s);var r=p.play();if(r&&r.catch)r.catch(function(){});});})();</script>` : ''}
                 <script data-flashcard-study>(function(){
                   var filter = 'all';
                   var flippedAll = false;
+                  var hideBacksAll = false;
                   var tb = document.querySelector('[data-flashcard-toolbar]');
                   var lblFlip = (tb && tb.getAttribute('data-fc-flip-label')) || 'Flip';
                   var lblPractice = (tb && tb.getAttribute('data-fc-practice-label')) || 'Needs Practice';
@@ -5552,14 +5622,58 @@ function flashcardExportImageAlt(item) {
                       .replace('{practice}', String(practiceCount));
                   }
                   document.addEventListener('click', function(e){
+                    var fieldBtn = e.target && e.target.closest ? e.target.closest('[data-fc-toggle-field]') : null;
+                    if (fieldBtn){
+                      var fname = fieldBtn.getAttribute('data-fc-toggle-field');
+                      if (fname){
+                        var cls = 'fc-hide-' + fname;
+                        var nowHidden = document.body.classList.toggle(cls);
+                        var showing = !nowHidden;
+                        fieldBtn.setAttribute('aria-pressed', showing ? 'true' : 'false');
+                        fieldBtn.style.background = showing ? '#3730a3' : '#fff';
+                        fieldBtn.style.color = showing ? '#fff' : '#475569';
+                        fieldBtn.style.borderColor = showing ? '#3730a3' : '#cbd5e1';
+                        var rawLabel = fieldBtn.textContent.replace(/^[✓✕]\s*/, '');
+                        fieldBtn.textContent = (showing ? '✓ ' : '✕ ') + rawLabel;
+                      }
+                      return;
+                    }
                     var actBtn = e.target && e.target.closest ? e.target.closest('[data-fc-action]') : null;
                     if (actBtn){
                       var act = actBtn.getAttribute('data-fc-action');
-                      if (act === 'flip-all'){
+                      if (act === 'toggle-bw'){
+                        var isBw = document.body.classList.toggle('fc-bw');
+                        actBtn.setAttribute('aria-pressed', isBw ? 'true' : 'false');
+                        actBtn.style.background = isBw ? '#0f172a' : '#fff';
+                        actBtn.style.color = isBw ? '#fff' : '#0f172a';
+                      } else if (act === 'hide-backs'){
+                        hideBacksAll = !hideBacksAll;
+                        if (hideBacksAll && flippedAll){
+                          flippedAll = false;
+                          var fa = document.querySelector('[data-fc-action="flip-all"]');
+                          if (fa) fa.setAttribute('aria-pressed', 'false');
+                        }
+                        actBtn.setAttribute('aria-pressed', hideBacksAll ? 'true' : 'false');
+                        actBtn.style.background = hideBacksAll ? '#3730a3' : '#fff';
+                        actBtn.style.color = hideBacksAll ? '#fff' : '#3730a3';
+                        var bList = document.querySelectorAll('.card-container');
+                        for (var bi = 0; bi < bList.length; bi++){
+                          if (hideBacksAll) bList[bi].classList.remove('fc-front-hidden');
+                          bList[bi].classList.toggle('fc-back-hidden', hideBacksAll);
+                          var fbb = bList[bi].querySelector('[data-card-study="flip"]');
+                          if (fbb) fbb.setAttribute('aria-pressed', 'false');
+                        }
+                      } else if (act === 'flip-all'){
                         flippedAll = !flippedAll;
+                        if (flippedAll && hideBacksAll){
+                          hideBacksAll = false;
+                          var hb = document.querySelector('[data-fc-action="hide-backs"]');
+                          if (hb) { hb.setAttribute('aria-pressed', 'false'); hb.style.background = '#fff'; hb.style.color = '#3730a3'; }
+                        }
                         actBtn.setAttribute('aria-pressed', flippedAll ? 'true' : 'false');
                         var list = document.querySelectorAll('.card-container');
                         for (var i = 0; i < list.length; i++){
+                          list[i].classList.remove('fc-back-hidden');
                           list[i].classList.toggle('fc-front-hidden', flippedAll);
                           var fb = list[i].querySelector('[data-card-study="flip"]');
                           if (fb) fb.setAttribute('aria-pressed', flippedAll ? 'true' : 'false');
@@ -5609,9 +5723,19 @@ function flashcardExportImageAlt(item) {
                       if (!card) return;
                       var op = cardBtn.getAttribute('data-card-study');
                       if (op === 'flip'){
-                        var nextFlip = !card.classList.contains('fc-front-hidden');
-                        card.classList.toggle('fc-front-hidden', nextFlip);
-                        cardBtn.setAttribute('aria-pressed', nextFlip ? 'true' : 'false');
+                        if (card.classList.contains('fc-back-hidden')){
+                          card.classList.remove('fc-back-hidden');
+                          card.classList.add('fc-front-hidden');
+                          cardBtn.setAttribute('aria-pressed', 'true');
+                        } else if (hideBacksAll && card.classList.contains('fc-front-hidden')){
+                          card.classList.remove('fc-front-hidden');
+                          card.classList.add('fc-back-hidden');
+                          cardBtn.setAttribute('aria-pressed', 'false');
+                        } else {
+                          var nextFlip = !card.classList.contains('fc-front-hidden');
+                          card.classList.toggle('fc-front-hidden', nextFlip);
+                          cardBtn.setAttribute('aria-pressed', nextFlip ? 'true' : 'false');
+                        }
                       } else if (op === 'known' || op === 'needs-practice'){
                         card.setAttribute('data-fc-status', op);
                         refresh();
@@ -5786,14 +5910,16 @@ function flashcardExportImageAlt(item) {
                 help.id = ui.uid + '-reader-help';
                 mine.setAttribute('aria-describedby', help.id);
             }
-            if (box || mine) (box || mine).setAttribute('data-agx-autofocus', '');
+            const bwBox = option(_gxText('flashcards.black_and_white_option', 'Black & white (ink saver)'), false);
+            if (box || mine || bwBox) (box || mine || bwBox).setAttribute('data-agx-autofocus', '');
             const actions = ui.el('div', 'agx-actions', '', ui.dialog);
             ui.button(_gxText('common.download', 'Download'), () => {
                 const includeAudio = box ? box.checked : undefined;
                 const useReadingSettings = mine ? mine.checked : undefined;
+                const blackAndWhite = bwBox ? bwBox.checked : false;
                 const returnTo = ui.returnTo;
                 ui.close();
-                handleExportFlashcards(mode, { includeAudio, useReadingSettings, opener: returnTo });
+                handleExportFlashcards(mode, { includeAudio, useReadingSettings, blackAndWhite, opener: returnTo });
             }, true, actions);
             ui.button(_gxText('common.cancel', 'Cancel'), () => ui.close(), false, actions);
         });

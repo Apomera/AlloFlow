@@ -295,6 +295,17 @@
     }, function () { loadingPictureExtras = null; return false; });
     return loadingPictureExtras;
   }
+  var loadingExtPictures = null;
+  function extPictures(ext) {
+    if (!ext || typeof ext.ready !== 'function' || !Array.isArray(ext.shards)) return Promise.resolve(false);
+    if (ext.ready()) return Promise.resolve(true);
+    if (!loadingExtPictures) {
+      loadingExtPictures = Promise.all(ext.shards.map(function (shard) {
+        return getJson(shard.url).then(function (data) { ext.add(data); }, function () {});
+      })).then(function () { loadingExtPictures = null; return ext.ready(); }, function () { loadingExtPictures = null; return false; });
+    }
+    return loadingExtPictures;
+  }
   function pictures(symbols) {
     if (!symbols || typeof symbols.ready !== 'function') return Promise.reject(new Error('the picture list is missing'));
     if (symbols.ready()) return Promise.resolve(true);
@@ -306,5 +317,5 @@
     return loadingPictures;
   }
 
-  root.AlloVocabMedia = { INDEX: INDEX, MEANING_INDEX: MEANING_INDEX, store: store, plan: plan, clips: clips, meaningClips: meaningClips, pictures: pictures, pictureExtras: pictureExtras, ready: function () { return !!index; } };
+  root.AlloVocabMedia = { INDEX: INDEX, MEANING_INDEX: MEANING_INDEX, store: store, plan: plan, clips: clips, meaningClips: meaningClips, pictures: pictures, extPictures: extPictures, pictureExtras: pictureExtras, ready: function () { return !!index; } };
 })(typeof window !== 'undefined' ? window : globalThis);

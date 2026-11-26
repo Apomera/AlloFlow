@@ -256,9 +256,10 @@ describe('1. Word Sounds Activity Worksheet HTML (all 13 Packets + 6 Main-App ac
     expect(segSec.querySelectorAll('.ws-tap-dot')).toHaveLength(3);
     expect(segSec.querySelector('.ws-line')).not.toBeNull();
 
-    // 7. blending: separated phoneme labels (NOT audio IDs a0/a1/a2!), writing line, no spoiler picture
+    // 7. blending: default showListeningWords=false hides printed phoneme sequence, shows Listen cue, no spoiler picture, no audio IDs
     const blendSec = doc.querySelector('section[data-activity="blending"]');
-    expect(blendSec.querySelector('.ws-sounds-seq').textContent).toBe('/k/ · /a/ · /t/');
+    expect(blendSec.querySelector('.ws-sounds-seq')).toBeNull();
+    expect(blendSec.textContent).toContain('Listen to your teacher:');
     expect(blendSec.textContent).not.toContain('/a0/');
     expect(blendSec.querySelector('img')).toBeNull();
     expect(blendSec.querySelector('.ws-line')).not.toBeNull();
@@ -297,11 +298,21 @@ describe('1. Word Sounds Activity Worksheet HTML (all 13 Packets + 6 Main-App ac
     // 14-19. Main App extra 6 activities
     expect(doc.querySelector('section[data-activity="syllable_counting"]').querySelectorAll('.ws-scoop').length).toBeGreaterThanOrEqual(2);
     expect(doc.querySelector('section[data-activity="syllable_counting"]').querySelectorAll('.ws-bubble').length).toBeGreaterThanOrEqual(5);
-    expect(doc.querySelector('section[data-activity="syllable_blending"] .ws-sounds-seq').textContent).toBe('sun · set');
+    expect(doc.querySelector('section[data-activity="syllable_blending"] .ws-sounds-seq')).toBeNull();
+    expect(doc.querySelector('section[data-activity="syllable_blending"]').textContent).toContain('Listen to your teacher:');
     expect(doc.querySelector('section[data-activity="manipulation"] .ws-prompt').textContent).toContain('change /k/ to /h/');
     expect(doc.querySelector('section[data-activity="decoding"]').querySelectorAll('.ws-checkbox').length).toBeGreaterThanOrEqual(2);
     expect(doc.querySelector('section[data-activity="read_sentence"] .ws-blank')).not.toBeNull();
     expect(doc.querySelector('section[data-activity="read_passage"]').querySelectorAll('.ws-checkbox')).toHaveLength(3);
+
+    // With showListeningWords: true, blending & syllable_blending show separated phoneme/syllable strings (never audio IDs)
+    const htmlShown = cards.buildWordSoundsWorksheetHtml(lesson, {
+      pictures: true, answerKey: true, hints: true, showListeningWords: true, symbols: SYMBOLS, matcher,
+    });
+    const docShown = new JSDOM(htmlShown).window.document;
+    expect(docShown.querySelector('section[data-activity="blending"] .ws-sounds-seq').textContent).toBe('/k/ · /a/ · /t/');
+    expect(docShown.querySelector('section[data-activity="blending"]').textContent).not.toContain('/a0/');
+    expect(docShown.querySelector('section[data-activity="syllable_blending"] .ws-sounds-seq').textContent).toBe('sun · set');
 
     // Separate Teacher Answer Key page with required label & teacher read-aloud list
     const keySec = doc.querySelector('.ws-key');
@@ -330,8 +341,18 @@ describe('1. Word Sounds Activity Worksheet HTML (all 13 Packets + 6 Main-App ac
     expect(html1).not.toContain('For the teacher');
     expect(doc1.querySelector('section[data-activity="mapping"] .ws-bank')).toBeNull();
     expect(doc1.querySelector('section[data-activity="spelling_bee"] .ws-box')).toBeNull();
-    expect(doc1.querySelector('section[data-activity="counting"] .ws-word').textContent).toBe('rab·bit');
+    expect(doc1.querySelector('section[data-activity="counting"] .ws-word')).toBeNull();
+    expect(doc1.querySelector('section[data-activity="counting"]').textContent).toContain('Listen to your teacher:');
     expect(doc1.querySelectorAll('img')).toHaveLength(0);
+
+    const html1Shown = cards.buildWordSoundsWorksheetHtml({
+      title: 'Options Test Shown',
+      words: ['rabbit', 'cat'],
+      activities: ['counting'],
+      syllablesTable: mockSyl,
+    }, { pictures: false, answerKey: false, hints: false, syllables: true, showListeningWords: true });
+    const doc1Shown = new JSDOM(html1Shown).window.document;
+    expect(doc1Shown.querySelector('section[data-activity="counting"] .ws-word').textContent).toBe('rab·bit');
 
     const htmlLower = cards.buildWordSoundsWorksheetHtml({
       title: 'Lowercase Tracing',
@@ -419,11 +440,12 @@ describe('2. Monochrome CSS & Packets Maker wiring invariants', () => {
     expect(printWs.hidden).toBe(true);
     expect(printWs.textContent.trim()).toBe('Print activity worksheet');
 
-    // Exact pinned script list preserved
+    // Exact pinned script list preserved (including offline picture coverage scripts)
     const scripts = [...doc.querySelectorAll('script')].map((s) => s.getAttribute('src'));
     expect(scripts).toEqual([
       'packets-page.js', 'word_sounds_phonemes_en.js', 'word_sounds_core.js', 'word_sounds_wordlist_en.js',
       'word_sounds_take_home_loader.js', 'word_sounds_packet_builder.js', 'word_sounds_symbols_en.js',
+      'reading_symbols_ext_en.js', 'word_picture_semantic_en.js', 'word_picture_matcher.js',
       'packets_my_words.js', 'packets-words.js', 'packets_verify_core.js', 'packets_reopen.js',
       'packets_handoff.js', 'packets_zip.js', 'packets-print-cards.js', 'packets-make.js',
     ]);

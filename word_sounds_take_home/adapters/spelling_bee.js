@@ -134,6 +134,16 @@ module.exports = {
       countLine.hidden = !(shown && typed);
       countLine.textContent = ctx.fmt(L.spelling_bee_letters_correct, { count: right, total: total });
       moreBtn.textContent = typed.indexOf('_') >= 0 ? L.spelling_bee_hint_more : L.spelling_bee_hint_vowels;
+      var hintsUnlocked = !ctx.check && shown;
+      firstBtn.hidden = !hintsUnlocked;
+      moreBtn.hidden = !hintsUnlocked;
+      if (ctx.isDone() || !hintsUnlocked) {
+        firstBtn.setAttribute('aria-disabled', 'true');
+        moreBtn.setAttribute('aria-disabled', 'true');
+      } else {
+        firstBtn.removeAttribute('aria-disabled');
+        moreBtn.removeAttribute('aria-disabled');
+      }
     };
     var edit = function (next, clue) {
       if (ctx.isDone()) return;
@@ -158,7 +168,8 @@ module.exports = {
     };
     // "Slow" plays the same recording at half speed, as playSpellingWord(0.5) does.
     var playSlow = function () { ctx.play(item.wordAudio, 0.5); };
-    var firstBtn = ctx.el('button', { type: 'button', on: { click: function () {
+    var firstBtn = ctx.el('button', { type: 'button', hidden: true, 'aria-disabled': 'true', on: { click: function () {
+      if (ctx.isDone() || ctx.check || ctx.attempts() <= 0) return;
       // The first LETTER, after any fixed slot in front of it.
       var at = 0;
       while (at < written.length - 1 && fixed(written[at])) at++;
@@ -168,7 +179,8 @@ module.exports = {
       edit(next, 'spelling_first_letter');
     } }, text: L.spelling_bee_first_letter });
     // "Show Vowels", then "Show More" one letter at a time (:19846-19863).
-    var moreBtn = ctx.el('button', { type: 'button', on: { click: function () {
+    var moreBtn = ctx.el('button', { type: 'button', hidden: true, 'aria-disabled': 'true', on: { click: function () {
+      if (ctx.isDone() || ctx.check || ctx.attempts() <= 0) return;
       var current = value().toLowerCase();
       var letters = written.split('');
       var isVowel = function (ch) { return 'aeiou'.indexOf(ch.toLowerCase()) >= 0; };

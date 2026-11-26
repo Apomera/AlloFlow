@@ -1414,8 +1414,21 @@
     });
     return after;
   }
+  function _simplifiedBionicText(text, lang) {
+    if (typeof text !== 'string' || !text) return text;
+    if (typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicReact === 'function') {
+      return window.__alloBionicReact(text, lang ? { lang: lang } : undefined);
+    }
+    return text;
+  }
+  function _simplifiedAiNoticeStart(text) {
+    var raw = String(text || '');
+    var match = raw.match(/(?:\r?\n){2,}---\s*(?:\r?\n)+\*About this document:[\s\S]*$/i)
+      || raw.match(/(?:\r?\n)+\*About this document:[\s\S]*$/i);
+    return match ? match.index : raw.length;
+  }
   function renderImmersiveSupports(entries) {
-    return (entries || []).map(entry => <span role="group" key={'support-' + entry.id} data-reading-gloss data-immersive-gloss aria-label={simplifiedText('simplified.original_gloss_for', 'Word help for {word}', { word: entry.quote })} className="mx-1 rounded bg-indigo-50 px-1.5 py-0.5 leading-snug text-indigo-900" style={{ fontSize: '0.85em' }}>{entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} className="mx-1 inline-block rounded bg-white object-contain align-middle" style={{ width: '2.1em', height: '2.1em' }} />}({entry.definition || entry.explanation || entry.text})</span>);
+    return (entries || []).map(entry => <span role="group" key={'support-' + entry.id} data-reading-gloss data-immersive-gloss aria-label={simplifiedText('simplified.original_gloss_for', 'Word help for {word}', { word: entry.quote })} className="mx-1 rounded bg-indigo-50 px-1.5 py-0.5 leading-snug text-indigo-900" style={{ fontSize: '0.85em' }}>{entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} className="mx-1 inline-block rounded bg-white object-contain align-middle" style={{ width: '2.1em', height: '2.1em' }} />}({_simplifiedBionicText(entry.definition || entry.explanation || entry.text)})</span>);
   }
 
   function alignImmersiveWords(words, sentences, clean) {
@@ -6453,7 +6466,9 @@
         if (isCurrentGlossAction(request)) setGlossNotice(error?.message || viewText('simplified.auto_supports_remove_failed', 'Some AI word help could not be removed. Review the explanations in the list.'));
       } finally { finishGlossAction(request); }
     }
-    var audioGlosses = readingContract?.selectReadingSupports ? readingContract.selectReadingSupports(supportOwner || generatedContent, checkedSupports, { density: glossDensity }) : (checkedSupports?.annotations || []);
+    var aiNoticeCutoff = _simplifiedAiNoticeStart(simplifiedReadAloudText);
+    var rawAudioGlosses = readingContract?.selectReadingSupports ? readingContract.selectReadingSupports(supportOwner || generatedContent, checkedSupports, { density: glossDensity }) : (checkedSupports?.annotations || []);
+    var audioGlosses = Array.isArray(rawAudioGlosses) ? rawAudioGlosses.filter(entry => !entry || typeof entry.start !== 'number' || entry.start < aiNoticeCutoff) : [];
     var activeGlosses = showReadingGlosses ? audioGlosses : [];
     // The same supports the page shows (Show glosses, density) follow into Immersive Reader.
     var immersiveSupportsKey = protectedOriginal && isImmersiveReaderActive ? JSON.stringify(activeGlosses.map(entry => [entry.id, entry.start, entry.end, entry.text, entry.image ? entry.image.src.length : 0])) : '';
@@ -6497,6 +6512,10 @@
         var choice = choices.find(item => item.key === key(active)) || choices.find(item => item.plan);
         var index = choice?.plan ? choice.plan.units.findIndex(unit => unit && unit.start === start) : -1;
         if (index >= 0) listenInPlace(choice, active, index);
+      }, readFromSupport: supportId => {
+        var choice = choices.find(item => item.key === 'supports' && item.plan) || choices.find(item => item.plan);
+        var index = choice?.plan ? choice.plan.units.findIndex(unit => unit && unit.support === supportId) : -1;
+        if (index >= 0) listenInPlace(choice, active, index);
       } };
     }
     var originalChoices = protectedOriginal ? [
@@ -6518,7 +6537,8 @@
     }
     function renderReaderGlossarySegment(segment, language, key, readerProps) {
       var Term = window.AlloModules?.TextUtilityHelpers?.GlossaryTermSpan;
-      return segment.item && Term ? <Term key={key} item={segment.item} leveledTextLanguage={language || readingLanguage} isLineFocusMode={isLineFocusMode} readerInteractions readerProps={readerProps}>{segment.text}</Term> : segment.text;
+      var displayText = _simplifiedBionicText(segment.text, language || readingLanguage);
+      return segment.item && Term ? <Term key={key} item={segment.item} leveledTextLanguage={language || readingLanguage} isLineFocusMode={isLineFocusMode} readerInteractions readerProps={readerProps}>{displayText}</Term> : displayText;
     }
     function renderReaderGlossary(text, language) {
       return readerGlossarySegments(text, language).map((segment, index) => <React.Fragment key={index}>{renderReaderGlossarySegment(segment, language, index)}</React.Fragment>);
@@ -6743,7 +6763,17 @@
         var next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : Math.max(0, Math.min(items.length - 1, items.indexOf(event.currentTarget) + delta));
         event.preventDefault(); items[next]?.focus();
       };
-      var renderGlossChip = entry => <span role="group" key={entry.id} data-reading-gloss data-reading-now={listenNow?.support === entry.id ? 'true' : undefined} style={listenNow?.support === entry.id ? { outline: '3px solid var(--adapted-focus, #4338ca)', outlineOffset: '1px' } : undefined} className="mx-1 rounded bg-indigo-50 px-1 text-base text-indigo-900" aria-label={viewText('simplified.original_gloss_for', 'Word help for {word}', { word: entry.quote })}>{entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} data-reading-gloss-picture className="mx-1 inline-block h-12 w-12 rounded bg-white object-contain align-middle" />} ({entry.definition || entry.explanation || entry.text}){isGlossEditing(annotationOwner) && props.onUpdateReadingSupports && <button type="button" aria-label={viewText('simplified.original_edit_explanation_for', 'Edit explanation for {word}', { word: entry.quote })} disabled={isProcessing} onClick={event => { event.stopPropagation(); setGlossEditorRequest(previous => ({ scope: glossEditingScope, ownerId: annotationOwner.id, id: entry.id, serial: (previous?.serial || 0) + 1 })); }} className="ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-indigo-200 px-2 text-xs font-semibold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('common.edit', 'Edit')}</button>}</span>;
+      var canClickGlossRead = !!(listen?.readFromSupport && interactionMode === 'read' && !props.isStudentPreview);
+      var renderGlossChip = entry => {
+        var triggerGlossRead = event => {
+          if (!canClickGlossRead) return;
+          if (event.target && event.target.closest && event.target.closest('button')) return;
+          if (event.type === 'click' && window.getSelection?.().toString().trim()) return;
+          event.stopPropagation();
+          listen.readFromSupport(entry.id);
+        };
+        return <span role={canClickGlossRead ? 'button' : 'group'} tabIndex={canClickGlossRead ? 0 : undefined} key={entry.id} data-reading-gloss data-reading-now={listenNow?.support === entry.id ? 'true' : undefined} onClick={canClickGlossRead ? triggerGlossRead : undefined} onKeyDown={canClickGlossRead ? event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); triggerGlossRead(event); } } : undefined} title={canClickGlossRead ? (t('common.click_read_from_here') || 'Click to read from here') : undefined} style={listenNow?.support === entry.id ? { outline: '3px solid var(--adapted-focus, #4338ca)', outlineOffset: '1px' } : undefined} className={'mx-1 rounded bg-indigo-50 px-1 text-base text-indigo-900' + (canClickGlossRead ? ' cursor-pointer hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1' : '')} aria-label={viewText('simplified.original_gloss_for', 'Word help for {word}', { word: entry.quote })}>{entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} data-reading-gloss-picture className="mx-1 inline-block h-12 w-12 rounded bg-white object-contain align-middle" />} ({_simplifiedBionicText(entry.definition || entry.explanation || entry.text, language)}){isGlossEditing(annotationOwner) && props.onUpdateReadingSupports && <button type="button" aria-label={viewText('simplified.original_edit_explanation_for', 'Edit explanation for {word}', { word: entry.quote })} disabled={isProcessing} onClick={event => { event.stopPropagation(); setGlossEditorRequest(previous => ({ scope: glossEditingScope, ownerId: annotationOwner.id, id: entry.id, serial: (previous?.serial || 0) + 1 })); }} className="ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-indigo-200 px-2 text-xs font-semibold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('common.edit', 'Edit')}</button>}</span>;
+      };
       var blocks = simplifiedExactBlocks(raw, formatted);
       // Pasted prose often separates paragraphs with one line break, which drew them
       // with no gap. With no blank line anywhere and paragraph-length lines, each
@@ -6776,7 +6806,7 @@
           return parts.map(function (part, index) {
             var start = offset + wordOffset; wordOffset += part.text.length;
             var glosses = (annotations || []).filter(entry => entry.end > start && entry.end <= offset + wordOffset);
-            var node = part.text;
+            var node = _simplifiedBionicText(part.text, language);
             if (part.item) {
               var glossaryWordProps = interactionMode === 'define' ? { 'data-exact-word': true, tabIndex: wordIndex++ === 0 ? 0 : -1,
                 onFocus: event => event.currentTarget.closest('[data-reading-paragraph]')?.querySelectorAll('[data-exact-word]').forEach(node => node.tabIndex = node === event.currentTarget ? 0 : -1),
@@ -6784,7 +6814,7 @@
               node = renderReaderGlossarySegment(part, language, index, glossaryWordProps);
             } else if (part.word && interactive !== false && ['define', 'phonics'].includes(interactionMode)) {
               var activate = event => { if (event.type === 'click' && (selectionMenu?.text || window.getSelection?.().toString().trim())) return; event.stopPropagation(); if (interactionMode === 'phonics') { handlePhonicsClick(part.text, event, { audioPlayback: 'reader', language }); return; } var helpPane = pane === 'adapted' ? event.currentTarget.closest('[data-word-help-language]') : null; if (!openWordHelpCard(event, helpPane, helpPane && helpPane.getAttribute('data-word-help-language'))) handleWordClick?.(part.text, event, { text: raw, language }); };
-              node = <span role="button" tabIndex={wordIndex++ === 0 ? 0 : -1} data-exact-word="true" aria-label={interactionMode === 'phonics' ? viewText('simplified.original_word_sounds_for', 'Word sounds: {word}', { word: part.text }) : viewText('simplified.original_define_word', 'Define: {word}', { word: part.text })} onClick={activate} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(event); } else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { const nodes = Array.from(event.currentTarget.closest('[data-reading-paragraph]').querySelectorAll('[data-exact-word]')); const delta = (event.key === 'ArrowRight' ? 1 : -1) * (getContentDirection(language) === 'rtl' ? -1 : 1); const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : Math.max(0, Math.min(nodes.length - 1, nodes.indexOf(event.currentTarget) + delta)); event.preventDefault(); nodes[next]?.focus(); } }} onFocus={event => { event.currentTarget.closest('[data-reading-paragraph]').querySelectorAll('[data-exact-word]').forEach(n => n.tabIndex = n === event.currentTarget ? 0 : -1); }} className="cursor-help rounded hover:bg-yellow-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{part.text}</span>;
+              node = <span role="button" tabIndex={wordIndex++ === 0 ? 0 : -1} data-exact-word="true" aria-label={interactionMode === 'phonics' ? viewText('simplified.original_word_sounds_for', 'Word sounds: {word}', { word: part.text }) : viewText('simplified.original_define_word', 'Define: {word}', { word: part.text })} onClick={activate} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(event); } else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { const nodes = Array.from(event.currentTarget.closest('[data-reading-paragraph]').querySelectorAll('[data-exact-word]')); const delta = (event.key === 'ArrowRight' ? 1 : -1) * (getContentDirection(language) === 'rtl' ? -1 : 1); const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : Math.max(0, Math.min(nodes.length - 1, nodes.indexOf(event.currentTarget) + delta)); event.preventDefault(); nodes[next]?.focus(); } }} onFocus={event => { event.currentTarget.closest('[data-reading-paragraph]').querySelectorAll('[data-exact-word]').forEach(n => n.tabIndex = n === event.currentTarget ? 0 : -1); }} className="cursor-help rounded hover:bg-yellow-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{_simplifiedBionicText(part.text, language)}</span>;
             }
             return <React.Fragment key={index}>{node}{glosses.map(renderGlossChip)}</React.Fragment>;
           });
@@ -6802,14 +6832,15 @@
           return points.slice(1).map(function (to, index) {
             var from = points[index], piece = text.slice(from - offset, to - offset);
             var glossaryPiece = glossaryPieces.find(segment => segment.start <= from && segment.end >= to);
-            var sentence = sentenceRanges.find(range => range.start <= from && from < range.end), body = glossaryPiece ? renderReaderGlossarySegment({ ...glossaryPiece, text: piece }, language, from) : piece;
+            var bionicPiece = _simplifiedBionicText(piece, language);
+            var sentence = sentenceRanges.find(range => range.start <= from && from < range.end), body = glossaryPiece ? renderReaderGlossarySegment({ ...glossaryPiece, text: piece }, language, from) : bionicPiece;
             if (sentence && piece.trim()) {
               var read = event => { if (event.type === 'click' && window.getSelection?.().toString().trim()) return; event.stopPropagation(); listen.readFrom(sentence.start); };
               if (!startedSentences.has(sentence.start)) {
                 startedSentences.add(sentence.start);
-                var sentenceControl = <span role="button" data-exact-sentence={sentence.start} data-exact-sentence-stop tabIndex={sentenceStops++ === 0 ? 0 : -1} aria-current={now && now.start === sentence.start ? 'true' : undefined} aria-label={readSentenceLabel + ': ' + plainReadingText(raw.slice(sentence.start, sentence.end)).trim()} title={t('common.click_read_from_here')} onClick={read} onFocus={claimSentenceStop} onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); read(event); return; } moveSentenceStop(event); }} className={glossaryPiece ? 'sr-only focus:not-sr-only focus:rounded focus:bg-indigo-700 focus:px-2 focus:text-white' : 'cursor-pointer rounded hover:bg-indigo-100/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1'}>{glossaryPiece ? readSentenceLabel : piece}</span>;
+                var sentenceControl = <span role="button" data-exact-sentence={sentence.start} data-exact-sentence-stop tabIndex={sentenceStops++ === 0 ? 0 : -1} aria-current={now && now.start === sentence.start ? 'true' : undefined} aria-label={readSentenceLabel + ': ' + plainReadingText(raw.slice(sentence.start, sentence.end)).trim()} title={t('common.click_read_from_here')} onClick={read} onFocus={claimSentenceStop} onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); read(event); return; } moveSentenceStop(event); }} className={glossaryPiece ? 'sr-only focus:not-sr-only focus:rounded focus:bg-indigo-700 focus:px-2 focus:text-white' : 'cursor-pointer rounded hover:bg-indigo-100/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1'}>{glossaryPiece ? readSentenceLabel : bionicPiece}</span>;
                 body = glossaryPiece ? <>{body}{sentenceControl}</> : sentenceControl;
-              } else if (!glossaryPiece) body = <span data-exact-sentence={sentence.start} onClick={read} className="cursor-pointer">{piece}</span>;
+              } else if (!glossaryPiece) body = <span data-exact-sentence={sentence.start} onClick={read} className="cursor-pointer">{bionicPiece}</span>;
             }
             var content = <>{body}{(annotations || []).filter(entry => entry.end > from && entry.end <= to).map(renderGlossChip)}</>;
             return <React.Fragment key={from}>{now && sentence && now.start === sentence.start ? <mark data-reading-now="true" style={readingNowStyle}>{content}</mark> : content}</React.Fragment>;
@@ -6944,7 +6975,7 @@
           var renderWords = function (text) {
             return readerGlossarySegments(text, section.label).flatMap(segment => segment.item ? [segment] : simplifiedWordSegments(segment.text, section.label)).map(function (part, index) {
               if (part.item) { var order = wordIndex++; return renderReaderGlossarySegment(part, section.label, index, { 'data-reading-word': order, tabIndex: order === 0 ? 0 : -1, onFocus: event => claimRovingStop(event, '[data-reading-word]'), onKeyDown: event => moveRovingStop(event, '[data-reading-word]') }); }
-              if (!part.word) return <React.Fragment key={index}>{part.text}</React.Fragment>;
+              if (!part.word) return <React.Fragment key={index}>{_simplifiedBionicText(part.text, section.label)}</React.Fragment>;
               var order = wordIndex++;
               var label = interactionMode === 'phonics' ? simplifiedHearPhonicsLabel : interactionMode === 'add-glossary' ? readerText('common.click_add_glossary', 'Add to glossary') : simplifiedDefineLabel;
               var activate = function (event) {
@@ -6957,7 +6988,7 @@
               return <span key={index} data-reading-word={order} role="button" tabIndex={order === 0 ? 0 : -1} aria-label={label + ': ' + part.text} title={label} onClick={activate} onFocus={function (event) { claimRovingStop(event, '[data-reading-word]'); }} onKeyDown={function (event) {
                 if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(event); return; }
                 moveRovingStop(event, '[data-reading-word]');
-              }} className="cursor-help rounded px-0.5 hover:bg-yellow-100 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{part.text}</span>;
+              }} className="cursor-help rounded px-0.5 hover:bg-yellow-100 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{_simplifiedBionicText(part.text, section.label)}</span>;
             });
           };
           var renderReadingInline = value => /\$|!\[/.test(value) || !window.AlloModules?.TextPipelineHelpers?.readingText ? readerGlossaryNodes(formatInteractiveText(value, false, !!isLineFocusMode)) : simplifiedInline(value, (text, offset, interactive) => interactive === false ? text : renderReaderGlossary(text, section.label));

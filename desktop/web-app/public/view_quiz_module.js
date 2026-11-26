@@ -103,6 +103,13 @@ var _QUIZ_MD_RULES = [{
   tag: 'em',
   nest: true
 }];
+function _quizBionicText(s) {
+  if (typeof s !== 'string' || !s) return s;
+  if (typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicReact === 'function') {
+    return window.__alloBionicReact(s);
+  }
+  return s;
+}
 function _quizInlineNodes(text, keyBase) {
   var out = [],
     rest = String(text == null ? '' : text),
@@ -112,7 +119,7 @@ function _quizInlineNodes(text, keyBase) {
       if (i) out.push(React.createElement('br', {
         key: keyBase + 'b' + k++
       }));
-      if (line) out.push(line);
+      if (line) out.push(_quizBionicText(line));
     });
   }
   while (rest) {
@@ -138,11 +145,11 @@ function _quizInlineNodes(text, keyBase) {
   }
   return out;
 }
-// Inline text: unchanged string when there is nothing to format.
+// Inline text: unchanged string when there is nothing to format (and bionic is off).
 function _quizRich(text) {
   if (text == null) return '';
   var value = String(text);
-  if (!/[*_`\n]/.test(value)) return value;
+  if (!/[*_`\n]/.test(value)) return _quizBionicText(value);
   var nodes = _quizInlineNodes(value, 'md');
   return nodes.length === 1 && typeof nodes[0] === 'string' ? nodes[0] : React.createElement(React.Fragment, null, nodes);
 }
@@ -402,16 +409,40 @@ var _quizCompositionEvents = {
 function _quizIsComposingText(event) {
   return _quizComposingFields.has(event.currentTarget) || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229;
 }
+var _quizDirectAudio = null;
+function _quizStopDirectAudio() {
+  if (_quizDirectAudio) {
+    try {
+      _quizDirectAudio.pause();
+    } catch (_) {}
+    _quizDirectAudio = null;
+  }
+}
 function _quizSpeakAloud(text, callTTSFn) {
   var clean = _quizPlain(text).replace(/\s+/g, ' ').trim();
   if (!clean) return;
+  _quizStopDirectAudio();
   try {
     if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
       window.AlloSpeechPlayer.speak(clean);
-    } else if (typeof callTTSFn === 'function') {
-      callTTSFn(clean);
-    } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
-      window.callTTS(clean);
+    } else if (typeof callTTSFn === 'function' || typeof window !== 'undefined' && typeof window.callTTS === 'function') {
+      var tts = typeof callTTSFn === 'function' ? callTTSFn : window.callTTS;
+      Promise.resolve(tts(clean)).then(function (url) {
+        if (typeof url === 'string' && /^(?:blob:|data:audio\/|https?:)/i.test(url) && typeof Audio === 'function') {
+          _quizStopDirectAudio();
+          var audio = new Audio(url);
+          _quizDirectAudio = audio;
+          audio.onended = function () {
+            if (_quizDirectAudio === audio) _quizDirectAudio = null;
+          };
+          audio.onerror = function () {
+            if (_quizDirectAudio === audio) _quizDirectAudio = null;
+          };
+          try {
+            Promise.resolve(audio.play()).catch(function () {});
+          } catch (_) {}
+        }
+      }).catch(function () {});
     } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(clean));
@@ -459,21 +490,57 @@ function _quizReadAloudText(q) {
 }
 function QuizListenButton(p) {
   var listenLabel = _quizGradedCopy('common.listen', 'Listen');
+  var loadingLabel = _quizGradedCopy('common.loading', 'Loading…');
+  var stopLabel = _quizGradedCopy('common.stop', 'Stop');
   var ariaBase = _quizGradedCopy('a11y.read_aloud', 'Listen to question');
   var num = p.itemNumber != null ? p.itemNumber : typeof p.questionIdx === 'number' ? p.questionIdx + 1 : null;
   var ariaLabel = num != null ? ariaBase + ' ' + num : ariaBase;
+  var spokenText = _quizPlain(p.text != null ? p.text : _quizReadAloudText(p.q)).replace(/\s+/g, ' ').trim();
+  var [speechStatus, setSpeechStatus] = React.useState('idle');
+  var ownTextRef = React.useRef('');
+  React.useEffect(function () {
+    if (typeof window === 'undefined') return undefined;
+    var sync = function (detail) {
+      var st = detail && typeof detail === 'object' ? detail : window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.getState === 'function' ? window.AlloSpeechPlayer.getState() : null;
+      if (!st || !st.isPlaying || !ownTextRef.current || st.currentText !== ownTextRef.current) {
+        setSpeechStatus('idle');
+        return;
+      }
+      setSpeechStatus(st.status === 'generating' ? 'generating' : 'playing');
+    };
+    var onState = function (ev) {
+      sync(ev && ev.detail);
+    };
+    window.addEventListener('allo-speech-state', onState);
+    return function () {
+      window.removeEventListener('allo-speech-state', onState);
+    };
+  }, []);
+  var isActive = speechStatus === 'generating' || speechStatus === 'playing';
+  var handleClick = function () {
+    if (isActive && typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') {
+      ownTextRef.current = '';
+      setSpeechStatus('idle');
+      window.AlloSpeechPlayer.stop();
+      return;
+    }
+    ownTextRef.current = spokenText;
+    _quizSpeakAloud(spokenText, p.callTTS);
+  };
+  var icon = speechStatus === 'generating' ? '⏳' : speechStatus === 'playing' ? '⏹' : '🔊';
+  var textLabel = speechStatus === 'generating' ? loadingLabel : speechStatus === 'playing' ? stopLabel : listenLabel;
   return /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-quiz-listen": p.questionIdx,
-    onClick: function () {
-      _quizSpeakAloud(p.text != null ? p.text : _quizReadAloudText(p.q), p.callTTS);
-    },
-    "aria-label": ariaLabel,
-    title: ariaBase,
-    className: "no-print shrink-0 inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none"
+    "aria-pressed": isActive,
+    "aria-busy": speechStatus === 'generating' || undefined,
+    onClick: handleClick,
+    "aria-label": isActive ? stopLabel + ': ' + ariaLabel : ariaLabel,
+    title: isActive ? stopLabel : ariaBase,
+    className: 'no-print shrink-0 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none ' + (isActive ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'border-slate-200 bg-slate-50 text-indigo-700 hover:bg-indigo-50')
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🔊"), /*#__PURE__*/React.createElement("span", null, listenLabel));
+  }, icon), /*#__PURE__*/React.createElement("span", null, textLabel));
 }
 function AssessmentReasoningInput(p) {
   var q = p.q || {};
@@ -3032,12 +3099,56 @@ function _quizUseStageFocus(stage) {
   }, [stage]);
   return targetRef;
 }
+function _quizAcceptedSequencePrinciples(q) {
+  var list = [];
+  var seen = {};
+  var primary = q && q.orderingPrinciple ? String(q.orderingPrinciple).trim() : 'chronological';
+  if (primary) {
+    seen[primary.toLowerCase()] = true;
+    list.push(primary);
+  }
+  var extras = q && Array.isArray(q.acceptablePrinciples) ? q.acceptablePrinciples : [];
+  extras.forEach(function (val) {
+    var trimmed = String(val == null ? '' : val).trim();
+    var key = trimmed.toLowerCase();
+    if (trimmed && !seen[key]) {
+      seen[key] = true;
+      list.push(trimmed);
+    }
+  });
+  return list;
+}
+function _quizSequencePrincipleMatches(answer, q) {
+  var norm = String(answer == null ? '' : answer).trim().toLowerCase();
+  if (!norm) return false;
+  return _quizAcceptedSequencePrinciples(q).some(function (p) {
+    return p.toLowerCase() === norm;
+  });
+}
+function _quizSequencePrincipleOverlapNote(picked, acceptedList) {
+  var normPicked = String(picked == null ? '' : picked).trim().toLowerCase();
+  if (!normPicked || !Array.isArray(acceptedList) || acceptedList.length === 0) return '';
+  var overlapGroups = [['chronological', 'process', 'cause-effect'], ['size', 'hierarchy']];
+  for (var i = 0; i < overlapGroups.length; i++) {
+    var group = overlapGroups[i];
+    if (group.indexOf(normPicked) >= 0) {
+      var matchedAccepted = acceptedList.find(function (a) {
+        return group.indexOf(String(a).toLowerCase()) >= 0;
+      });
+      if (matchedAccepted) {
+        return '"' + picked + '" and "' + matchedAccepted + '" can often overlap for sequences like this.';
+      }
+    }
+  }
+  return '';
+}
 function SequenceSenseCard(p) {
   var q = p.q;
   var shortSequence = q.sequenceMode === 'arrange-explain';
   var canonicalItems = Array.isArray(q.items) ? q.items.filter(Boolean) : [];
   var intentionallyWrongIndex = typeof q.intentionallyWrongIndex === 'number' ? q.intentionallyWrongIndex : null;
   var orderingPrinciple = q.orderingPrinciple || 'chronological';
+  var acceptedPrinciples = _quizAcceptedSequencePrinciples(q);
   var principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 2 ? q.principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
   var modeStrat = p.modeStrategy || null;
   var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
@@ -3233,7 +3344,8 @@ function SequenceSenseCard(p) {
     setStep(4);
   }
   function answerPrinciple(p2) {
-    setPrincipleAnswer(p2);
+    var chosen = p2 == null || p2 === '' ? null : p2;
+    setPrincipleAnswer(chosen);
     var step1Correct = verifyAnswer === 'yes' ? actualOrderIsCorrect : !actualOrderIsCorrect;
     var step2Correct;
     if (verifyAnswer === 'yes') {
@@ -3244,9 +3356,11 @@ function SequenceSenseCard(p) {
     var arrangeCorrect = orderAnswer.every(function (canonicalIdx, position) {
       return canonicalIdx === position;
     });
-    var step3Correct = p2 === orderingPrinciple;
-    var maxScore = shortSequence ? 2 : 4;
-    var rawScore = (shortSequence ? 0 : (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0)) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
+    var step3Skipped = !chosen;
+    var step3Correct = !step3Skipped && _quizSequencePrincipleMatches(chosen, q);
+    var bonusScore = step3Correct ? 1 : 0;
+    var maxScore = shortSequence ? 1 : 3;
+    var rawScore = (shortSequence ? 0 : (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0)) + (arrangeCorrect ? 1 : 0);
     var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
     var score = partialCredit ? rawScore : rawScore === maxScore ? maxScore : 0;
     var status = score === maxScore ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
@@ -3255,13 +3369,15 @@ function SequenceSenseCard(p) {
       step2Correct: step2Correct,
       arrangeCorrect: arrangeCorrect,
       step3Correct: step3Correct,
+      step3Skipped: step3Skipped,
+      bonusScore: bonusScore,
       status: status,
       score: score,
       maxScore: maxScore
     };
     _quizRecordPracticeAttempt(p, {
       orderAnswer: orderAnswer,
-      principleAnswer: p2
+      principleAnswer: chosen
     }, confidence);
     setGrade(gradeResult);
     setStep('done');
@@ -3275,7 +3391,8 @@ function SequenceSenseCard(p) {
             verifyAnswer: verifyAnswer,
             clickedIdx: clickedIdx,
             orderAnswer: orderAnswer.slice(),
-            principleAnswer: p2,
+            principleAnswer: chosen,
+            bonusScore: bonusScore,
             score: score,
             status: status
           },
@@ -3409,24 +3526,32 @@ function SequenceSenseCard(p) {
           message: 'Moved ' + arrangedItems[movePosition] + ' ' + move[2] + '. Say done when the order is right.'
         };
       }
-      var principleIdx = _quizVoiceNamedChoiceIndex(choice, principleOptions);
-      if (step !== 4 || principleIdx < 0) return {
-        ok: false,
-        state: 'invalid-choice',
-        message: 'Choose an available ordering principle by number or exact name.'
-      };
-      var result = answerPrinciple(principleOptions[principleIdx]);
-      var resultMessage = result.status === 'correct' ? 'Sequence response checked. All four parts are correct.' : result.status === 'partially-correct' ? 'Sequence response checked. You earned ' + result.score + ' of 4 points.' : 'Sequence response checked. This sequence needs review.';
+      var principleText = String(choice == null ? '' : choice).trim().toLowerCase().replace(/[?!.,]+$/g, '').replace(/\s+/g, ' ');
+      var result;
+      if (step === 4 && /^(?:skip|skip bonus|no bonus|pass|done)$/.test(principleText)) {
+        result = answerPrinciple(null);
+      } else {
+        var principleIdx = _quizVoiceNamedChoiceIndex(choice, principleOptions);
+        if (step !== 4 || principleIdx < 0) return {
+          ok: false,
+          state: 'invalid-choice',
+          message: 'Choose an available ordering principle by number or exact name, or say skip.'
+        };
+        result = answerPrinciple(principleOptions[principleIdx]);
+      }
+      var bonusSuffix = result.bonusScore ? ' Plus 1 bonus point!' : '';
+      var resultMessage = result.status === 'correct' ? 'Sequence response checked. All sequence steps are correct.' + bonusSuffix : result.status === 'partially-correct' ? 'Sequence response checked. You earned ' + result.score + ' of ' + result.maxScore + ' points.' + bonusSuffix : 'Sequence response checked. This sequence needs review.' + bonusSuffix;
       return {
         ok: true,
         state: 'checked',
         correct: result.status === 'correct',
         score: result.score,
+        bonusScore: result.bonusScore,
         message: resultMessage
       };
     }
   });
-  var stageAnnouncement = step === 1 ? 'Step 1 of 4. Is this order correct?' : step === 2 ? 'Step 2 of 4. Choose an item that is out of place.' : step === 3 ? shortSequence ? 'Step 1 of 2. Arrange the items using the Move up and Move down buttons, then choose Done arranging.' : 'Step 3 of 4. Arrange the items using the Move up and Move down buttons, then choose Done arranging.' : step === 4 ? shortSequence ? 'Step 2 of 2. Choose the ordering principle.' : 'Step 4 of 4. Choose the ordering principle.' : '';
+  var stageAnnouncement = step === 1 ? 'Step 1 of 3. Is this order correct?' : step === 2 ? 'Step 2 of 3. Choose an item that is out of place.' : step === 3 ? shortSequence ? 'Arrange the items using the Move up and Move down buttons, then choose Done arranging.' : 'Step 3 of 3. Arrange the items using the Move up and Move down buttons, then choose Done arranging.' : step === 4 ? 'Optional bonus point. Choose the ordering principle, or skip bonus to check your sequence.' : '';
   if (canonicalItems.length === 0) return null;
   var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
   var sequenceTrail = shortSequence ? [{
@@ -3434,7 +3559,7 @@ function SequenceSenseCard(p) {
     label: 'Arrange'
   }, {
     id: 4,
-    label: 'Principle'
+    label: 'Bonus (+1)'
   }] : [{
     id: 1,
     label: 'Verify'
@@ -3446,8 +3571,12 @@ function SequenceSenseCard(p) {
     label: 'Arrange'
   }, {
     id: 4,
-    label: 'Principle'
+    label: 'Bonus (+1)'
   }];
+  var overlapNote = grade && !grade.step3Correct && !grade.step3Skipped ? _quizSequencePrincipleOverlapNote(principleAnswer, acceptedPrinciples) : '';
+  var acceptedLabel = acceptedPrinciples.map(function (a) {
+    return '"' + a + '"';
+  }).join(' or ');
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-5 rounded-xl border border-slate-300 shadow-sm"
   }, /*#__PURE__*/React.createElement("p", {
@@ -3548,7 +3677,7 @@ function SequenceSenseCard(p) {
     className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900 mb-2"
-  }, "Step 1 of 4 — Is this order correct?"), /*#__PURE__*/React.createElement("div", {
+  }, "Step 1 of 3 — Is this order correct?"), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -3575,7 +3704,7 @@ function SequenceSenseCard(p) {
     className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-between gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900"
-  }, "Step 2 of 4 — Click an item that's out of place above."), /*#__PURE__*/React.createElement("button", {
+  }, "Step 2 of 3 — Click an item that's out of place above."), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-assessment-sequence-back": true,
     onClick: goBackStep,
@@ -3590,7 +3719,7 @@ function SequenceSenseCard(p) {
     className: "flex items-center justify-between gap-2 flex-wrap mb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900"
-  }, shortSequence ? 'Step 1 of 2 — Arrange the items.' : 'Step 3 of 4 — Put the items in the correct order. If they are already right, leave them.'), !shortSequence && /*#__PURE__*/React.createElement("button", {
+  }, shortSequence ? 'Arrange the items.' : 'Step 3 of 3 — Put the items in the correct order. If they are already right, leave them.'), !shortSequence && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-assessment-sequence-back": true,
     onClick: goBackStep,
@@ -3648,15 +3777,17 @@ function SequenceSenseCard(p) {
   }, "Done arranging")), step === 4 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between gap-2 flex-wrap mb-2"
+    className: "flex items-center justify-between gap-2 flex-wrap mb-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900"
-  }, shortSequence ? 'Step 2 of 2 — Identify the ordering principle.' : "Step 4 of 4 — What's the ordering principle?"), /*#__PURE__*/React.createElement("button", {
+  }, "Bonus (+1, optional) — What's the ordering principle?"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-assessment-sequence-back": true,
     onClick: goBackStep,
     className: "min-h-9 rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50"
-  }, "← Back")), /*#__PURE__*/React.createElement("div", {
+  }, "← Back")), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-indigo-800 mb-2"
+  }, "Optional bonus point — skipping or choosing a different label will not lower your sequence score."), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 md:grid-cols-3 gap-2"
   }, principleOptions.map(function (opt) {
     return /*#__PURE__*/React.createElement("button", {
@@ -3673,7 +3804,16 @@ function SequenceSenseCard(p) {
       index: principleOptions.indexOf(opt),
       text: opt
     }));
-  }))), grade && /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2.5 flex justify-end"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-sequence-skip-bonus": true,
+    onClick: function () {
+      answerPrinciple(null);
+    },
+    className: "min-h-9 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors motion-reduce:transition-none"
+  }, "Skip bonus & check"))), grade && /*#__PURE__*/React.createElement("div", {
     className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
     role: "status",
     "aria-live": "polite"
@@ -3684,9 +3824,9 @@ function SequenceSenseCard(p) {
     tabIndex: -1,
     "data-assessment-stage-result": true,
     className: 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-xs uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
-  }, grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / ' + (shortSequence ? 2 : 4) + ' — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
+  }, grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / ' + (grade.maxScore || (shortSequence ? 1 : 3)) + (grade.bonusScore ? ' (+' + grade.bonusScore + ' bonus)' : '') + ' — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
     className: 'space-y-1 text-sm text-' + statusColor + '-900'
-  }, !shortSequence && /*#__PURE__*/React.createElement("li", null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (actualOrderIsCorrect ? 'order was correct' : describeSequenceMisplaced(misplacedPositions)) + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')), !shortSequence && verifyAnswer === 'no' && /*#__PURE__*/React.createElement("li", null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found a misplaced item' : actualOrderIsCorrect ? 'nothing was misplaced' : describeSequenceMisplaced(misplacedPositions) + (misplacedPositions.length > 1 ? ' (either one counts)' : ''))), /*#__PURE__*/React.createElement("li", null, (grade.arrangeCorrect ? '✓ ' : '✗ ') + 'Arrange: ' + (grade.arrangeCorrect ? 'your order matched' : 'correct order is ' + canonicalItems.join(' → '))), /*#__PURE__*/React.createElement("li", null, (grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")'))), /*#__PURE__*/React.createElement("div", {
+  }, !shortSequence && /*#__PURE__*/React.createElement("li", null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (actualOrderIsCorrect ? 'order was correct' : describeSequenceMisplaced(misplacedPositions)) + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')), !shortSequence && verifyAnswer === 'no' && /*#__PURE__*/React.createElement("li", null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found a misplaced item' : actualOrderIsCorrect ? 'nothing was misplaced' : describeSequenceMisplaced(misplacedPositions) + (misplacedPositions.length > 1 ? ' (either one counts)' : ''))), /*#__PURE__*/React.createElement("li", null, (grade.arrangeCorrect ? '✓ ' : '✗ ') + 'Arrange: ' + (grade.arrangeCorrect ? 'your order matched' : 'correct order is ' + canonicalItems.join(' → '))), /*#__PURE__*/React.createElement("li", null, grade.step3Correct ? '★ Bonus (+1): "' + principleAnswer + '"' : grade.step3Skipped ? '☆ Bonus (skipped): suggested principle is ' + acceptedLabel + ' (no penalty)' : '☆ Bonus (0): suggested ' + acceptedLabel + ' (you picked "' + principleAnswer + '" — no penalty' + (overlapNote ? '; ' + overlapNote : '') + ')')), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex items-center gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -9929,7 +10069,9 @@ function AssessmentDiagnosticFields(p) {
       }, "Position ", index + 1);
     }))), /*#__PURE__*/React.createElement("label", {
       className: "block text-xs font-bold text-slate-700"
-    }, "Ordering principle", /*#__PURE__*/React.createElement("input", {
+    }, "Ordering principle ", /*#__PURE__*/React.createElement("span", {
+      className: "font-normal text-slate-600"
+    }, "(optional +1 bonus)"), /*#__PURE__*/React.createElement("input", {
       value: q.orderingPrinciple || '',
       onChange: function (event) {
         patch({
@@ -9937,7 +10079,40 @@ function AssessmentDiagnosticFields(p) {
         });
       },
       className: "block w-full mt-1 text-xs border-slate-300 rounded-md p-2"
-    })), /*#__PURE__*/React.createElement(AssessmentTextListEditor, {
+    })), Array.isArray(q.principleOptions) && q.principleOptions.filter(function (opt) {
+      return opt && String(opt).trim().toLowerCase() !== String(q.orderingPrinciple || '').trim().toLowerCase();
+    }).length > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "rounded-lg border border-slate-200 bg-slate-50 p-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-xs font-bold text-slate-700 mb-1"
+    }, "Also accept as valid bonus principles ", /*#__PURE__*/React.createElement("span", {
+      className: "font-normal text-slate-600"
+    }, "(when categories overlap)")), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-2"
+    }, q.principleOptions.filter(function (opt) {
+      return opt && String(opt).trim().toLowerCase() !== String(q.orderingPrinciple || '').trim().toLowerCase();
+    }).map(function (opt) {
+      var extras = Array.isArray(q.acceptablePrinciples) ? q.acceptablePrinciples : [];
+      var checked = extras.some(function (x) {
+        return String(x).trim().toLowerCase() === String(opt).trim().toLowerCase();
+      });
+      return /*#__PURE__*/React.createElement("label", {
+        key: opt,
+        className: "inline-flex items-center gap-1.5 text-xs text-slate-700 bg-white border border-slate-200 rounded px-2 py-1"
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: checked,
+        onChange: function (event) {
+          var next = extras.filter(function (x) {
+            return String(x).trim().toLowerCase() !== String(opt).trim().toLowerCase();
+          });
+          if (event.target.checked) next.push(opt);
+          patch({
+            acceptablePrinciples: next
+          });
+        }
+      }), opt);
+    }))), /*#__PURE__*/React.createElement(AssessmentTextListEditor, {
       label: "Principle choices",
       itemLabel: "choice",
       values: q.principleOptions || [],
@@ -10090,7 +10265,31 @@ function AssessmentItemEditor(p) {
     className: "w-full text-sm font-semibold border-slate-300 rounded-md p-2 resize-y"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "ml-9 space-y-3"
-  }, /*#__PURE__*/React.createElement("label", {
+  }, q.imageUrl && /*#__PURE__*/React.createElement("div", {
+    className: "rounded-lg border border-slate-200 bg-slate-50 p-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between gap-2 mb-1.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-slate-700"
+  }, "Question picture"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-quiz-remove-image": 'question-' + p.questionIdx,
+    onClick: function () {
+      patch({
+        imageUrl: '',
+        imageAltText: ''
+      });
+    },
+    "aria-label": "Remove picture",
+    className: "inline-flex items-center gap-1 rounded-md border border-rose-300 bg-white px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50 transition-colors motion-reduce:transition-none"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🗑️"), " Remove picture")), /*#__PURE__*/React.createElement("img", {
+    src: q.imageUrl,
+    alt: _quizAuthoredImageAlt(q.imageAltText),
+    loading: "lazy",
+    className: "max-h-48 w-full rounded object-contain bg-white border border-slate-200"
+  })), /*#__PURE__*/React.createElement("label", {
     className: "block text-xs font-bold text-slate-700"
   }, "Concept label", /*#__PURE__*/React.createElement("input", {
     value: q.conceptLabel || '',
@@ -12252,9 +12451,10 @@ function _quizEvaluateSubmittedItem(q, index, responses, scoringPolicy) {
     var orderOk = Array.isArray(answer.orderAnswer) && answer.orderAnswer.length > 0 && answer.orderAnswer.every(function (cIdx, pos) {
       return cIdx === pos;
     });
-    var principleOk = _quizAnswerMatches(answer.principleAnswer, q.orderingPrinciple);
+    var principleOk = !!answer.principleAnswer && _quizSequencePrincipleMatches(answer.principleAnswer, q);
     return {
-      status: orderOk && principleOk ? 'matched' : orderOk || principleOk ? 'partial' : 'needs-review',
+      status: orderOk ? 'matched' : principleOk ? 'partial' : 'needs-review',
+      bonusEarned: principleOk,
       confidence: confidence,
       answer: answer
     };
@@ -12875,13 +13075,13 @@ function DeferredAssessmentItem(p) {
     className: "min-h-11 min-w-11 rounded border border-slate-400 text-slate-800 disabled:opacity-40"
   }, delta < 0 ? '↑' : '↓')))))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
-  }, "Ordering principle", /*#__PURE__*/React.createElement("select", {
+  }, "Ordering principle (optional bonus)", /*#__PURE__*/React.createElement("select", {
     className: inputClass,
     value: principleAnswer,
     onChange: e => setPrincipleAnswer(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "Choose a principle"), (q.principleOptions || ['chronological', 'cause-effect', 'process', 'size', 'hierarchy']).map((v, i) => /*#__PURE__*/React.createElement("option", {
+  }, "Skip or choose a principle"), (q.principleOptions || ['chronological', 'cause-effect', 'process', 'size', 'hierarchy']).map((v, i) => /*#__PURE__*/React.createElement("option", {
     key: v,
     value: v
   }, v, q.principleOptions_en?.[i] ? ' — ' + q.principleOptions_en[i] : ''))))), type === 'relation-mismatch' && /*#__PURE__*/React.createElement("div", {
@@ -14327,6 +14527,42 @@ function QuizViewContent(props) {
       if (failures === 0) addToast(t('toasts.rewrote') + updates.length + ' distractor' + (updates.length === 1 ? '' : 's') + '.', 'success');else addToast(t('toasts.rewrote') + updates.length + ' / ' + tasks.length + ' (' + failures + ' failed — try again).', failures > updates.length ? 'error' : 'success');
     }
   }
+  function removeQuizImage(qIdx, target, optIdx) {
+    var key = refineKey(qIdx, target, optIdx);
+    setRefineOpen(function (prev) {
+      if (!prev[key]) return prev;
+      var next = Object.assign({}, prev);
+      next[key] = false;
+      return next;
+    });
+    if (typeof handleQuizImageRefine === 'function') {
+      handleQuizImageRefine(qIdx, target, optIdx, null);
+    } else if (typeof props.handleQuizQuestionAction === 'function') {
+      if (target === 'question') {
+        props.handleQuizQuestionAction(qIdx, 'patch', {
+          imageUrl: '',
+          imageAltText: ''
+        });
+      } else if (target === 'option' && typeof optIdx === 'number') {
+        var q = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions) ? generatedContent.data.questions[qIdx] : null;
+        var nextUrls = Array.isArray(q && q.optionImageUrls) ? q.optionImageUrls.slice() : [];
+        nextUrls[optIdx] = null;
+        var allEmpty = nextUrls.every(function (u) {
+          return !u;
+        });
+        var patchPayload = {
+          optionImageUrls: allEmpty ? [] : nextUrls
+        };
+        if (Array.isArray(q && q.optionImageAltTexts)) {
+          var nextAlts = q.optionImageAltTexts.slice();
+          nextAlts[optIdx] = '';
+          patchPayload.optionImageAltTexts = allEmpty ? [] : nextAlts;
+        }
+        props.handleQuizQuestionAction(qIdx, 'patch', patchPayload);
+      }
+    }
+    if (typeof addToast === 'function') addToast('Picture removed.', 'info');
+  }
   function renderImageRefineOverlay(qIdx, target, optIdx, isCompact) {
     if (!isEditingQuiz) return null;
     var key = refineKey(qIdx, target, optIdx);
@@ -14334,18 +14570,34 @@ function QuizViewContent(props) {
     var isLoading = !!isRefiningQuizImage[key];
     var inputValue = quizImageRefineInputs[key] || '';
     var btnSize = isCompact ? 'h-6 w-6 text-xs' : 'h-7 w-7 text-xs';
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    var removeId = target + '-' + qIdx + (optIdx != null ? '-' + optIdx : '');
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "absolute top-1 right-1 flex items-center gap-1"
+    }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: function (e) {
         e.stopPropagation();
         toggleRefinePanel(key);
       },
       disabled: isLoading || !!_quizAiDoor(t, 'imageEdit')?.disabled,
-      className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50',
+      className: btnSize + ' rounded-full bg-white/95 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50',
       title: isLoading ? 'Refining…' : _quizAiDoor(t, 'imageEdit')?.title || 'Refine this image',
       "aria-label": t("a11y.refine_image"),
       "data-help-key": "quiz_image_refine_btn"
-    }, isLoading ? '⋯' : '✏️'), isOpen && /*#__PURE__*/React.createElement("div", {
+    }, isLoading ? '⋯' : '✏️'), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-quiz-remove-image": removeId,
+      onClick: function (e) {
+        e.stopPropagation();
+        removeQuizImage(qIdx, target, optIdx);
+      },
+      disabled: isLoading,
+      className: (isCompact ? 'h-6 w-6 justify-center' : 'h-7 px-2 gap-1') + ' rounded-full bg-white/95 hover:bg-rose-50 border border-rose-300 text-rose-700 text-xs font-bold shadow-sm inline-flex items-center transition-colors motion-reduce:transition-none disabled:opacity-50',
+      title: "Remove picture",
+      "aria-label": "Remove picture"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "🗑️"), !isCompact && /*#__PURE__*/React.createElement("span", null, "Remove"))), isOpen && /*#__PURE__*/React.createElement("div", {
       className: "mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-1.5 flex-wrap"
@@ -14360,7 +14612,17 @@ function QuizViewContent(props) {
       title: t("tooltips.one_click_remove_text")
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
-    }, "🧹 "), t("ui_common.remove_text"))), /*#__PURE__*/React.createElement("textarea", _extends({
+    }, "🧹 "), t("ui_common.remove_text")), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function () {
+        removeQuizImage(qIdx, target, optIdx);
+      },
+      disabled: isLoading,
+      className: "text-xs font-bold px-2 py-0.5 rounded bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 disabled:opacity-50",
+      "aria-label": "Remove this picture"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "🗑️ "), "Remove picture")), /*#__PURE__*/React.createElement("textarea", _extends({
       "aria-label": "Image refinement instructions",
       value: inputValue
     }, _quizCompositionEvents, {

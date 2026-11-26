@@ -3215,10 +3215,10 @@ function GlossaryPanel(props) {
     InfoTooltip, autoRemoveWords, expandedTools,
     glossaryCustomInstructions, glossaryDefinitionLevel, glossaryTier2Count,
     glossaryTier3Count, gradeLevel, handleGenerate,
-    hasSourceOrAnalysis, includeEtymology, isProcessing,
+    hasSourceOrAnalysis, includeEtymology, includeExampleSentence, isProcessing,
     leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
     setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count,
-    setIncludeEtymology, t, nativeLanguageDefaultsVersion, appLanguage, currentUiLanguage,
+    setIncludeEtymology, setIncludeExampleSentence, t, nativeLanguageDefaultsVersion, appLanguage, currentUiLanguage,
     translationMode, resolveTranslationPolicy, translationTargetChoices, analyzedGlossaryCounts,
     onStartFromWordList, sourceVocabulary
   } = props;
@@ -3328,6 +3328,22 @@ function GlossaryPanel(props) {
                         {includeEtymology && (
                             <p className={`${SIDEBAR_PANEL_UI.help} ml-6`}>
                                 {t('glossary.settings.etymology_always_all') || 'Applied to every term — shows the actual root morphemes, word history, and related English words that share the root.'}
+                            </p>
+                        )}
+                    </div>
+                    <div className="mb-3" data-help-key="glossary_example_sentence_info">
+                        <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={!!includeExampleSentence} disabled={_dictionaryOn}
+                                onChange={(e) => typeof setIncludeExampleSentence === 'function' && setIncludeExampleSentence(e.target.checked)}
+                                className={SIDEBAR_PANEL_UI.checkbox}
+                            />
+                            💬 {t('glossary.settings.include_example_sentence') || 'Include example sentence'}
+                        </label>
+                        {includeExampleSentence && (
+                            <p className={`${SIDEBAR_PANEL_UI.help} ml-6`}>
+                                {t('glossary.settings.example_sentence_help') || 'Generates a grade-appropriate sentence using each word, separate from source quotes.'}
                             </p>
                         )}
                     </div>
@@ -5035,7 +5051,7 @@ function GeneratorActionsView(props) {
     handleSetFullPackPlanAdaptedTextPolicy, handleSetStandardModeToAi, handleSetStandardModeToManual,
     handleStartAdventure, handleStopFullPack, handleToggleAllTools, handleUseResolvedStandard,
     hasSavedAdventureForLesson, hasSourceOrAnalysis, hiddenToolCatalogSelector, history,
-    imageAspectRatio, imageGenerationStyle, imageStyle, includeCharts, includeEtymology,
+    imageAspectRatio, imageGenerationStyle, imageStyle, includeCharts, includeEtymology, includeExampleSentence,
     includeTimelineVisuals, inputText, interestInput, isAdventureCloudEnabled, isAdventureStoryMode,
     isAutoConfigEnabled, isFindingStandards, isGeneratingPersona, isGuidedToolVisible, isIndependentMode,
     isMathGraphEnabled, isParentMode, isPersonaFreeResponse, isProcessing, isResumingAdventure,
@@ -5067,7 +5083,7 @@ function GeneratorActionsView(props) {
     setFaqCustomInstructions, setFillInTheBlank, setFrameCustomInstructions, setFrameType,
     setFullPackAddType, setFullPackTargetGroup, setGeneratedContent, setGlossaryCustomInstructions,
     setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setGradeLevel, setHistory,
-    setImageStyle, setIncludeCharts, setIncludeEtymology, setIncludeTimelineVisuals, setInterestInput,
+    setImageStyle, setIncludeCharts, setIncludeEtymology, setIncludeExampleSentence, setIncludeTimelineVisuals, setInterestInput,
     setIsAdventureCloudEnabled, setIsAdventureStoryMode, setIsAutoConfigEnabled, setIsMathGraphEnabled,
     setIsPersonaFreeResponse, setIsSocialStoryMode, setIsToolCatalogExpanded, setIsToolCatalogHidden,
     setIsUniversalSettingsOpen, setKeepCitations, setLanguageInput, setLessonCustomAdditions,
@@ -5233,9 +5249,9 @@ function GeneratorActionsView(props) {
                 {expandedTools.includes('glossary') && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
           expandedTools, InfoTooltip, autoRemoveWords, glossaryCustomInstructions,
           glossaryDefinitionLevel, glossaryTier2Count, glossaryTier3Count, gradeLevel,
-          handleGenerate, hasSourceOrAnalysis, includeEtymology, isProcessing,
+          handleGenerate, hasSourceOrAnalysis, includeEtymology, includeExampleSentence, isProcessing,
           leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
-          setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology,
+          setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology, setIncludeExampleSentence,
           t, nativeLanguageDefaultsVersion, appLanguage, currentUiLanguage,
           translationMode, resolveTranslationPolicy, translationTargetChoices,
           onStartFromWordList: isTeacherMode ? () => openWordListStart('glossary') : undefined, sourceVocabulary: props.sourceVocabulary,

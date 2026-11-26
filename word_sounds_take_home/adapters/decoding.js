@@ -78,7 +78,7 @@ module.exports = {
     item.choices.forEach(function (choice, i) {
       var right = norm(choice.text) === norm(item.target);
       var src = ctx.image(choice.image);
-      var name = ctx.fmt(ctx.L.decoding_picture_of, { word: choice.text });
+      var name = 'Picture ' + (i + 1);
       // The picture's number, the key 1-9 that chooses it (2026-11-13).
       var number = i < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:26px;border-radius:14px;border:1px solid var(--accent-ink);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(i + 1) }) : null;
       var pick = ctx.el('button', { type: 'button', 'aria-label': name, style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
@@ -91,7 +91,7 @@ module.exports = {
           if (outcome !== 'correct') { box.classList.add('tried'); pick.setAttribute('aria-disabled', 'true'); }
         } } }, [number, ctx.el('img', { class: 'picture', src: src || '', alt: '', style: 'max-width:min(100%,160px);height:auto;object-fit:contain' })]);
       var box = ctx.el('li', { class: 'choice' }, [pick]);
-      cards.push({ box: box, pick: pick, right: right });
+      cards.push({ box: box, pick: pick, right: right, text: choice.text });
       list.appendChild(box);
     });
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.decoding_prompt }));
@@ -107,9 +107,12 @@ module.exports = {
       reveal: function () {
         cards.forEach(function (c) {
           c.pick.setAttribute('aria-disabled', 'true');
-          if (c.right && !c.box.classList.contains('right')) {
-            c.box.classList.add('right');
-            c.pick.setAttribute('aria-label', c.pick.getAttribute('aria-label') + ' ' + ctx.L.decoding_answer_mark);
+          var revealed = ctx.fmt(ctx.L.decoding_picture_of, { word: c.text });
+          if (c.right) {
+            if (!c.box.classList.contains('right')) c.box.classList.add('right');
+            c.pick.setAttribute('aria-label', revealed + ' ' + ctx.L.decoding_answer_mark);
+          } else {
+            c.pick.setAttribute('aria-label', revealed);
           }
         });
       },

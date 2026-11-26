@@ -70,6 +70,38 @@
     return base + who + '.html';
   }
 
+  function withSpeechManifest(html) {
+    if (typeof html !== 'string' || html.indexOf('speechSynthesis') < 0) return html;
+    var tag = '<script type="application/json" id="packet-manifest">';
+    var start = html.indexOf(tag);
+    if (start < 0) return html;
+    var bodyStart = start + tag.length;
+    var end = html.indexOf('</script>', bodyStart);
+    if (end < 0) return html;
+    try {
+      var obj = JSON.parse(html.slice(bodyStart, end), function (k, v) {
+        return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v;
+      });
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return html;
+      if (!obj.speech) {
+        obj.speech = {
+          engine: 'speechSynthesis',
+          localOnly: true,
+          when: 'only when the learner presses Read aloud',
+        };
+      }
+      var json = JSON.stringify(obj)
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
+      return html.slice(0, bodyStart) + json + html.slice(end);
+    } catch (_) {
+      return html;
+    }
+  }
+
   function withCodeName(html, learner) {
     var clean = codeName(learner);
     if (!clean) return html;
@@ -174,6 +206,8 @@
     { id: 'st_stem_geom_area', source: 'stemLab', activity: 'stem_geometry_grid', starterId: 'geom_area_perimeter', domain: 'STEM Lab', gradeBand: 'Grades 4-6', label: 'Area & Perimeter Tile Grid', summary: 'Build rectangles with target area and perimeter on a live unit grid.', defaultMaxItems: 0 },
     { id: 'st_life_money', source: 'lifeSkills', activity: 'life_money', starterId: 'ls_money_change', domain: 'Life Skills', gradeBand: 'Grades 6-12', label: 'Making Change & Budgeting', summary: 'Count US bills and coins for exact pay, change, and a $12 grocery budget.', defaultMaxItems: 0 },
     { id: 'st_life_transit', source: 'lifeSkills', activity: 'life_transit', starterId: 'ls_transit_routes', domain: 'Life Skills', gradeBand: 'Grades 6-12', label: 'Transit & Schedule Reading', summary: 'Read departure tables, transfer platforms, and travel times.', defaultMaxItems: 0 },
+    { id: 'st_life_kitchen', source: 'lifeSkills', activity: 'life_kitchen', starterId: 'ls_kitchen_safety', domain: 'Life Skills', gradeBand: 'Grades 6-12', label: 'Kitchen & Home Safety', summary: 'Practice safe stove, food handling, and home emergency routines.', defaultMaxItems: 0 },
+    { id: 'st_life_laundry', source: 'lifeSkills', activity: 'life_laundry', starterId: 'ls_laundry_care', domain: 'Life Skills', gradeBand: 'Grades 6-12', label: 'Laundry Sorting & Care Tags', summary: 'Sort garments by color and care labels for safe washing and drying.', defaultMaxItems: 0 },
     { id: 'st_life_signs', source: 'lifeSkills', activity: 'life_signs', starterId: 'ls_community_signs', domain: 'Life Skills', gradeBand: 'Grades 4-12', label: 'Community & Safety Signs', summary: 'Identify exit, caution, and accessible route signs in community settings.', defaultMaxItems: 0 },
     { id: 'st_sel_first_then', source: 'sel', activity: 'sel_first_then', starterId: 'sel_first_then_routine', domain: 'Focus & UDL', gradeBand: 'Grades K-12', label: 'First-Then & Task Checklist', summary: 'Plan the work steps before diving into the unit.', defaultMaxItems: 0 },
     { id: 'st_sel_calm', source: 'sel', activity: 'sel_calm_toolkit', starterId: 'sel_calm_reset_cards', domain: 'Focus & UDL', gradeBand: 'Grades K-12', label: 'Private Calm Reset Cards', summary: 'Optional private breathing, grounding, and stretch cards between tasks.', defaultMaxItems: 0 },
@@ -257,6 +291,66 @@
     throw new Error('buildPlaylistPacket needs AlloWordSoundsTakeHome loader');
   }
 
+  var ACTIVITY_META = {
+    concept_sort: { source: 'choice', domain: 'Choice & Sort', badge: 'Choice & Sort', label: 'Concept Sort', summary: 'Sort examples into categories.', defaultStarterId: 'sci_states_matter_sort' },
+    sequence_order: { source: 'choice', domain: 'Choice & Sort', badge: 'Choice & Sort', label: 'Sequence & Timeline', summary: 'Arrange steps or events in order.', defaultStarterId: 'sci_water_cycle_seq' },
+    tiered_writing: { source: 'choice', domain: 'Writing', badge: 'Writing', label: 'Tiered Frame Writing', summary: 'Draft a response using sentence frames and a word bank.', defaultStarterId: 'ela_claim_evidence_write' },
+    choice_board: { source: 'choice', domain: 'Choice & Sort', badge: 'Choice & Sort', label: 'UDL Choice Board', summary: 'Choose one of three equivalent ways to show understanding.', defaultStarterId: 'sci_ecosystems_choice' },
+    maze_reading: { source: 'maze', domain: 'Reading Fluency', badge: 'Reading Fluency', label: 'Maze Reading', summary: 'Choose the word that fits each passage blank in context.', defaultStarterId: 'g2_3_pond_helpers' },
+    manip_base_ten: { source: 'manipulatives', domain: 'Math Manipulatives', badge: 'Math Manipulatives', label: 'Place Value Base-10 Blocks', summary: 'Build numbers using interactive hundreds flats, tens rods, and ones cubes.', defaultStarterId: 'b10_place_value_g2' },
+    manip_fraction_bars: { source: 'manipulatives', domain: 'Math Manipulatives', badge: 'Math Manipulatives', label: 'Equivalent Fractions Bars', summary: 'Shade interactive fraction bars to build and compare equivalent fractions.', defaultStarterId: 'frac_equiv_g4' },
+    manip_number_line: { source: 'manipulatives', domain: 'Math Manipulatives', badge: 'Math Manipulatives', label: 'Number Line Jumps & Integers', summary: 'Plot values and step across positive and negative numbers on a number line.', defaultStarterId: 'nl_integers_fracs_g6' },
+    manip_balance_scale: { source: 'manipulatives', domain: 'Math Manipulatives', badge: 'Math Manipulatives', label: 'One-Step Equations Balance Scale', summary: 'Keep both pans balanced to isolate x visually.', defaultStarterId: 'bal_one_step_g6' },
+    stem_circuit: { source: 'stemLab', domain: 'STEM Lab', badge: 'STEM Lab', label: 'Series Circuit Exploration', summary: 'Wire a battery, switch, and bulbs in an interactive circuit simulator.', defaultStarterId: 'circuit_series_basics' },
+    stem_data_explorer: { source: 'stemLab', domain: 'STEM Lab', badge: 'STEM Lab', label: 'Plant Growth Data Explorer', summary: 'Inspect real experiment data in an interactive bar chart and table.', defaultStarterId: 'data_plant_growth' },
+    stem_geometry_grid: { source: 'stemLab', domain: 'STEM Lab', badge: 'STEM Lab', label: 'Area & Perimeter Tile Grid', summary: 'Build rectangles with target area and perimeter on a live unit grid.', defaultStarterId: 'geom_area_perimeter' },
+    life_money: { source: 'lifeSkills', domain: 'Life Skills', badge: 'Life Skills', label: 'Making Change & Budgeting', summary: 'Count US bills and coins for exact pay, change, and budgeting.', defaultStarterId: 'ls_money_change' },
+    life_transit: { source: 'lifeSkills', domain: 'Life Skills', badge: 'Life Skills', label: 'Transit & Schedule Reading', summary: 'Read departure tables, transfer platforms, and travel times.', defaultStarterId: 'ls_transit_routes' },
+    life_kitchen: { source: 'lifeSkills', domain: 'Life Skills', badge: 'Life Skills', label: 'Kitchen & Home Safety', summary: 'Practice safe stove, food handling, and home emergency routines.', defaultStarterId: 'ls_kitchen_safety' },
+    life_laundry: { source: 'lifeSkills', domain: 'Life Skills', badge: 'Life Skills', label: 'Laundry Sorting & Care Tags', summary: 'Sort garments by color and care labels for safe washing and drying.', defaultStarterId: 'ls_laundry_care' },
+    life_signs: { source: 'lifeSkills', domain: 'Life Skills', badge: 'Life Skills', label: 'Community & Safety Signs', summary: 'Identify exit, caution, and accessible route signs in community settings.', defaultStarterId: 'ls_community_signs' },
+    sel_first_then: { source: 'sel', domain: 'Focus & UDL', badge: 'Focus & UDL', label: 'First-Then & Task Checklist', summary: 'Plan the work steps before diving into the unit.', defaultStarterId: 'sel_first_then_routine' },
+    sel_calm_toolkit: { source: 'sel', domain: 'Focus & UDL', badge: 'Focus & UDL', label: 'Private Calm Reset Cards', summary: 'Optional private breathing, grounding, and stretch cards between tasks.', defaultStarterId: 'sel_calm_reset_cards' },
+    sel_udl_reflect: { source: 'sel', domain: 'Focus & UDL', badge: 'Focus & UDL', label: 'Private UDL Reflection & Goal Check', summary: 'Choose which learning supports helped most (notes private by default).', defaultStarterId: 'sel_udl_goal_check' },
+  };
+
+  function describeActivity(activity) {
+    var key = String(activity || '').trim();
+    if (!key) return null;
+    if (Object.prototype.hasOwnProperty.call(ACTIVITY_META, key)) {
+      var m = ACTIVITY_META[key];
+      return {
+        activity: key,
+        source: m.source,
+        domain: m.domain,
+        badge: m.badge,
+        label: m.label,
+        summary: m.summary,
+        defaultStarterId: m.defaultStarterId,
+      };
+    }
+    var src = resolveSourceForActivity(key);
+    if (!src) return null;
+    var domainMap = {
+      choice: 'Choice & Sort',
+      maze: 'Reading Fluency',
+      manipulatives: 'Math Manipulatives',
+      stemLab: 'STEM Lab',
+      lifeSkills: 'Life Skills',
+      sel: 'Focus & UDL',
+    };
+    var dom = domainMap[src] || 'Activity';
+    return {
+      activity: key,
+      source: src,
+      domain: dom,
+      badge: dom,
+      label: key.replace(/_/g, ' '),
+      summary: '',
+      defaultStarterId: '',
+    };
+  }
+
   function resolveSourceForActivity(act) {
     if (act === 'concept_sort' || act === 'sequence_order' || act === 'tiered_writing' || act === 'choice_board') return 'choice';
     if (act === 'maze_reading') return 'maze';
@@ -270,10 +364,12 @@
   function buildStagePayload(spec, builders) {
     var cat = spec && spec.stageId ? stageById(spec.stageId) : null;
     var activity = (spec && spec.activity) || (cat && cat.activity) || '';
-    var source = (spec && spec.source) || (cat && cat.source) || resolveSourceForActivity(activity);
-    var starterId = (spec && spec.starterId) || (cat && cat.starterId) || '';
-    var label = str((spec && spec.label) || (cat && cat.label) || activity, 80);
-    var domain = str((spec && spec.domain) || (cat && cat.domain) || '', 40);
+    var meta = describeActivity(activity);
+    var source = (spec && spec.source) || (cat && cat.source) || (meta && meta.source) || resolveSourceForActivity(activity);
+    var starterId = (spec && spec.starterId) || (cat && cat.starterId) || (meta && meta.defaultStarterId) || '';
+    var label = str((spec && spec.label) || (cat && cat.label) || (meta && meta.label) || activity, 80);
+    var domain = str((spec && spec.domain) || (cat && cat.domain) || (meta && meta.domain) || '', 40);
+    var summary = str((spec && spec.summary) || (cat && cat.summary) || (meta && meta.summary) || '', 180);
     var maxItems = (spec && spec.maxItems != null && spec.maxItems !== '')
       ? Math.max(0, Math.floor(Number(spec.maxItems) || 0))
       : (cat && cat.defaultMaxItems ? cat.defaultMaxItems : 0);
@@ -406,6 +502,7 @@
       starterId: starterId,
       domain: domain,
       label: label || adapter.title || activity,
+      summary: summary,
       maxItems: maxItems,
       items: items,
       stretchItems: stretchItems,
@@ -502,6 +599,7 @@
         starterId: st.starterId,
         domain: st.domain,
         label: st.label,
+        summary: st.summary || '',
         maxItems: st.maxItems,
         itemCount: cleanItems.length,
       });
@@ -633,7 +731,7 @@
       stationBilingual: opts.stationBilingual || root.AlloPacketStationBilingual,
     };
 
-    var baseHtml = loader.buildHtml(lesson, buildOpts);
+    var baseHtml = withSpeechManifest(loader.buildHtml(lesson, buildOpts));
     var cleanLearner = codeName(opts.learner || '');
     var html = cleanLearner ? withCodeName(baseHtml, cleanLearner) : baseHtml;
     var plain = fileName(lesson.title, '');
@@ -690,13 +788,15 @@
     var stages = stageBlocks.map(function (b, idx) {
       var m = metaList[idx] || {};
       var cat = m.stageId ? stageById(m.stageId) : null;
+      var meta = describeActivity(b.activity);
       return {
         stageId: m.stageId || (cat ? cat.id : ''),
-        source: m.source || resolveSourceForActivity(b.activity),
+        source: m.source || (cat ? cat.source : '') || (meta ? meta.source : '') || resolveSourceForActivity(b.activity),
         activity: b.activity,
-        starterId: m.starterId || (cat ? cat.starterId : ''),
-        domain: m.domain || (cat ? cat.domain : ''),
-        label: str(m.label || (cat ? cat.label : b.activity), 80),
+        starterId: m.starterId || (cat ? cat.starterId : '') || (meta ? meta.defaultStarterId : ''),
+        domain: m.domain || (cat ? cat.domain : '') || (meta ? meta.domain : ''),
+        label: str(m.label || (cat ? cat.label : '') || (meta ? meta.label : '') || b.activity, 80),
+        summary: str(m.summary || (cat ? cat.summary : '') || (meta ? meta.summary : ''), 180),
         maxItems: (m.maxItems != null && m.maxItems !== '') ? Math.max(0, Math.floor(Number(m.maxItems) || 0)) : 0,
         items: clone(b.items),
       };
@@ -730,7 +830,9 @@
     ROADMAP_CSS: ROADMAP_CSS,
     ROADMAP_ADAPTER: ROADMAP_ADAPTER,
     STAGE_CATALOG: STAGE_CATALOG,
+    ACTIVITY_META: ACTIVITY_META,
     STARTER_ARCS: STARTER_ARCS,
+    describeActivity: describeActivity,
     stageById: stageById,
     arcById: arcById,
     lessonFromPlaylist: lessonFromPlaylist,

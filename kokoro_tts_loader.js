@@ -549,11 +549,13 @@
         // ── Sentence splitter (runs in worker) ──
         function splitSentences(text) {
             // Template string: every regex backslash is doubled here. Titles,
-            // initials (U.S.A., a.m.) and decimals (3.5) never end a sentence.
-            const sentences = text.match(/(?:\\b(?:Dr|Mr|Mrs|Ms|St|Jr|Sr|Prof|vs|Inc|Ltd|Co|etc)\\.(?!$)|\\b(?:[a-z]\\.){2,}(?!$)|\\.(?=\\d)|[^.!?])+(?:[.!?]+|$)\\s*/gi);
-            if (!sentences) return [text];
+            // initials (U.S.A., a.m.), list markers (A. Option, 1. Step) and
+            // decimals (3.5) never end a sentence.
+            const normalized = String(text || '').replace(/([!?])\\.+/g, '$1');
+            const sentences = normalized.match(/(?:\\b(?:Dr|Mr|Mrs|Ms|St|Jr|Sr|Prof|vs|Inc|Ltd|Co|etc)\\.(?!$)|\\b(?:[a-z]\\.){2,}(?!$)|\\b[A-Za-z0-9]\\.(?=\\s+\\S)|\\.(?=\\d)|[^.!?])+(?:[.!?]+|$)\\s*/gi);
+            if (!sentences) return [normalized];
             const cleaned = sentences.map(s => s.trim()).filter(s => s.length > 1);
-            return cleaned.length > 0 ? cleaned : [String(text || '').trim()].filter(Boolean);
+            return cleaned.length > 0 ? cleaned : [normalized.trim()].filter(Boolean);
         }
 
         // ── Float32 PCM → WAV (runs in worker) ──

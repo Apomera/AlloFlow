@@ -1086,6 +1086,26 @@ function AdventureView(props) {
   var priorEndingRef = React.useRef(adventureState.isGameOver);
   var [statusToolsOpen, setStatusToolsOpen] = React.useState(adventureInputMode === 'system' || adventureInputMode === 'debate');
   React.useEffect(() => { setStatusToolsOpen(adventureInputMode === 'system' || adventureInputMode === 'debate'); }, [adventureInputMode]);
+  var [headerCollapsed, setHeaderCollapsed] = React.useState(() => {
+    try {
+      return typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem('alloflow_adventure_header_collapsed') === 'true';
+    } catch (_) {
+      return false;
+    }
+  });
+  var toggleHeaderCollapsed = function () {
+    setHeaderCollapsed(function (prev) {
+      var next = !prev;
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('alloflow_adventure_header_collapsed', next ? 'true' : 'false');
+        }
+      } catch (_) {}
+      return next;
+    });
+  };
+  var isSidebarCollapsed = !!props.isFullscreen;
+  var onToggleSidebar = typeof props.handleToggleIsFullscreen === 'function' ? props.handleToggleIsFullscreen : null;
   // Own scrolling here: the host used to jump past the new scene to the bottom.
   React.useEffect(() => {
     const newReadingPoint = priorSceneRef.current !== adventureState.currentScene || (!priorEndingRef.current && adventureState.isGameOver);
@@ -1585,7 +1605,7 @@ function AdventureView(props) {
                             </div>
                         </div>
                       )}
-                      <div data-adventure-header role="region" aria-label={adventureSettingsText(t, 'header_controls', 'Adventure controls')} style={{ ...adventureVisualTokens(theme), backgroundImage: theme === 'contrast' ? 'none' : 'linear-gradient(120deg, var(--av-wash), var(--av-surface) 70%)' }} className={`rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] p-3 sm:p-4 flex flex-col shadow-[var(--av-shadow)] shrink-0 gap-3 relative max-h-[42vh] overflow-y-auto overscroll-contain ${adventureState.isImmersiveMode || !adventureState.currentScene ? 'hidden' : ''}`}>
+                      <div data-adventure-header role="region" aria-label={adventureSettingsText(t, 'header_controls', 'Adventure controls')} style={{ ...adventureVisualTokens(theme), backgroundImage: theme === 'contrast' ? 'none' : 'linear-gradient(120deg, var(--av-wash), var(--av-surface) 70%)' }} className={`rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] ${headerCollapsed ? 'px-3 py-2 sm:px-4 sm:py-2 gap-0' : 'p-2.5 sm:p-3.5 gap-2.5'} flex flex-col shadow-[var(--av-shadow)] shrink-0 relative max-h-[42vh] overflow-y-auto overscroll-contain ${adventureState.isImmersiveMode || !adventureState.currentScene ? 'hidden' : ''}`}>
                         {adventureEffects.levelUp && (
                             <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-[1px]">
                                 <div aria-hidden="true"><ConfettiExplosion /></div>
@@ -1595,8 +1615,38 @@ function AdventureView(props) {
                             </div>
                         )}
 
-                                <h3 className="w-full font-bold text-base sm:text-lg tracking-tight flex items-center gap-2.5 min-w-0"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-950 border border-teal-700 shadow-sm"><MapIcon size={18} className="text-yellow-300" aria-hidden="true"/></span><span className="min-w-0 [overflow-wrap:anywhere]">{t('adventure.title')}</span></h3>
-                        <div data-adventure-toolbar className="grid grid-cols-2 sm:grid-cols-3 items-stretch gap-2 relative z-10 min-w-0 shrink-0 border-t border-[var(--av-line)] pt-3" role="group" aria-label={adventureSettingsText(t, 'header_tools', 'Story tools')}>
+                        <div className="flex items-center justify-between gap-2 flex-wrap min-w-0">
+                                <h3 className="font-bold text-base sm:text-lg tracking-tight flex items-center gap-2.5 min-w-0"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-950 border border-teal-700 shadow-sm"><MapIcon size={18} className="text-yellow-300" aria-hidden="true"/></span><span className="min-w-0 [overflow-wrap:anywhere]">{t('adventure.title')}</span></h3>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                    {!isZenMode && onToggleSidebar && (
+                                        <button type="button"
+                                            data-adventure-toggle-sidebar
+                                            aria-pressed={isSidebarCollapsed}
+                                            aria-label={isSidebarCollapsed ? (t('common.restore_view') || 'Show left panel') : (t('common.maximize_view') || 'Collapse left panel')}
+                                            title={isSidebarCollapsed ? (t('common.restore_view') || 'Show left panel') : (t('common.maximize_view') || 'Collapse left panel')}
+                                            onClick={onToggleSidebar}
+                                            className={`min-w-11 min-h-11 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${isSidebarCollapsed ? 'bg-[var(--av-wash)] text-[var(--av-ink)] border-[var(--av-accent)] ring-1 ring-[var(--av-accent)]' : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'}`}
+                                        >
+                                            {isSidebarCollapsed ? <Minimize size={14} aria-hidden="true" /> : <Maximize size={14} aria-hidden="true" />}
+                                            <span className="hidden sm:inline">{isSidebarCollapsed ? (adventureSettingsText(t, 'show_left_panel', 'Show panel')) : (adventureSettingsText(t, 'hide_left_panel', 'Hide panel'))}</span>
+                                        </button>
+                                    )}
+                                    <button type="button"
+                                        data-adventure-header-toggle
+                                        aria-expanded={!headerCollapsed}
+                                        aria-controls="adventure-header-controls"
+                                        aria-label={headerCollapsed ? (adventureSettingsText(t, 'show_header_controls', 'Show adventure controls')) : (adventureSettingsText(t, 'hide_header_controls', 'Hide adventure controls'))}
+                                        title={headerCollapsed ? (adventureSettingsText(t, 'show_header_controls', 'Show adventure controls')) : (adventureSettingsText(t, 'hide_header_controls', 'Hide adventure controls'))}
+                                        onClick={toggleHeaderCollapsed}
+                                        className="min-w-11 min-h-11 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]"
+                                    >
+                                        <span aria-hidden="true">{headerCollapsed ? '▸' : '▾'}</span>
+                                        <span>{headerCollapsed ? (adventureSettingsText(t, 'show_controls', 'Controls')) : (adventureSettingsText(t, 'hide_controls', 'Hide controls'))}</span>
+                                    </button>
+                                </div>
+                        </div>
+                        <div id="adventure-header-controls" className={headerCollapsed ? 'hidden' : 'flex flex-col gap-2'}>
+                        <div data-adventure-toolbar className="grid grid-cols-2 sm:grid-cols-3 items-stretch gap-2 relative z-10 min-w-0 shrink-0 border-t border-[var(--av-line)] pt-2.5" role="group" aria-label={adventureSettingsText(t, 'header_tools', 'Story tools')}>
                             <button type="button"
                                 aria-label={t('adventure.ledger_tooltip')}
                                 onClick={handleSetShowLedgerToTrue}
@@ -1827,7 +1877,23 @@ function AdventureView(props) {
                             </button>}
 </div>
                         </details>
+                        </div>
                     </div>
+                    {!adventureState.isImmersiveMode && !adventureState.currentScene && !isZenMode && onToggleSidebar && (
+                        <div className="flex justify-end shrink-0">
+                            <button type="button"
+                                data-adventure-toggle-sidebar
+                                aria-pressed={isSidebarCollapsed}
+                                aria-label={isSidebarCollapsed ? (t('common.restore_view') || 'Show left panel') : (t('common.maximize_view') || 'Collapse left panel')}
+                                title={isSidebarCollapsed ? (t('common.restore_view') || 'Show left panel') : (t('common.maximize_view') || 'Collapse left panel')}
+                                onClick={onToggleSidebar}
+                                className="min-w-11 min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                            >
+                                {isSidebarCollapsed ? <Minimize size={14} aria-hidden="true" /> : <Maximize size={14} aria-hidden="true" />}
+                                <span>{isSidebarCollapsed ? (adventureSettingsText(t, 'show_left_panel', 'Show panel')) : (adventureSettingsText(t, 'hide_left_panel', 'Hide panel'))}</span>
+                            </button>
+                        </div>
+                    )}
                     <div data-adventure-canvas style={adventureVisualTokens(theme)} className="flex-grow min-h-0 bg-[var(--av-wash)] rounded-3xl border border-[var(--av-line)] shadow-inner overflow-hidden flex flex-col relative">
                         <div data-adventure-flow ref={node => { flowRef.current = node; if (adventureScrollRef) adventureScrollRef.current = node; }} className={adventureState.isImmersiveMode ? 'contents' : 'flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar'}>
                         {!adventureState.isImmersiveMode ? (

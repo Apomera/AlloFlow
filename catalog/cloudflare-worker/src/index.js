@@ -270,8 +270,11 @@ async function turnstileRefusal(request, env, payload) {
   if (!token) return { status: 403, error: 'turnstile-required' };
   try {
     const form = new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: submitClientIp(request) });
-    const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form, redirect: 'error', signal: AbortSignal.timeout(8000) });
-    if (!resp.ok) {
+    // Cloudflare Workers (workerd) only supports 'follow' and 'manual' for
+    // fetch() redirect; 'error' throws TypeError at runtime. Use 'manual' and
+    // reject any non-2xx (including 3xx redirect) below without following it.
+    const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form, redirect: 'manual', signal: AbortSignal.timeout(8000) });
+    if (resp.status >= 300 && resp.status < 400 || !resp.ok) {
       try { await resp.body?.cancel?.(); } catch (_) {}
       return { status: 403, error: 'turnstile-failed' };
     }
@@ -2675,14 +2678,16 @@ async function handleSearch(request, env, url) {
       method: 'POST',
       headers: { 'X-API-KEY': env.SERPER_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ q: query, num }),
-      redirect: 'error',
+      // Cloudflare Workers (workerd) rejects redirect:'error' with TypeError.
+      // Use 'manual' and reject any 3xx response below without following it.
+      redirect: 'manual',
       signal: AbortSignal.timeout(8000),
     });
   } catch (err) {
     return jsonResponse({ ok: false, error: 'search-upstream-unreachable' }, 502);
   }
-  if (!upstream.ok) {
-    // Never forward the upstream body - it can echo request details.
+  if ((upstream.status >= 300 && upstream.status < 400) || !upstream.ok) {
+    // Never forward the upstream body or redirect target - it can echo request details.
     try { await upstream.body?.cancel?.(); } catch (_) {}
     return jsonResponse({ ok: false, error: 'search-provider-error', status: upstream.status }, 502);
   }

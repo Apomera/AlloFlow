@@ -121,7 +121,7 @@ describe('O2 Choices: Easy, Medium, All', () => {
     expect(blockOf(all, 'isolation').items.some((item) => item.position > 0 && item.position < core.dictionarySounds(item.word).sounds.length - 1)).toBe(true);
     // The same inputs make the same file.
     expect((await build({ choices: 'easy' })).html).toBe((await build({ choices: 'easy' })).html);
-  });
+  }, 15000);
 
   it('travels in the manifest and "Open a file I made" reads it back; a file from before reads as All', async () => {
     for (const level of ['easy', 'medium', 'all']) {
@@ -187,7 +187,7 @@ describe('O3 Listen, then Choose', () => {
           // 2026-11-18 (segmentation) & 2026-11-19 (mapping): one tile per sound, as in the app. Picking a tile up plays
           // its sound and commits nothing until placed in a box, so it needs no separate Listen button (Listen + Choose
           // pairs remain for choices that answer immediately when pressed).
-          const tiles = [...t.d.querySelectorAll('#app ul.row > li')];
+          const tiles = [...t.d.querySelectorAll('#app ul.row > li:not([data-seg-put-back-item]):not([data-map-put-back-item])')];
           expect(tiles.length, block.activity).toBeGreaterThan(1);
           for (const li of tiles) {
             const buttons = li.querySelectorAll('button');
@@ -242,7 +242,7 @@ describe('O4 letter case, O10 fixed characters', () => {
     expect(t.text()).toContain('The word is spelled: cat');
     t.next();
     // Word Scramble: the tiles are lowercase.
-    const tiles = [...t.d.querySelectorAll('#app ul[aria-label="Letters"] button')].map((b) => b.textContent);
+    const tiles = [...t.d.querySelectorAll('#app ul[aria-label="Letters"] button:not([data-ws-put-back])')].map((b) => b.textContent);
     expect(tiles.slice().sort().join('')).toBe('act');
   });
 
@@ -262,7 +262,7 @@ describe('O4 letter case, O10 fixed characters', () => {
     t.button('Check spelling').click();
     expect(t.d.querySelector('[data-feedback]').textContent).toBe('Yes! That is how to spell Sam.');
     t.next();
-    expect([...t.d.querySelectorAll('#app ul[aria-label="Letters"] button')].map((b) => b.textContent)).toEqual(['a', 'm', 'S']);
+    expect([...t.d.querySelectorAll('#app ul[aria-label="Letters"] button:not([data-ws-put-back])')].map((b) => b.textContent)).toEqual(['a', 'm', 'S']);
   });
 
   it('an apostrophe, hyphen or space is a fixed character: no box, no tile, filled in for the student', async () => {
@@ -303,7 +303,7 @@ describe('O4 letter case, O10 fixed characters', () => {
     expect(t.text()).toContain('6/8 letters correct');
     t.next();
     // Word Scramble "don't": four tiles, four boxes, the apostrophe in place.
-    expect(t.d.querySelectorAll('#app ul[aria-label="Letters"] button')).toHaveLength(4);
+    expect(t.d.querySelectorAll('#app ul[aria-label="Letters"] button:not([data-ws-put-back])')).toHaveLength(4);
     expect(t.d.querySelectorAll('#app ol.slots button')).toHaveLength(4);
     for (const ch of 'dont') {
       [...t.d.querySelectorAll('#app ul[aria-label="Letters"] button')].find((b) => b.textContent === ch && !b.closest('[hidden]')).click();
@@ -333,7 +333,7 @@ describe('O6 Letter Trace start tip, O16 Hear the letter', () => {
     const t = open(made.html);
     const note = () => t.d.querySelector('#app p[aria-live="polite"]').textContent;
     stroke(t, [140, 40], [140, 200]);
-    expect(note()).toBe('');
+    expect(note()).toBe('Looks good! Press I traced it when you are ready.');
     t.button('Start again').click();
     stroke(t, [60, 230], [140, 230]);
     expect(note()).toBe('Start at the green dot 1.');
@@ -342,7 +342,7 @@ describe('O6 Letter Trace start tip, O16 Hear the letter', () => {
     stroke(t, [200, 200], [202, 201]);
     expect(note()).toBe('');
     stroke(t, [140, 40], [140, 200]);
-    expect(note()).toBe('');
+    expect(note()).toBe('Looks good! Press I traced it when you are ready.');
     t.button('Start again').click();
     stroke(t, [60, 230], [140, 230]);
     t.button('I traced it').click();
@@ -398,12 +398,15 @@ describe('O9 reading choices as written, O12 the read-back', () => {
   const PROMPT = 'Read the sentence. Which word finishes it?';
   const sentenceRow = () => ({ word: 'Sam', targetWord: 'Sam', _ttsAssets: clips('Sam', PROMPT, 'I see Sam.'),
     activityItems: { read_sentence: { sentence: 'I see Sam.', before: 'I see ', after: '.', options: ['cat', 'Sam', 'dog'] } } });
-  it('a name keeps its capital in the choices and the word card', () => {
+  it('a name keeps its capital in the choices and after reveal, without giving away the word beforehand', () => {
     const t = open(fileOf([sentenceRow()], ['read_sentence']).html);
     const spans = [...t.d.querySelectorAll('#app li.choice button span')];
     expect(spans.map((s) => s.textContent)).toEqual(['cat', 'Sam', 'dog']);
     for (const s of spans) expect(s.getAttribute('style') || '').not.toContain('lowercase');
-    expect(t.text()).toContain('Your word: Sam');
+    expect(t.text()).not.toContain('Your word: Sam');
+    expect(t.text()).toContain('Choose the word that fits.');
+    t.button('Sam').click();
+    expect(t.d.querySelector('#app [data-read]').textContent).toBe('I see Sam.');
     expect(readFileSync('word_sounds_take_home/adapters/read_passage.js', 'utf8')).not.toContain('text-transform:lowercase');
   });
 

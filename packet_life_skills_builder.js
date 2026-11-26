@@ -87,8 +87,12 @@
     '.lg-sign-head{margin:0;font-size:1.55rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}',
     '.lg-sign-sub{margin:0;font-size:1rem;font-weight:600}',
     '@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}',
-    '@media (forced-colors:active){.lm-denom,.lt-table-wrap,.lk-card,.lk-seq-row,.ll-garment,.lg-placard{border:2px solid CanvasText}.lm-chip,.ll-badge,.lm-budget-item,.ls-choice-btn,.ll-bin-btn{border:2px solid ButtonText}.lm-budget-item[aria-pressed=true],.ls-choice-btn[aria-pressed=true],.ll-bin-btn[aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText;border:2px solid Highlight}}',
-    '@media print{.ls-actions button,.lm-dctrls,.lk-seq-btns{display:none!important}}',
+    '@media (forced-colors:active){.lm-denom,.lt-table-wrap,.lk-card,.lk-seq-row,.ll-garment,.lg-placard{border:2px solid CanvasText}.lm-chip,.ll-badge,.lm-budget-item,.ls-choice-btn,.ll-bin-btn{border:2px solid ButtonText}.lm-budget-item[aria-pressed=true],.ls-choice-btn[aria-pressed=true],.ll-bin-btn[aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText;border:2px solid Highlight}[data-read-aloud-btn][aria-pressed=true]{forced-color-adjust:none;background:Highlight;color:HighlightText;border:2px solid Highlight}}',
+    '.ls-read-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}',
+    '[data-read-aloud-btn]{min-height:44px;min-width:44px;padding:6px 12px;font-size:.92rem;border-radius:10px}',
+    '[data-read-aloud-btn][aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;outline:none}',
+    '[data-read-aloud-btn]:focus-visible{outline:3px solid var(--focus);outline-offset:2px}',
+    '@media print{.ls-actions button,.ls-read-row,[data-read-aloud-btn],.lm-dctrls,.lk-seq-btns{display:none!important}}',
   ].join('\n');
 
   function str(v, max) {
@@ -142,6 +146,35 @@
     try {
       var obj = JSON.parse(html.slice(bodyStart, end));
       obj.learner = clean;
+      var json = JSON.stringify(obj)
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
+      return html.slice(0, bodyStart) + json + html.slice(end);
+    } catch (_) {
+      return html;
+    }
+  }
+
+  function withSpeechManifest(html) {
+    var tag = '<script type="application/json" id="packet-manifest">';
+    var start = typeof html === 'string' ? html.indexOf(tag) : -1;
+    if (start < 0) return html;
+    var bodyStart = start + tag.length;
+    var end = html.indexOf('</script>', bodyStart);
+    if (end < 0) return html;
+    try {
+      var obj = JSON.parse(html.slice(bodyStart, end), function (k, v) {
+        return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v;
+      });
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return html;
+      obj.speech = {
+        engine: 'speechSynthesis',
+        localOnly: true,
+        when: 'only when the learner presses Read aloud',
+      };
       var json = JSON.stringify(obj)
         .replace(/</g, '\\u003c')
         .replace(/>/g, '\\u003e')
@@ -291,12 +324,19 @@
         if (activeEl && activeEl.disabled && ctx.root.contains(activeEl) && !locked) {
           try { (itemBtns[0] ? itemBtns[0].btn : submitBtn).focus(); } catch (_) {}
         }
-        var diff = budgetCents - total;
-        readout.className = diff < 0 ? 'ls-readout ls-readout-warn' : 'ls-readout';
-        var line = 'Basket: ' + fmtCents(total) + ' (' + picked.length + (picked.length === 1 ? ' item' : ' items') + ') \u00b7 '
-          + (diff >= 0 ? (fmtCents(diff) + ' left under ' + fmtCents(budgetCents)) : (fmtCents(-diff) + ' over ' + fmtCents(budgetCents)));
-        readout.textContent = line;
-        if (say) ctx.announce(line);
+        if (locked && !ctx.check) {
+          var diff = budgetCents - total;
+          readout.className = diff < 0 ? 'ls-readout ls-readout-warn' : 'ls-readout';
+          var doneLine = 'Basket: ' + fmtCents(total) + ' (' + picked.length + (picked.length === 1 ? ' item' : ' items') + ') \u00b7 '
+            + (diff >= 0 ? (fmtCents(diff) + ' left under ' + fmtCents(budgetCents)) : (fmtCents(-diff) + ' over ' + fmtCents(budgetCents)));
+          readout.textContent = doneLine;
+          if (say) ctx.announce(doneLine);
+        } else {
+          readout.className = 'ls-readout';
+          var line = picked.length + (picked.length === 1 ? ' item' : ' items') + ' selected \u00b7 Budget: ' + fmtCents(budgetCents);
+          readout.textContent = line;
+          if (say) ctx.announce(line);
+        }
       };
       paintBudget(false);
       return { reveal: function () { locked = true; paintBudget(false); } };
@@ -1123,6 +1163,210 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Self-contained Read Aloud wrapper for all 5 Life Skills adapters
+  // ---------------------------------------------------------------------------
+  function lifeReadAloudWrapper(origRender, activityId) {
+    return function (item, ctx) {
+      var handle = origRender(item, ctx) || {};
+      var root = ctx && ctx.root;
+      if (!root) return handle;
+      var L = (ctx && ctx.L) || {};
+      var doc = root.ownerDocument;
+      var view = doc && doc.defaultView;
+      var synth = view && view.speechSynthesis && typeof view.speechSynthesis.speak === 'function' ? view.speechSynthesis : null;
+      var speaking = false;
+      var gen = 0;
+      var obs = null;
+      var readBtn = null;
+
+      var disconnectObs = function () {
+        if (obs) { try { obs.disconnect(); } catch (_) {} obs = null; }
+      };
+
+      var setBtnState = function (active) {
+        speaking = !!active;
+        if (readBtn) {
+          readBtn.setAttribute('aria-pressed', speaking ? 'true' : 'false');
+          readBtn.textContent = speaking ? 'Stop reading' : 'Read aloud';
+        }
+        if (!speaking) disconnectObs();
+      };
+
+      var stopSpeech = function () {
+        gen++;
+        var was = speaking;
+        setBtnState(false);
+        if (synth && (was || synth.speaking || synth.pending)) {
+          try { if (typeof synth.cancel === 'function') synth.cancel(); } catch (_) {}
+        }
+      };
+
+      var readRate = function () {
+        var attr = doc && doc.documentElement ? String(doc.documentElement.getAttribute('data-audio-speed') || '').trim().toLowerCase() : '';
+        if (attr === 'slow') return 0.75;
+        var n = Number(attr);
+        if (attr && isFinite(n) && n >= 0.5 && n <= 2) return n;
+        if (typeof ctx.speedRate === 'function') {
+          var sr = Number(ctx.speedRate());
+          if (isFinite(sr) && sr > 0 && sr !== 1) return sr;
+        }
+        if (typeof ctx.slow === 'function' && ctx.slow()) return 0.75;
+        return 1.0;
+      };
+
+      var getVisiblePromptText = function () {
+        var parts = [];
+        var add = function (s) {
+          var t = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+          if (t && parts.indexOf(t) < 0) parts.push(t);
+        };
+        if (activityId === 'life_transit') {
+          add(item && item.route);
+          add(item && item.serviceNote);
+          add((item && item.prompt) || 'Use the schedule to pick the right departure.');
+          add(L.life_transit_directions);
+        } else if (activityId === 'life_kitchen') {
+          add(item && item.area);
+          add((item && item.prompt) || 'Choose the safe action.');
+          add(item && item.scenario);
+          add(L.life_kitchen_directions);
+        } else if (activityId === 'life_laundry') {
+          add((item && item.prompt) || 'Sort each garment into the right laundry load.');
+          add(L.life_laundry_directions);
+        } else if (activityId === 'life_signs') {
+          if (item && item.signTitle) add('Sign: ' + item.signTitle);
+          add(item && item.signSub);
+          add((item && item.prompt) || 'What should you do when you see this sign?');
+          if (item && item.location) add('Location: ' + item.location);
+          add(L.life_signs_directions);
+        } else {
+          add((item && item.prompt) || 'Count the bills and coins.');
+          add(L.life_money_directions);
+        }
+        return parts.map(function (p) { return /[.!?]$/.test(p) ? p : p + '.'; }).join(' ');
+      };
+
+      var cleanup = function () {
+        disconnectObs();
+        if (doc) {
+          doc.removeEventListener('keydown', onKeyDown);
+          doc.removeEventListener('click', onDocClick, true);
+        }
+        if (view) {
+          view.removeEventListener('pagehide', onUnload);
+          view.removeEventListener('beforeunload', onUnload);
+        }
+      };
+
+      var onKeyDown = function (ev) {
+        if (!root.isConnected) { cleanup(); return; }
+        var k = ev && ev.key;
+        if ((k === 'Escape' || k === 'Esc') && speaking) stopSpeech();
+      };
+
+      var onDocClick = function (ev) {
+        if (!root.isConnected) { cleanup(); return; }
+        if (!speaking || !ev || !ev.target) return;
+        var t = ev.target.closest ? ev.target.closest('button') : null;
+        if (!t || t === readBtn) return;
+        if (t.hasAttribute('data-stop-audio') || /stop audio/i.test(String(t.textContent || ''))) {
+          stopSpeech();
+        }
+      };
+
+      var onUnload = function () {
+        stopSpeech();
+        cleanup();
+      };
+
+      if (synth && doc) {
+        doc.addEventListener('keydown', onKeyDown);
+        doc.addEventListener('click', onDocClick, true);
+      }
+      if (synth && view) {
+        view.addEventListener('pagehide', onUnload);
+        view.addEventListener('beforeunload', onUnload);
+      }
+
+      var speakNow = function () {
+        if (!synth) return;
+        if (speaking) { stopSpeech(); return; }
+        var text = getVisiblePromptText();
+        if (!text) return;
+        if (typeof ctx.support === 'function') ctx.support('readAloud');
+        gen++;
+        var mine = gen;
+        try { if (typeof synth.cancel === 'function') synth.cancel(); } catch (_) {}
+        var Utter = typeof view.SpeechSynthesisUtterance === 'function' ? view.SpeechSynthesisUtterance : null;
+        var u = Utter ? new Utter(text) : { text: text, rate: 1.0, lang: 'en-US' };
+        u.rate = readRate();
+        var lang = (doc && doc.documentElement && doc.documentElement.lang) || 'en-US';
+        u.lang = lang;
+        try {
+          if (typeof synth.getVoices === 'function') {
+            var voices = synth.getVoices() || [];
+            var want = String(lang).toLowerCase().split('-')[0];
+            var local = voices.filter(function (v) {
+              return v && v.localService === true && String(v.lang || '').toLowerCase().replace('_', '-').indexOf(want) === 0;
+            })[0];
+            if (local) { u.voice = local; u.lang = local.lang || lang; }
+          }
+        } catch (_) {}
+        u.onend = function () { if (mine === gen) setBtnState(false); };
+        u.onerror = function () { if (mine === gen) setBtnState(false); };
+        setBtnState(true);
+        if (view && typeof view.MutationObserver === 'function' && doc && doc.body) {
+          disconnectObs();
+          obs = new view.MutationObserver(function () {
+            if (!root.isConnected) { stopSpeech(); cleanup(); }
+          });
+          try { obs.observe(doc.getElementById('app') || doc.body, { childList: true, subtree: true }); } catch (_) {}
+        }
+        try {
+          synth.speak(u);
+        } catch (_) {
+          if (mine === gen) setBtnState(false);
+        }
+      };
+
+      readBtn = ctx.el('button', {
+        type: 'button',
+        'data-read-aloud-btn': '',
+        'aria-pressed': 'false',
+        hidden: !synth,
+        on: { click: speakNow },
+        text: 'Read aloud',
+      });
+
+      var row = ctx.el('div', { class: 'ls-read-row' }, [readBtn]);
+      var wrap = root.querySelector('.ls-wrap') || root;
+      var anchor = wrap.querySelector('.lk-card') || wrap.querySelector('[data-ls-prompt]');
+      if (anchor && anchor.parentNode === wrap) {
+        wrap.insertBefore(row, anchor.nextSibling);
+      } else {
+        wrap.insertBefore(row, wrap.firstChild);
+      }
+
+      var origReveal = handle && typeof handle.reveal === 'function' ? handle.reveal : null;
+      return Object.assign({}, handle, {
+        reveal: function () {
+          stopSpeech();
+          if (origReveal) return origReveal.apply(handle, arguments);
+        },
+      });
+    };
+  }
+
+  function wrapLifeRender(origRender, activityId) {
+    var wrapped = function (item, ctx) {
+      return lifeReadAloudWrapper(origRender, activityId)(item, ctx);
+    };
+    var src = '(' + lifeReadAloudWrapper.toString() + ')(' + origRender.toString() + ',' + JSON.stringify(activityId) + ')';
+    wrapped.toString = function () { return src; };
+    return wrapped;
+  }
+
+  // ---------------------------------------------------------------------------
   // Check-mode prepare() and score(item, expected, given) for all 5 domains
   // ---------------------------------------------------------------------------
   var ADAPTERS = {
@@ -1181,7 +1425,7 @@
         }
         return { correct: got === exp };
       },
-      render: renderLifeMoney,
+      render: wrapLifeRender(renderLifeMoney, 'life_money'),
     },
     life_transit: {
       id: 'life_transit',
@@ -1211,7 +1455,7 @@
       score: function (item, expected, given) {
         return { correct: String(given || '').trim() === String(expected || '').trim() };
       },
-      render: renderLifeTransit,
+      render: wrapLifeRender(renderLifeTransit, 'life_transit'),
     },
     life_kitchen: {
       id: 'life_kitchen',
@@ -1271,7 +1515,7 @@
       score: function (item, expected, given) {
         return { correct: String(given || '').trim() === String(expected || '').trim() };
       },
-      render: renderLifeKitchen,
+      render: wrapLifeRender(renderLifeKitchen, 'life_kitchen'),
     },
     life_laundry: {
       id: 'life_laundry',
@@ -1319,7 +1563,7 @@
       score: function (item, expected, given) {
         return { correct: String(given || '').trim() === String(expected || '').trim() };
       },
-      render: renderLifeLaundry,
+      render: wrapLifeRender(renderLifeLaundry, 'life_laundry'),
     },
     life_signs: {
       id: 'life_signs',
@@ -1350,7 +1594,7 @@
       score: function (item, expected, given) {
         return { correct: String(given || '').trim() === String(expected || '').trim() };
       },
-      render: renderLifeSigns,
+      render: wrapLifeRender(renderLifeSigns, 'life_signs'),
     },
   };
 
@@ -2215,7 +2459,7 @@
       stationBilingual: opts.stationBilingual || root.AlloPacketStationBilingual,
     };
 
-    var baseHtml = loader.buildHtml(lesson, buildOpts);
+    var baseHtml = withSpeechManifest(loader.buildHtml(lesson, buildOpts));
     var cleanLearner = codeName(opts.learner || '');
     var html = cleanLearner ? withCodeName(baseHtml, cleanLearner) : baseHtml;
     var activity = lesson.blocks.length > 1 ? 'mixed' : (lesson.blocks[0] ? lesson.blocks[0].activity : 'life_money');

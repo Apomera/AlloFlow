@@ -80,6 +80,7 @@
       starterId: cat.starterId,
       domain: cat.domain,
       label: cat.label,
+      summary: cat.summary || '',
       maxItems: cat.defaultMaxItems || 0,
     };
   }
@@ -113,6 +114,7 @@
             starterId: st.starterId || '',
             domain: st.domain || '',
             label: st.label || '',
+            summary: st.summary || '',
             maxItems: st.maxItems != null ? st.maxItems : 0,
           };
         }),
@@ -253,12 +255,19 @@
 
     var focusRefs = [];
     state.stages.forEach(function (st, idx) {
+      var info = (builder && typeof builder.describeActivity === 'function' && builder.describeActivity(st.activity)) || null;
+      var domainLabel = st.domain || (info && info.domain) || '';
+      var summaryText = st.summary || (info && info.summary) || '';
       var li = el('li', 'stage-card');
       li.setAttribute('data-stage-index', String(idx));
+      if (st.activity) li.setAttribute('data-stage-activity', st.activity);
+      if (domainLabel) li.setAttribute('data-stage-domain', domainLabel);
 
       var head = el('div', 'stage-head');
       head.appendChild(el('span', 'stage-badge', String(idx + 1)));
-      head.appendChild(el('span', 'stage-domain', 'Stage ' + (idx + 1) + (st.domain ? ' \u00b7 ' + st.domain : '')));
+      var domNode = el('span', 'stage-domain', 'Stage ' + (idx + 1) + (domainLabel ? ' \u00b7 ' + domainLabel : ''));
+      domNode.setAttribute('data-stage-badge', domainLabel);
+      head.appendChild(domNode);
 
       var upBtn = el('button', 'btn btn-small', 'Move up');
       upBtn.type = 'button';
@@ -359,6 +368,11 @@
       }
 
       li.appendChild(fields);
+      if (summaryText) {
+        var sumNode = el('p', 'hint stage-summary', summaryText);
+        sumNode.setAttribute('data-stage-summary', '');
+        li.appendChild(sumNode);
+      }
       list.appendChild(li);
       focusRefs.push({ up: upBtn, down: downBtn, rem: remBtn, label: inp });
     });
@@ -559,6 +573,12 @@
         rows.appendChild(el('dd', '', v));
       };
       addRow('Unit stages', result.stages.map(function (s, i) { return (i + 1) + '. ' + s.label; }).join(' \u2192 '));
+      var subjList = [];
+      result.stages.forEach(function (s) {
+        var d = s.domain || (builder && typeof builder.describeActivity === 'function' && builder.describeActivity(s.activity) && builder.describeActivity(s.activity).domain) || '';
+        if (d && subjList.indexOf(d) < 0) subjList.push(d);
+      });
+      if (subjList.length) addRow('Subjects', subjList.join(', '));
       addRow('Total items', String(result.itemCount));
       addRow('Mastery branching', state.adaptiveScaffold ? 'On (deterministic hints & stretch items)' : 'Off');
       addRow('File size', fileSize(result.bytes));

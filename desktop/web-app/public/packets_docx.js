@@ -1020,6 +1020,18 @@
           return pClone;
         });
       }
+      if (Array.isArray(cloned.choices)) {
+        cloned.choices = cloned.choices.map(function (ch) {
+          if (!ch || typeof ch !== 'object') return ch;
+          var cClone = Object.assign({}, ch);
+          if (typeof cClone.pictureUri === 'string' && isSvgDataUri(cClone.pictureUri)) {
+            queueRaster(cClone.pictureUri, function (pngUri) {
+              cClone.pictureUri = pngUri;
+            });
+          }
+          return cClone;
+        });
+      }
       return cloned;
     }
 
@@ -1311,6 +1323,9 @@
       : (o.answerKey !== undefined ? !!o.answerKey : (m.answerKeyOn !== undefined ? !!m.answerKeyOn : true));
     var hintsOn = o.hintsOn !== undefined ? !!o.hintsOn
       : (o.hints !== undefined ? !!o.hints : (m.hintsOn !== undefined ? !!m.hintsOn : true));
+    var showListeningWords = o.showListeningWords !== undefined ? !!o.showListeningWords
+      : (o.listeningWords !== undefined ? !!o.listeningWords
+        : (m.showListeningWords !== undefined ? !!m.showListeningWords : false));
     var hiddenSections = o.hiddenSections || m.hiddenSections || null;
     var sectionOverrides = o.sectionOverrides || m.sectionOverrides || null;
     var rawSections = Array.isArray(m.sections) ? m.sections : [];
@@ -1408,16 +1423,25 @@
       visibleItems.forEach(function (it, idx) {
         var n = idx + 1;
         var numRun = rXml(n + '.  ', { bold: true, sz: d.bodyHp });
-        var wsPicUri = resolveWsItemImage(it);
-        var wsPicAlt = (act === 'orthography' || act === 'spelling_bee') ? ('Word #' + n) : String(it.word || ('Item ' + n));
+        var isListeningAct = act === 'counting' || act === 'isolation' || act === 'segmentation'
+          || act === 'syllable_counting' || act === 'blending' || act === 'syllable_blending';
+        var hideItemPic = act === 'blending' || act === 'syllable_blending' || act === 'decoding';
+        var wsPicUri = hideItemPic ? '' : resolveWsItemImage(it);
+        var isNeutralAlt = act === 'orthography' || act === 'spelling_bee'
+          || act === 'mapping' || act === 'missing_letter' || act === 'word_scramble'
+          || (isListeningAct && !showListeningWords);
+        var wsPicAlt = (act === 'orthography' || act === 'spelling_bee')
+          ? ('Word #' + n)
+          : (isNeutralAlt ? ('Picture clue ' + n) : String(it.word || ('Item ' + n)));
         var itemDraw = wsPicUri ? imgReg.addImage(wsPicUri, 0.65, 0.65, wsPicAlt) : null;
         var cp = String(it.customPrompt || '').trim();
         var cpPrefix = cp ? [rXml(cp + '  ', { sz: d.bodyHp, color: '222222' })] : [];
 
         if (act === 'mapping') {
           var boxCount = Number(it.soundCount) || (Array.isArray(it.phonemes) && it.phonemes.length) || String(it.word || '').length || 3;
+          var mapLeadText = cp || (itemDraw ? 'Say the word and write each sound in a box:' : 'Listen to your teacher: write each sound in a box.');
           body.push(pXml(wsLead(numRun, itemDraw, [
-            rXml(cp || 'Listen and write each sound in a box:', { sz: d.bodyHp, color: '222222' })
+            rXml(mapLeadText, { sz: d.bodyHp, color: '222222' })
           ]), { before: d.itemBefore, after: 50, keepNext: true }));
           body.push(soundBoxesTableXml(boxCount, d, contentW));
           if (hintsOn && Array.isArray(it.bank) && it.bank.length) {
@@ -1432,7 +1456,8 @@
           var letters = Array.isArray(it.letters) && it.letters.length ? it.letters : String(it.word || '').split('');
           var hiddenIdx = Number.isInteger(it.hiddenIndex) ? it.hiddenIndex : (letters.length > 2 ? 1 : 0);
           var disp = letters.map(function (ch, ci) { return ci === hiddenIdx ? '___' : String(ch); }).join(' ');
-          body.push(pXml(wsLead(numRun, itemDraw, cpPrefix.concat([
+          var mlPrefix = cpPrefix.length ? cpPrefix : (!itemDraw ? [rXml('Listen to your teacher:  ', { italic: true, sz: d.bodyHp, color: '222222' })] : []);
+          body.push(pXml(wsLead(numRun, itemDraw, mlPrefix.concat([
             rXml(disp, { bold: true, sz: d.wordHp })
           ])), { before: d.itemBefore, after: 50, keepNext: true }));
           if (Array.isArray(it.choices) && it.choices.length) {
@@ -1443,27 +1468,34 @@
           }
         } else if (act === 'word_scramble') {
           var tiles = Array.isArray(it.tiles) && it.tiles.length ? it.tiles : String(it.word || '').split('');
-          body.push(pXml(wsLead(numRun, itemDraw, [rXml(cp || 'Unscramble the letters:', { sz: d.bodyHp, color: '222222' })]), { before: d.itemBefore, after: 50, keepNext: true }));
+          var scrLeadText = cp || (itemDraw ? 'Unscramble the letters:' : 'Listen to your teacher: unscramble the letters.');
+          body.push(pXml(wsLead(numRun, itemDraw, [rXml(scrLeadText, { sz: d.bodyHp, color: '222222' })]), { before: d.itemBefore, after: 50, keepNext: true }));
           body.push(letterTilesTableXml(tiles.map(choiceText), d, contentW));
           body.push(writingLineXml(d, { dashedTop: true, indentLeft: 240, after: d.itemAfter }));
         } else if (act === 'counting') {
           var vals = Array.isArray(it.values) && it.values.length ? it.values : ['1', '2', '3', '4', '5', '6'];
-          body.push(pXml(wsLead(numRun, itemDraw, cpPrefix.concat([
-            rXml(String(it.word || ''), { bold: true, sz: d.wordHp })
-          ])), { before: d.itemBefore, after: 50, keepNext: true }));
+          var ctRuns = showListeningWords
+            ? cpPrefix.concat([rXml(String(it.word || ''), { bold: true, sz: d.wordHp })])
+            : cpPrefix.concat([rXml('Listen to your teacher:', { italic: true, sz: d.bodyHp, color: '222222' })]);
+          body.push(pXml(wsLead(numRun, itemDraw, ctRuns), { before: d.itemBefore, after: 50, keepNext: true }));
           body.push(pXml([
             rXml('Sounds:  ', { bold: true, sz: d.smallHp }),
             rXml(vals.map(function (v) { return '( ' + choiceText(v) + ' )'; }).join('    '), { bold: true, sz: d.bodyHp })
           ], { before: 20, after: d.itemAfter, indentLeft: 320, keepLines: true }));
         } else if (act === 'isolation') {
           var isoChoices = Array.isArray(it.choices) ? it.choices : [];
-          body.push(pXml(wsLead(numRun, itemDraw, cp
+          var isoRuns = cp
             ? [rXml(cp, { bold: true, sz: d.bodyHp })]
-            : [
-                rXml('What is the ' + String(it.positionName || 'target') + ' sound in ', { sz: d.bodyHp }),
-                rXml(String(it.word || ''), { bold: true, sz: d.wordHp }),
-                rXml('?', { sz: d.bodyHp })
-              ]), { before: d.itemBefore, after: 50, keepNext: true }));
+            : (showListeningWords
+              ? [
+                  rXml('What is the ' + String(it.positionName || 'target') + ' sound in ', { sz: d.bodyHp }),
+                  rXml(String(it.word || ''), { bold: true, sz: d.wordHp }),
+                  rXml('?', { sz: d.bodyHp })
+                ]
+              : [
+                  rXml('Listen to your teacher: What is the ' + String(it.positionName || 'target') + ' sound?', { sz: d.bodyHp })
+                ]);
+          body.push(pXml(wsLead(numRun, itemDraw, isoRuns), { before: d.itemBefore, after: 50, keepNext: true }));
           if (isoChoices.length) {
             body.push(pXml([
               rXml('Circle one:  ', { bold: true, sz: d.smallHp }),
@@ -1474,8 +1506,11 @@
           var slotN = Math.max(1, Math.min(10, Number(it.slotCount) || (Array.isArray(it.sounds) ? it.sounds.length : 3)));
           var circles = [];
           for (var ci = 0; ci < slotN; ci++) circles.push('\u25CB');
+          var segLead = showListeningWords
+            ? rXml(String(it.word || '') + '    ', { bold: true, sz: d.wordHp })
+            : rXml('Listen to your teacher:    ', { italic: true, sz: d.bodyHp, color: '222222' });
           body.push(pXml(wsLead(numRun, itemDraw, cpPrefix.concat([
-            rXml(String(it.word || '') + '    ', { bold: true, sz: d.wordHp }),
+            segLead,
             rXml(circles.join('   '), { sz: d.wordHp })
           ])), { before: d.itemBefore, after: 40, keepNext: true }));
           body.push(writingLineXml(d, { dashedTop: true, indentLeft: 320, after: 50 }));
@@ -1487,9 +1522,10 @@
           }
         } else if (act === 'blending') {
           var seq = Array.isArray(it.sounds) && it.sounds.length ? it.sounds.map(function (s) { return soundLabel(choiceText(s)); }).join('  \u00b7  ') : '';
-          body.push(pXml(wsLead(numRun, itemDraw, cpPrefix.concat([
-            rXml(seq, { bold: true, sz: d.wordHp })
-          ])), { before: d.itemBefore, after: 40, keepNext: true }));
+          var blRuns = showListeningWords
+            ? cpPrefix.concat([rXml(seq, { bold: true, sz: d.wordHp })])
+            : cpPrefix.concat([rXml('Listen to your teacher:', { italic: true, sz: d.bodyHp, color: '222222' })]);
+          body.push(pXml(wsLead(numRun, null, blRuns), { before: d.itemBefore, after: 40, keepNext: true }));
           body.push(writingLineXml(d, { dashedTop: true, indentLeft: 320, after: 50 }));
           if (Array.isArray(it.choices) && it.choices.length) {
             body.push(pXml([
@@ -1597,16 +1633,20 @@
           body.push(writingLineXml(d, { dashedTop: true, indentLeft: 240, after: d.itemAfter }));
         } else if (act === 'syllable_counting') {
           var sVals = Array.isArray(it.values) && it.values.length ? it.values : ['1', '2', '3', '4', '5'];
-          body.push(pXml(wsLead(numRun, itemDraw, cpPrefix.concat([
-            rXml(String(it.word || ''), { bold: true, sz: d.wordHp })
-          ])), { before: d.itemBefore, after: 50, keepNext: true }));
+          var scRuns = showListeningWords
+            ? cpPrefix.concat([rXml(String(it.word || ''), { bold: true, sz: d.wordHp })])
+            : cpPrefix.concat([rXml('Listen to your teacher:', { italic: true, sz: d.bodyHp, color: '222222' })]);
+          body.push(pXml(wsLead(numRun, itemDraw, scRuns), { before: d.itemBefore, after: 50, keepNext: true }));
           body.push(pXml([
             rXml('Syllables:  ', { bold: true, sz: d.smallHp }),
             rXml(sVals.map(function (v) { return '( ' + choiceText(v) + ' )'; }).join('    '), { bold: true, sz: d.bodyHp })
           ], { before: 20, after: d.itemAfter, indentLeft: 320, keepLines: true }));
         } else if (act === 'syllable_blending') {
           var sylSeq = Array.isArray(it.syllables) ? it.syllables.map(choiceText).join('  \u00b7  ') : '';
-          body.push(pXml(wsLead(numRun, itemDraw, cpPrefix.concat([rXml(sylSeq, { bold: true, sz: d.wordHp })])), { before: d.itemBefore, after: 40, keepNext: true }));
+          var sbRuns = showListeningWords
+            ? cpPrefix.concat([rXml(sylSeq, { bold: true, sz: d.wordHp })])
+            : cpPrefix.concat([rXml('Listen to your teacher:', { italic: true, sz: d.bodyHp, color: '222222' })]);
+          body.push(pXml(wsLead(numRun, null, sbRuns), { before: d.itemBefore, after: 40, keepNext: true }));
           body.push(writingLineXml(d, { dashedTop: true, indentLeft: 320, after: 50 }));
           if (Array.isArray(it.choices) && it.choices.length) {
             body.push(pXml([
@@ -1624,14 +1664,27 @@
             ], { before: 20, after: d.itemAfter, indentLeft: 320, keepLines: true }));
           }
         } else if (act === 'decoding') {
-          body.push(pXml(wsLead(numRun, itemDraw, cpPrefix.concat([
+          body.push(pXml(wsLead(numRun, null, cpPrefix.concat([
             rXml(String(it.word || ''), { bold: true, sz: d.wordHp }),
             rXml('      \u2610 Read aloud     \u2610 Read smoothly', { sz: d.smallHp })
           ])), { before: d.itemBefore, after: d.itemAfter, keepLines: true }));
           if (Array.isArray(it.choices) && it.choices.length) {
-            body.push(pXml([
-              rXml(it.choices.map(function (c) { return '( ' + choiceText(c) + ' )'; }).join('    '), { bold: true, sz: d.bodyHp })
-            ], { before: 0, after: d.itemAfter, indentLeft: 320, keepLines: true }));
+            var decChoiceDraws = [];
+            it.choices.forEach(function (c) {
+              var cUri = c && typeof c === 'object' ? (c.pictureUri || c.imgUri || c.uri || '') : '';
+              if (cUri && isRasterDataUri(cUri)) {
+                var cd = imgReg.addImage(cUri, 0.5, 0.5, 'Picture choice');
+                if (cd) decChoiceDraws.push(cd);
+              }
+            });
+            if (decChoiceDraws.length >= 2) {
+              var decPicRuns = [];
+              decChoiceDraws.forEach(function (cd, cdi) {
+                if (cdi > 0) decPicRuns.push(rXml('      ', { sz: d.bodyHp }));
+                decPicRuns.push(drawingRunXml(cd));
+              });
+              body.push(pXml(decPicRuns, { before: 0, after: d.itemAfter, indentLeft: 320, keepLines: true }));
+            }
           }
         } else if (act === 'read_sentence') {
           body.push(pXml(wsLead(numRun, itemDraw, cpPrefix.concat([

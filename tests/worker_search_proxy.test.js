@@ -263,6 +263,61 @@ describe('worker GET /search', () => {
     expect(JSON.stringify(body)).not.toContain('sk-live-123');
     expect(body.error).toBe('search-provider-error');
   });
+
+  it('uses workerd-compatible redirect:manual and rejects 3xx upstream redirects without following them', async () => {
+    vi.stubGlobal('caches', cacheStub());
+    const workerdGuard = (init) => {
+      if (init && init.redirect === 'error') {
+        throw new TypeError('Invalid redirect value, must be one of "follow" or "manual"');
+      }
+    };
+    const okFetch = vi.fn(async (_url, init) => {
+      workerdGuard(init);
+      return new Response(JSON.stringify({
+        organic: [{ link: 'https://example.org/photosynthesis', title: 'Photosynthesis', snippet: 'Plants make food.' }],
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    });
+    vi.stubGlobal('fetch', okFetch);
+
+    const okRes = await worker.fetch(get('https://w.dev/search?q=photosynthesis'), { SERPER_API_KEY: 'k' });
+    expect(okRes.status).toBe(200);
+    expect(okFetch.mock.calls[0][1].redirect).toBe('manual');
+
+    const redirectFetch = vi.fn(async (_url, init) => {
+      workerdGuard(init);
+      return new Response('redirecting', { status: 302, headers: { Location: 'https://evil.example/steal-key' } });
+    });
+    vi.stubGlobal('fetch', redirectFetch);
+
+    const redirRes = await worker.fetch(get('https://w.dev/search?q=water+cycle'), { SERPER_API_KEY: 'k' });
+    const redirBody = await redirRes.json();
+    expect(redirRes.status).toBe(502);
+    expect(redirBody.error).toBe('search-provider-error');
+    expect(redirBody.status).toBe(302);
+    expect(JSON.stringify(redirBody)).not.toContain('evil.example');
+    expect(redirectFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses workerd-compatible redirect:manual for Turnstile siteverify and rejects 3xx redirects', async () => {
+    const fetchMock = vi.fn(async (_url, init) => {
+      if (init && init.redirect === 'error') {
+        throw new TypeError('Invalid redirect value, must be one of "follow" or "manual"');
+      }
+      return new Response('', { status: 302, headers: { Location: 'https://evil.example/turnstile' } });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const submitRate = kvStub();
+    const res = await worker.fetch(new Request('https://w.dev/submitBug', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Turnstile-Token': 'tok-123' },
+      body: JSON.stringify({ type: 'Bug Report', notes: 'test' }),
+    }), { SUBMIT_RATE: submitRate, BUG_REPORTS: kvStub(), TURNSTILE_SECRET: 'ts-secret' });
+    const body = await res.json();
+    expect(res.status).toBe(403);
+    expect(body.error).toBe('turnstile-failed');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][1].redirect).toBe('manual');
+  });
 describe('worker GET /source-metadata', () => {
   it('follows one safe redirect and parses structured metadata', async () => {
     vi.stubGlobal('caches', cacheStub());

@@ -73,8 +73,9 @@ describe('Wave 3A — Base-Ten Blocks (manip_base_ten)', () => {
     t.d.getElementById('learner-name').value = 'Leo';
     t.button('Start').click();
 
-    // Item 1 starts with 2 tens and 14 ones (total 34, unregrouped)
-    expect(t.q('[data-b10-readout]').textContent).toContain('34');
+    // Item 1 starts with 2 tens and 14 ones (total 34, unregrouped) — live total stays hidden before submit
+    expect(t.q('[data-b10-readout]').textContent).toBe('Mat: 0 hundreds, 2 tens, 14 ones');
+    expect(t.q('[data-b10-readout]').textContent).not.toContain('34');
     // Submitting unregrouped triggers retry guidance in exact mode
     t.q('[data-mn-submit]').click();
     expect(t.q('[data-feedback]').textContent).toContain('Trade');
@@ -92,13 +93,18 @@ describe('Wave 3A — Base-Ten Blocks (manip_base_ten)', () => {
     expect(t.q('[data-b10-count="t"]').textContent).toBe('3');
     expect(t.q('[data-b10-count="o"]').textContent).toBe('4');
 
-    // Check regrouped answer -> correct!
+    // Check regrouped answer -> correct and reveals total!
     t.q('[data-mn-submit]').click();
     expect(t.q('[data-feedback]').textContent).toContain('Right');
+    expect(t.q('[data-b10-readout]').textContent).toContain('34');
     t.button('Next').click();
 
-    // Item 2: build 124 (value mode -> 1H 2T 4O, also test Break 1 ten -> 10 ones and trade back)
+    // Item 2: build 124 — wrong attempt does NOT print exact numeric gap ("24 less than the target")
     t.q('[data-b10-inc="h"]').click();
+    t.q('[data-mn-submit]').click();
+    expect(t.q('[data-feedback]').textContent).not.toContain('24 less');
+    expect(t.q('[data-feedback]').textContent).toContain('hundreds, tens, and ones');
+    // Finish building 124 (value mode -> 1H 2T 4O, also test Break 1 ten -> 10 ones)
     for (let i = 0; i < 2; i++) t.q('[data-b10-inc="t"]').click();
     for (let i = 0; i < 4; i++) t.q('[data-b10-inc="o"]').click();
     t.q('[data-b10-trade="t2o"]').click();
@@ -113,7 +119,7 @@ describe('Wave 3A — Base-Ten Blocks (manip_base_ten)', () => {
     expect(saved.items[0].correct).toBe(true);
     expect(saved.items[0].supports.regroup).toBe(1);
     expect(saved.items[0].supports.hint).toBe(1);
-    expect(saved.items[1].firstTry).toBe(true);
+    expect(saved.items[1].correct).toBe(true);
     t.dom.window.close();
   });
 });
@@ -189,15 +195,17 @@ describe('Wave 3A — Interactive Number Line (manip_number_line)', () => {
     t.d.getElementById('learner-name').value = 'Noah';
     t.button('Start').click();
 
-    // Item 1: 3 + (-5) = -2 on -6..6
+    // Item 1: 3 + (-5) = -2 on -6..6 — live position stays hidden during expression hopping
     t.q('[data-nl-hop="-5"]').click();
-    expect(t.q('[data-nl-readout]').textContent).toContain('-2');
+    expect(t.q('[data-nl-readout]').textContent).toContain('Started at 3, 1 hop taken (-5)');
+    expect(t.q('[data-nl-readout]').textContent).not.toContain('Point at -2');
     // Test undo + redo via hops
     t.q('[data-nl-undo]').click();
-    expect(t.q('[data-nl-readout]').textContent).toContain('Point at 3');
+    expect(t.q('[data-nl-readout]').textContent).toContain('Started at 3 (0 hops taken)');
     t.q('[data-nl-hop="-5"]').click();
     t.q('[data-mn-submit]').click();
     expect(t.q('[data-feedback]').textContent).toContain('Right');
+    expect(t.q('[data-nl-readout]').textContent).toContain('Point at -2');
     t.button('Next').click();
 
     // Item 2: -4 + 7 = 3 using +5 then +1 twice
@@ -208,11 +216,13 @@ describe('Wave 3A — Interactive Number Line (manip_number_line)', () => {
     expect(t.q('[data-feedback]').textContent).toContain('Right');
     t.button('Next').click();
 
-    // Item 3: 1/4 + 1/2 = 3/4 on fourths line
+    // Item 3: 1/4 + 1/2 = 3/4 on fourths line — live position hidden while hopping, revealed on submit
     t.q('[data-nl-hop="+1/2"]').click();
-    expect(t.q('[data-nl-readout]').textContent).toContain('3/4');
+    expect(t.q('[data-nl-readout]').textContent).toContain('Started at 1/4, 1 hop taken (+1/2)');
+    expect(t.q('[data-nl-readout]').textContent).not.toContain('Point at 3/4');
     t.q('[data-mn-submit]').click();
     expect(t.q('[data-feedback]').textContent).toContain('Right');
+    expect(t.q('[data-nl-readout]').textContent).toContain('Point at 3/4');
     t.button('Next').click();
 
     // Item 4: plot 5/4 via direct stop click + ArrowRight check
@@ -283,26 +293,33 @@ describe('Wave 3A — Balance-Scale Equations (manip_balance_scale)', () => {
     t.q('[data-bal-op="sub1"]').click();
     expect(t.q('[data-bal-eq]').textContent).toBe('2x = 8');
 
-    // Split into 2 equal groups -> x = 4 (div button disables, focus moves cleanly to submit)
+    // Split into 2 equal groups -> x = 4 (div button disables, focus moves to xInput; xInput is NOT auto-filled!)
     const divBtn = t.q('[data-bal-op="div"]');
     expect(divBtn.disabled).toBe(false);
     divBtn.focus();
     divBtn.click();
     expect(t.q('[data-bal-eq]').textContent).toBe('x = 4');
-    expect(t.q('[data-bal-x]').value).toBe('4');
-    expect(t.d.activeElement).toBe(t.q('[data-mn-submit]'));
+    expect(t.q('[data-bal-x]').value).toBe('6');
+    expect(t.d.activeElement).toBe(t.q('[data-bal-x]'));
     expect(t.qa('[data-bal-log] li')).toHaveLength(4);
 
+    // Student must enter x themselves
+    t.q('[data-bal-x]').value = '4';
     t.q('[data-mn-submit]').click();
     expect(t.q('.bal-beam').getAttribute('data-tilt')).toBe('level');
     expect(t.q('[data-feedback]').textContent).toContain('Balanced');
     t.button('Next').click();
 
-    // Item 2: 2x - 4 = 6 -> add 1 four times to both sides -> 2x = 10 -> divide by 2 -> x = 5
+    // Item 2: 2x - 4 = 6 -> add 1 four times to both sides -> 2x = 10 -> divide by 2 -> x = 5 (input stays empty until student types)
     for (let i = 0; i < 4; i++) t.q('[data-bal-op="add1"]').click();
     expect(t.q('[data-bal-eq]').textContent).toBe('2x = 10');
     t.q('[data-bal-op="div"]').click();
     expect(t.q('[data-bal-eq]').textContent).toBe('x = 5');
+    expect(t.q('[data-bal-x]').value).toBe('');
+    // Empty submit does not auto-read curC
+    t.q('[data-mn-submit]').click();
+    expect(t.q('[data-feedback]').textContent).toContain('type a number for x first');
+    t.q('[data-bal-x]').value = '5';
     t.q('[data-mn-submit]').click();
     expect(t.q('[data-feedback]').textContent).toContain('Balanced');
     t.button('See my results').click();
@@ -366,8 +383,9 @@ describe('Wave 3A — Check mode, Adaptive Scaffolding, Bilingual RTL, Station M
     t.tick(500);
     t.q('[data-bal-x]').value = '4';
     t.q('[data-mn-submit]').click();
-    // Item 2: wrong (x=3)
+    // Item 2: wrong (x=3) — divide button stays neutral in Check mode without spoiling divisor
     t.tick(500);
+    expect(t.q('[data-bal-op="div"]').textContent).toBe('Split into equal groups');
     t.q('[data-bal-x]').value = '3';
     t.q('[data-mn-submit]').click();
 

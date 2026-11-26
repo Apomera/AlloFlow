@@ -122,13 +122,16 @@ module.exports = {
           if (phase !== 'study' || ctx.isDone()) return;
           phase = 'play';
           redraw();
-          try {
-            if (isLockOn && laneButtons[aimLane]) { laneButtons[aimLane].focus(); }
-            else {
-              var nextFocus = ctx.root.querySelector('[data-lane]:not([disabled]), [data-sr-choice]:not([disabled]), input:not([disabled]):not([hidden]), button:not([disabled]):not([hidden])');
-              if (nextFocus && typeof nextFocus.focus === 'function') nextFocus.focus();
-            }
-          } catch (_) {}
+          if (!ctx.noFocus) {
+            try {
+              if (isLockOn && laneButtons[aimLane]) { laneButtons[aimLane].focus(); }
+              else if (!isSingleKeyItem && textInput && !textInput.disabled) { textInput.focus(); }
+              else {
+                var nextFocus = ctx.root.querySelector('[data-lane]:not([disabled]), [data-sr-choice]:not([disabled]), input:not([disabled]):not([hidden]), button:not([disabled]):not([hidden])');
+                if (nextFocus && typeof nextFocus.focus === 'function') nextFocus.focus();
+              }
+            } catch (_) {}
+          }
         },
       },
     }, [L.symbol_runner_cover]);
@@ -184,15 +187,28 @@ module.exports = {
     });
 
     var laneButtons = [];
+    var cueImg = null;
+    function focusPlayTarget() {
+      if (ctx.noFocus || phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return;
+      try {
+        if (!isSingleKeyItem && textInput && !textInput.disabled) { textInput.focus(); return; }
+        var openChoice = choiceButtons.filter(function (c) { return c && c.node && !c.node.disabled; })[0];
+        if (openChoice && openChoice.node && typeof openChoice.node.focus === 'function') { openChoice.node.focus(); return; }
+        if (textInput && !textInput.disabled) textInput.focus();
+      } catch (_) {}
+    }
     function lockToLane(idx) {
       if (phase !== 'play' || ctx.isDone()) return;
       aimLane = idx;
+      var justLocked = false;
       if (isLockOn && idx === item.lane && !lockedOn) {
         lockedOn = true;
+        justLocked = true;
         ctx.support('lockon');
         ctx.announce(L.symbol_runner_lockon_ready);
       }
       redraw();
+      if (justLocked) focusPlayTarget();
     }
 
     for (var i = 0; i < 3; i++) {
@@ -249,18 +265,26 @@ module.exports = {
               style: 'font-size:clamp(1.05rem,5vw,1.8rem);font-weight:800;line-height:1.1;margin:4px 0;letter-spacing:clamp(0.02em,0.8vw,0.08em)',
             }, fNodes));
           } else {
+            var srTxt = String(item.word || '').trim();
+            var srNoSpace = srTxt.indexOf(' ') < 0;
+            var srStyle = (srNoSpace && srTxt.length >= 8)
+              ? 'font-size:clamp(0.75rem,3vw,1.6rem);font-weight:900;line-height:1.15;margin:4px 0;max-width:100%;white-space:nowrap'
+              : (srNoSpace && srTxt.length >= 4)
+                ? 'font-size:clamp(0.92rem,3.9vw,1.9rem);font-weight:900;line-height:1.15;margin:4px 0;max-width:100%;white-space:nowrap'
+                : 'font-size:clamp(1.25rem,6.5vw,2.4rem);font-weight:900;line-height:1.1;margin:4px 0;max-width:100%;overflow-wrap:break-word';
             children.push(ctx.el('span', {
               'data-sr-symbol': item.word,
-              style: 'font-size:clamp(1.25rem,6.5vw,2.4rem);font-weight:900;line-height:1.1;margin:4px 0;max-width:100%;overflow-wrap:anywhere',
+              style: srStyle,
               text: item.word,
             }));
           }
           if (hasSafeImg) {
-            children.push(ctx.el('img', {
+            cueImg = ctx.el('img', {
               src: imgSrc,
-              alt: ctx.fmt(L.symbol_runner_picture_alt, { word: item.word }),
+              alt: 'Picture cue',
               style: 'width:52px;height:52px;object-fit:contain;margin-top:4px;border-radius:8px;background:#fff;padding:2px',
-            }));
+            });
+            children.push(cueImg);
           }
         } else {
           children.push(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1.5rem;opacity:0.3', text: '·' }));
@@ -278,6 +302,8 @@ module.exports = {
           on: {
             mouseenter: function () { if (isTarget) lockToLane(laneIndex); else { aimLane = laneIndex; redraw(); } },
             pointerenter: function () { if (isTarget) lockToLane(laneIndex); },
+            pointermove: function () { if (isTarget && !lockedOn) lockToLane(laneIndex); },
+            mousemove: function () { if (isTarget && !lockedOn) lockToLane(laneIndex); },
             click: function () { lockToLane(laneIndex); },
             keydown: function (e) {
               if (e.key === 'ArrowLeft') { e.preventDefault(); var p1 = Math.max(0, aimLane - 1); aimLane = p1; if (laneButtons[p1]) laneButtons[p1].focus(); lockToLane(p1); }
@@ -291,7 +317,42 @@ module.exports = {
       })(i);
     }
 
+    var normChoice = function (v) { return String(v == null ? '' : v).replace(/\s+/g, ' ').trim().toLowerCase(); };
     var numericChoices = item.choices.length > 0 && item.choices.every(function (c) { return /^[0-9]+$/.test(String(c).trim()); });
+    var isSingleKeyItem = !!(item.stroopInk || (item.choices.length > 0 && item.choices.every(function (c) {
+      var cl = normChoice(c);
+      return cl.length === 1 && /^[a-z0-9]$/i.test(cl);
+    })));
+    var resolveInstantKey = function (k, allowIndex) {
+      var lc = String(k == null ? '' : k).toLowerCase();
+      if (numericChoices) {
+        if (!/^[0-9]$/.test(k)) return null;
+        var matched = item.choices.filter(function (c) { return String(c).trim() === k; })[0];
+        var longerNum = item.choices.some(function (c) { var s = String(c).trim(); return s.length > 1 && s.indexOf(k) === 0; });
+        return matched && !longerNum ? matched : null;
+      }
+      if (item.stroopInk && k.length === 1) {
+        var wantColor = { r: 'red', b: 'blue', g: 'green', y: 'gold' }[lc] || '';
+        if (wantColor) {
+          var colorHit = item.choices.filter(function (c) {
+            var cl = normChoice(c);
+            return cl === wantColor || (lc === 'y' && cl === 'yellow');
+          })[0];
+          if (colorHit) return colorHit;
+        }
+      }
+      if (allowIndex && /^[1-9]$/.test(k)) {
+        var n = Number(k);
+        if (n >= 1 && n <= item.choices.length) return item.choices[n - 1];
+        return null;
+      }
+      if (k.length === 1 && /^[a-z0-9]$/i.test(k)) {
+        var exact = item.choices.filter(function (c) { return normChoice(c) === lc; })[0];
+        var longerChoice = item.choices.some(function (c) { var cl = normChoice(c); return cl.length > 1 && cl.indexOf(lc) === 0; });
+        if (exact && !longerChoice) return exact;
+      }
+      return null;
+    };
     var textInput = ctx.el('input', {
       type: 'text',
       autocomplete: 'off',
@@ -314,23 +375,36 @@ module.exports = {
       },
     }, [L.symbol_runner_done]);
 
-    textInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.repeat && !e.isComposing && e.keyCode !== 229) {
-        e.preventDefault();
-        submitAnswer(textInput.value);
-      }
-    });
-    // Practice mode: auto-submit an exact typed match when no longer choice shares it as a prefix.
-    textInput.addEventListener('input', function () {
+    var checkPracticeTypedMatch = function () {
       if (ctx.check || phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return;
-      var raw = String(textInput.value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      var raw = normChoice(textInput.value);
       if (!raw || raw !== item.answer) return;
       var longer = item.choices.some(function (c) {
-        var cl = String(c == null ? '' : c).trim().toLowerCase();
+        var cl = normChoice(c);
         return cl.length > raw.length && cl.indexOf(raw) === 0;
       });
       if (!longer) submitAnswer(raw);
+    };
+    textInput.addEventListener('keydown', function (e) {
+      if (e.repeat || e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitAnswer(textInput.value);
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return;
+      if (isSingleKeyItem && !textInput.value && e.key && e.key.length === 1) {
+        var instant = resolveInstantKey(e.key, !!item.stroopInk);
+        if (instant) {
+          e.preventDefault();
+          textInput.value = '';
+          if (!tried[normChoice(instant)]) submitAnswer(instant);
+        }
+      }
     });
+    // Practice mode: auto-submit an exact typed match when no longer choice shares it as a prefix.
+    textInput.addEventListener('input', checkPracticeTypedMatch);
 
     var typedRow = ctx.el('div', {
       class: 'row',
@@ -459,40 +533,24 @@ module.exports = {
         }
         if (phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return false;
         var lc = k.toLowerCase();
-        if (numericChoices) {
-          if (!/^[0-9]$/.test(k)) return false;
-          var matched = item.choices.filter(function (c) { return String(c).trim() === k; })[0];
-          var longerNum = item.choices.some(function (c) { var s = String(c).trim(); return s.length > 1 && s.indexOf(k) === 0; });
-          if (!matched || longerNum) return false;
-          if (!tried[matched.toLowerCase()]) submitAnswer(matched);
+        var instant = resolveInstantKey(k, !numericChoices);
+        if (instant) {
+          if (!tried[normChoice(instant)]) submitAnswer(instant);
           return true;
         }
-        if (item.stroopInk && k.length === 1) {
-          var wantColor = { r: 'red', b: 'blue', g: 'green', y: 'gold' }[lc] || '';
-          if (wantColor) {
-            var colorHit = item.choices.filter(function (c) {
-              var cl = String(c).trim().toLowerCase();
-              return cl === wantColor || (lc === 'y' && cl === 'yellow');
-            })[0];
-            if (colorHit && !tried[colorHit.toLowerCase()]) { submitAnswer(colorHit); return true; }
-          }
+        if (k === 'Backspace' && textInput.value) {
+          try { textInput.focus(); } catch (_) {}
+          textInput.value = textInput.value.slice(0, -1);
+          checkPracticeTypedMatch();
+          return true;
         }
-        if (/^[1-9]$/.test(k)) {
-          var n = Number(k);
-          if (n >= 1 && n <= item.choices.length) {
-            var pickChoice = item.choices[n - 1];
-            if (!tried[pickChoice.toLowerCase()]) submitAnswer(pickChoice);
-            return true;
-          }
-          return false;
-        }
-        if (k.length === 1 && /^[a-z0-9]$/i.test(k)) {
-          var exact = item.choices.filter(function (c) { return String(c).trim().toLowerCase() === lc; })[0];
-          var longerChoice = item.choices.some(function (c) { var cl = String(c).trim().toLowerCase(); return cl.length > 1 && cl.indexOf(lc) === 0; });
-          if (exact && !longerChoice) {
-            if (!tried[exact.toLowerCase()]) submitAnswer(exact);
-            return true;
-          }
+        // Multi-char or prefix-colliding choices: focus textInput and insert the first printable keystroke instead of dropping it.
+        var canType = !isSingleKeyItem && k.length === 1 && (numericChoices ? /^[0-9]$/.test(k) : /^[a-z0-9'\-]$/i.test(k));
+        if (canType && !(lc === 'r' && item.audio && !item.choices.some(function (c) { return normChoice(c).indexOf('r') === 0; }))) {
+          try { textInput.focus(); } catch (_) {}
+          textInput.value = String(textInput.value || '') + k;
+          checkPracticeTypedMatch();
+          return true;
         }
         return false;
       });
@@ -504,14 +562,19 @@ module.exports = {
     ctx.root.appendChild(coverButton);
     ctx.root.appendChild(padWrap);
     redraw();
-    if (!ctx.noFocus && isLockOn && phase === 'play' && !ctx.isDone() && laneButtons[aimLane]) {
-      try { laneButtons[aimLane].focus(); } catch (_) {}
+    if (!ctx.noFocus && phase === 'play' && !ctx.isDone()) {
+      if (isLockOn && laneButtons[aimLane]) {
+        try { laneButtons[aimLane].focus(); } catch (_) {}
+      } else if (!isSingleKeyItem && lockedOn && textInput && !textInput.disabled) {
+        try { textInput.focus(); } catch (_) {}
+      }
     }
 
     return {
       replay: item.audio ? function () { if (typeof ctx.play === 'function') ctx.play(item.audio); } : null,
       reveal: function (correct) {
         phase = 'done';
+        if (cueImg) cueImg.setAttribute('alt', ctx.fmt(L.symbol_runner_picture_alt, { word: item.word }));
         if (typeof correct === 'string') {
           revealAnswer = String(correct).replace(/\s+/g, ' ').trim().toLowerCase();
           outcome = true;

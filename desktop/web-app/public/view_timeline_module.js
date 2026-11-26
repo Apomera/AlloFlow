@@ -692,17 +692,26 @@ function TimelineView(props) {
   }, t('timeline.order_by')), " ", generatedContent?.data.progressionLabel), timelineModeDef && (!isTeacherMode ? /*#__PURE__*/React.createElement("span", {
     "data-timeline-mode-chip": true,
     className: "bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-xs font-bold shadow-sm"
-  }, timelineModeDef.label) : generatedContent.data.autoDetected ? /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: handleLockTimelineMode,
-    className: "min-h-11 bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold shadow-sm hover:bg-amber-100 transition-colors",
-    title: t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations',
-    "aria-label": `${t('timeline.detected_label') || 'Detected'}: ${timelineModeDef.label} — ${t('timeline.click_to_lock_aria') || 'Click to lock this mode'}`
+  }, timelineModeDef.label) : /*#__PURE__*/React.createElement("label", {
+    className: "inline-flex items-center gap-1.5 bg-white text-slate-700 border border-indigo-200 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm"
   }, /*#__PURE__*/React.createElement("span", {
+    className: "sr-only"
+  }, t('timeline.settings.mode_label') || 'Sequence type'), /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "✨ "), t('timeline.detected_label') || 'Detected', ": ", timelineModeDef.label) : /*#__PURE__*/React.createElement("span", {
-    className: "bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-xs font-bold shadow-sm"
-  }, "🔒 ", timelineModeDef.label))), /*#__PURE__*/React.createElement("div", {
+  }, generatedContent.data.autoDetected ? '✨' : '🧭'), /*#__PURE__*/React.createElement("select", {
+    "data-timeline-mode-select": true,
+    "aria-label": t('timeline.settings.mode_label') || 'Sequence type',
+    value: generatedContent.data.mode || 'chronological',
+    onChange: e => {
+      if (typeof handleLockTimelineMode === 'function') handleLockTimelineMode(e.target.value);
+    },
+    className: "bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer pr-1"
+  }, Object.entries(TIMELINE_MODE_DEFINITIONS || {}).map(([modeKey, def]) => /*#__PURE__*/React.createElement("option", {
+    key: modeKey,
+    value: modeKey
+  }, def?.label || modeKey)), /*#__PURE__*/React.createElement("option", {
+    value: "auto"
+  }, t('timeline.settings.mode_auto') || '✨ Auto-detect'))))), /*#__PURE__*/React.createElement("div", {
     className: "absolute left-[-5px] bottom-[-10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[12px] border-t-indigo-200"
   }), isEditingTimeline ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"

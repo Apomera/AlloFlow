@@ -566,6 +566,8 @@
     var o = input || {};
     var bank = o.bank || null;
     var pics = o.pictures && typeof o.pictures.has === 'function' && typeof o.pictures.file === 'function' ? o.pictures : null;
+    var extPics = o.readingSymbolsExt && typeof o.readingSymbolsExt.has === 'function' && typeof o.readingSymbolsExt.file === 'function' ? o.readingSymbolsExt : null;
+    var sem = o.semantic && typeof o.semantic.lookup === 'function' ? o.semantic : null;
     var art = o.art && typeof o.art.svgRefusal === 'function' ? o.art : null;
     var useDiagrams = o.diagrams === true && o.matcher && typeof o.matcher.matchWord === 'function' ? o.matcher : null;
     var edits = isObject(o.edits) ? o.edits : {};
@@ -623,9 +625,13 @@
             try { row.picture = pics.has(word) ? String(pics.file(word) || '') : ''; } catch (_) { row.picture = ''; }
             if (row.picture) row.pictureSource = 'symbol';
           }
+          if (!row.picture && extPics) {
+            try { row.picture = extPics.has(word) ? String(extPics.file(word) || '') : ''; } catch (_) { row.picture = ''; }
+            if (row.picture) row.pictureSource = 'symbol';
+          }
           if (!row.picture && useDiagrams) {
             try {
-              var matched = useDiagrams.matchWord({ word: word, lemma: row.base || '', definition: row.def || '' }, { symbols: pics, preferDiagrams: true });
+              var matched = useDiagrams.matchWord({ word: word, lemma: row.base || '', definition: row.def || '' }, { symbols: pics, readingSymbolsExt: extPics, semantic: sem, preferDiagrams: true });
               if (matched && matched.set === 'diagram' && svgSafe(matched.svg, art) && !diagramNamesWord(matched.svg, word, row.base)) {
                 row.picture = 'diagram:' + String(matched.matchedKey || key);
                 row.pictureSource = 'diagram';
@@ -666,7 +672,7 @@
       });
       delete row.mine;
     });
-    rows.forEach(function (row) { row.pictureWrong = row.picture ? pictureWrong(row, rows, bank, pics, useDiagrams, art) : []; });
+    rows.forEach(function (row) { row.pictureWrong = row.picture ? pictureWrong(row, rows, bank, pics, useDiagrams, art, extPics) : []; });
     return rows;
   }
   // The 3 other words of a picture question: list words with a picture (a fixed mix, the same kind of word first),
@@ -682,7 +688,7 @@
     var k = keyOf(word);
     return !!GROUP_WORDS[k] || (/s$/.test(k) && (!!GROUP_WORDS[k.slice(0, -1)] || (/es$/.test(k) && !!GROUP_WORDS[k.slice(0, -2)]))) || /ies$/.test(k) && !!GROUP_WORDS[k.slice(0, -3) + 'y'] || k === 'children';
   }
-  function pictureWrong(row, rows, bank, pics, matcher, art) {
+  function pictureWrong(row, rows, bank, pics, matcher, art, extPics) {
     var out = [], files = [row.picture];
     var base = function (w) { try { return bank && typeof bank.head === 'function' ? keyOf(bank.head(w) || w) : keyOf(w); } catch (_) { return keyOf(w); } };
     var mine = meaningsOf(bank, row.word, [row.def]);
@@ -691,6 +697,7 @@
       var k = keyOf(word), file = knownFile || '';
       if (!k || k === row.key || isGroupWord(word) || base(word) === base(row.word) || sameFamily(row.word, word, bank) || out.some(function (c) { return c.key === k; })) return;
       if (!file && pics) { try { file = pics.has(word) ? String(pics.file(word) || '') : ''; } catch (_) { file = ''; } }
+      if (!file && extPics) { try { file = extPics.has(word) ? String(extPics.file(word) || '') : ''; } catch (_) { file = ''; } }
       if (!file && matcher && typeof matcher.getDiagram === 'function') {
         try {
           var dg = matcher.getDiagram(word);
@@ -879,10 +886,18 @@
       recordedMeanings[got.k] = true;
       return cid;
     };
-    // Pictures (o.pictures: the Word Sounds picture set, o.matcher: built-in concept diagrams, and per-row custom uploads;
-    // o.art: word_sounds_packet_builder.js, whose svgRefusal tests each drawing as it goes into the file).
+    // Pictures (o.pictures: the Word Sounds picture set, o.readingSymbolsExt: extended offline symbols, o.semantic: WordNet bridge,
+    // o.matcher: built-in concept diagrams, and per-row custom uploads; o.art: word_sounds_packet_builder.js, whose svgRefusal tests each drawing).
     var pics = o.pictures && typeof o.pictures.get === 'function' ? o.pictures : null, art = o.art && typeof o.art.svgRefusal === 'function' ? o.art : null;
+    var extPics = o.readingSymbolsExt && typeof o.readingSymbolsExt.get === 'function' ? o.readingSymbolsExt : null;
+    var sem = o.semantic && typeof o.semantic.lookup === 'function' ? o.semantic : null;
     var matcher = o.diagrams === true && o.matcher && typeof o.matcher.getDiagram === 'function' ? o.matcher : null;
+    var getSym = function (w) {
+      var hit = null;
+      if (pics) { try { hit = pics.get(w); } catch (_) { hit = null; } }
+      if (!hit && extPics) { try { hit = extPics.get(w); } catch (_) { hit = null; } }
+      return hit;
+    };
     var rowByWord = Object.create(null);
     rows.forEach(function (r) { if (r && r.key) rowByWord[r.key] = r; });
     var resolveImage = function (word) {
@@ -895,7 +910,9 @@
         }
       }
       var got = null;
-      try { got = pics && art ? (pics.get(word) || (r && r.pictureLookupWord ? pics.get(r.pictureLookupWord) : null)) : null; } catch (_) { got = null; }
+      if (art) {
+        got = getSym(word) || (r && r.pictureLookupWord ? getSym(r.pictureLookupWord) : null);
+      }
       if (got && typeof got.svg === 'string' && svgSafe(got.svg, art)) {
         return { key: wk, id: 'p' + fnv('picture|' + String(got.file || wk)), dataUri: 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(got.svg))),
           meta: { word: line(word, 60), set: got.set === 'openmoji' ? 'openmoji' : 'mulberry' } };
@@ -907,8 +924,12 @@
         try {
           diag = matcher.getDiagram(word, (r && r.base) || '', word);
           if (!diag && typeof matcher.matchWord === 'function') {
-            var m = matcher.matchWord({ word: word, lemma: (r && r.base) || '', definition: (r && r.def) || '' }, { symbols: pics, preferDiagrams: true });
+            var m = matcher.matchWord({ word: word, lemma: (r && r.base) || '', definition: (r && r.def) || '' }, { symbols: pics, readingSymbolsExt: extPics, semantic: sem, preferDiagrams: true });
             if (m && m.set === 'diagram' && m.svg) diag = m;
+            else if (m && m.svg && art && svgSafe(m.svg, art)) {
+              return { key: wk, id: 'p' + fnv('picture|' + String(m.file || wk)), dataUri: 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(m.svg))),
+                meta: { word: line(word, 60), set: m.set === 'openmoji' ? 'openmoji' : 'mulberry' } };
+            }
           }
         } catch (_) { diag = null; }
       }
@@ -976,7 +997,7 @@
           var heard = clipOf(item.row.word); if (heard) raw.askAudio = heard;
           if (choices.every(meaningUri)) raw.choiceAudio = choices.map(meaningClipOf);
         }
-        if (id === 'word') { var meant = meaningClipOf(item.ask); if (meant) raw.askAudio = meant; }
+        if (id === 'word' || id === 'blank') { var meant = meaningClipOf(item.ask); if (meant) raw.askAudio = meant; }
         if (id === 'word' || id === 'blank') { var voiced = choices.map(clipOf); if (voiced.some(Boolean)) raw.choiceAudio = voiced; }
         if (id === 'picture') {
           raw.word = item.row.word;

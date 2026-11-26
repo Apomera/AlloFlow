@@ -22,6 +22,8 @@
 <script src="packets_my_words.js" defer></script>
 <script src="packets_vocab_bank_en.js" defer></script>
 <script src="word_sounds_symbols_en.js" defer></script>
+<script src="reading_symbols_ext_en.js" defer></script>
+<script src="word_picture_semantic_en.js" defer></script>
 <script src="word_picture_matcher.js" defer></script>
 <script src="word_sounds_packet_builder.js" defer></script>
 <script src="packets_vocab_media.js" defer></script>
@@ -247,6 +249,10 @@
         <span class="sr-only" id="v-mix-said" role="status"></span>
       </div>
 
+      <p class="row" id="vocab-find-missing-pics-row" hidden>
+        <a class="btn btn-small" id="vocab-find-missing-pics" href="packets-pictures.html" target="_blank" rel="noopener" hidden>Find pictures for missing words</a>
+      </p>
+
       <details class="why code-box" id="picture-more">
         <summary>More pictures and school concept diagrams</summary>
         <div class="block">
@@ -271,6 +277,7 @@
       <div id="blank-panel" class="block" hidden>
         <h3 class="v-sub">Check the sentences</h3>
         <p class="hint">The wrong answers are other words from your list, so that only one word fits. Swap a word that could also fit.</p>
+        <div id="blank-kokoro-callout" class="note" role="status" hidden></div>
         <div id="blank-rows" class="v-rows"></div>
       </div>
 
@@ -336,6 +343,7 @@
           <a class="btn btn-small" id="open-present-export" href="packets-present-export.html#from-vocab" target="_blank" rel="noopener">Present &amp; print word cards <span class="sr-only">(opens in a new tab)</span></a>
           <a class="btn btn-small" id="open-symbol-runner" href="packets-symbol-runner.html" target="_blank" rel="noopener" hidden>Practice in Symbol Runner <span class="sr-only">(opens in a new tab)</span></a>
         </p>
+        <p class="hint" id="bundle-hint">The classroom bundle (.zip) packages the interactive file, scaffolded, independent, and answer-key worksheets (HTML and editable Word .docx), cut-out word cards (.docx), and the offline audio player when recordings are ready.</p>
       </div>
 
       <details class="batch" id="batch">

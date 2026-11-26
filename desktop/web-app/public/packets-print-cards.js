@@ -68,6 +68,26 @@
   function lengthClass(word) { return 'pc-len-' + Math.max(1, Math.min(LONGEST, String(word).length)); }
   function svgUri(svg) { return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(String(svg)); }
   function isPicture(uri) { return typeof uri === 'string' && /^data:image\/(?:png|jpeg|jpg|webp|gif|svg\+xml)[;,]/.test(uri); }
+  function picturesQueueInfo(wordList) {
+    var clean = [], seen = Object.create(null);
+    var norm = root && root.AlloPacketMyWords && typeof root.AlloPacketMyWords.normalizeWord === 'function'
+      ? root.AlloPacketMyWords.normalizeWord
+      : function (raw) {
+          var s = String(raw == null ? '' : raw).trim().toLowerCase();
+          return /^[a-z]{2,24}$/.test(s) ? s : '';
+        };
+    (Array.isArray(wordList) ? wordList : []).forEach(function (raw) {
+      var w = norm(raw);
+      if (w && !seen[w]) { seen[w] = true; clean.push(w); }
+    });
+    if (!clean.length) return { href: '', count: 0 };
+    var first = clean[0], rest = clean.slice(1, 50);
+    return {
+      href: 'packets-pictures.html#word=' + encodeURIComponent(first)
+        + (rest.length ? '&more=' + rest.map(encodeURIComponent).join(',') : ''),
+      count: clean.length
+    };
+  }
 
   // ---------------------------------------------------------------------------
   // Word Sounds Activity Worksheets (13 Packets + 6 Main-App activities)
@@ -98,7 +118,22 @@
   };
   var WS_HIDE_WORD = { orthography: 1, spelling_bee: 1 };
   var WS_HIDE_PICTURE = { blending: 1, syllable_blending: 1 };
+  var WS_LISTENING_ACTIVITIES = { counting: 1, isolation: 1, segmentation: 1, syllable_counting: 1, blending: 1, syllable_blending: 1 };
   var WS_NO_SYLLABLES = { missing_letter: 1, word_scramble: 1, letter_tracing: 1, mapping: 1, syllable_counting: 1 };
+  function getReadingSymbolsExt(src) {
+    var explicit = src && src.readingSymbolsExt;
+    if (explicit && typeof explicit.get === 'function') return explicit;
+    if (root && root.AlloReadingSymbolsExt && typeof root.AlloReadingSymbolsExt.get === 'function') return root.AlloReadingSymbolsExt;
+    if (root && root.AlloModules && root.AlloModules.ReadingSymbolsExt && typeof root.AlloModules.ReadingSymbolsExt.get === 'function') return root.AlloModules.ReadingSymbolsExt;
+    return null;
+  }
+  function getSemanticBridge(src) {
+    var explicit = src && (src.semanticBridge || src.semantic);
+    if (explicit && typeof explicit.lookup === 'function') return explicit;
+    if (root && root.AlloWordPictureSemantic && typeof root.AlloWordPictureSemantic.lookup === 'function') return root.AlloWordPictureSemantic;
+    if (root && root.AlloModules && root.AlloModules.WordPictureSemantic && typeof root.AlloModules.WordPictureSemantic.lookup === 'function') return root.AlloModules.WordPictureSemantic;
+    return null;
+  }
   var WS_FRIENDLY_SOUND = { oo_short: 'short oo', dh: 'th (this)', zh: 'zh', schwa: 'uh' };
   var WS_ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
   var WS_DEFAULT_ACTIVITIES = ['mapping', 'missing_letter', 'word_scramble', 'counting'];
@@ -1194,10 +1229,12 @@
       var ak = pickBool('answerKey', 'answerKeyOn', 'includeAnswerKey');
       var h = pickBool('hints', 'hintsOn', 'showHints');
       var sy = pickBool('syllables', 'syllablesOn', 'showSyllables');
+      var slw = pickBool('showListeningWords', 'listeningWords');
       if (p !== undefined) out.pictures = p;
       if (ak !== undefined) out.answerKey = ak;
       if (h !== undefined) out.hints = h;
       if (sy !== undefined) out.syllables = sy;
+      if (slw !== undefined) out.showListeningWords = slw;
     } else if (kind === 'vocab') {
       var wb = pickBool('wordBank', 'wordBankOn', 'showWordBank');
       var vp = pickBool('pictures', 'picturesOn', 'showPictures');
@@ -1497,10 +1534,16 @@
     var answerKeyOn = !!rawKey;
     var hintsOn = !!rawHints;
     var syllablesOn = !!rawSyl;
+    var showListeningWords = opts.showListeningWords !== undefined ? !!opts.showListeningWords
+      : (opts.listeningWords !== undefined ? !!opts.listeningWords
+        : (src.showListeningWords !== undefined ? !!src.showListeningWords
+          : (src.listeningWords !== undefined ? !!src.listeningWords : false)));
     var tracingCase = opts.tracing || src.tracing || (src.sessionConfig && src.sessionConfig.tracingCases) || 'both';
     var defaultMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
     var symbols = opts.symbols !== undefined ? opts.symbols : (src.symbols || (root && root.AlloModules && root.AlloModules.WordSoundsSymbols) || null);
-    var matcher = opts.matcher !== undefined ? opts.matcher : (src.matcher !== undefined ? src.matcher : defaultMatcher);
+    var readingSymbolsExt = opts.readingSymbolsExt !== undefined ? opts.readingSymbolsExt : getReadingSymbolsExt(src);
+    var semanticBridge = opts.semanticBridge !== undefined ? opts.semanticBridge : getSemanticBridge(src);
+    var matcher = opts.matcher !== undefined ? opts.matcher : (src.matcher !== undefined && src.matcher !== null ? src.matcher : defaultMatcher);
     var ownMap = (opts.own && typeof opts.own === 'object' && typeof opts.own !== 'function') ? opts.own
       : (src.own && typeof src.own === 'object' && typeof src.own !== 'function' ? src.own : null);
     var creditLine = typeof opts.creditLine === 'function' ? opts.creditLine
@@ -1645,8 +1688,9 @@
     });
 
     var picMap = Object.create(null);
+    var suppressedPicWords = Object.create(null);
     if (picturesOn && picWords.length) {
-      var resolved = picturesOf(picWords, ownMap, symbols, matcher);
+      var resolved = picturesOf(picWords, ownMap, symbols, matcher, readingSymbolsExt, semanticBridge);
       picWords.forEach(function (w) {
         if (resolved[w]) picMap[w.toLowerCase()] = resolved[w];
       });
@@ -1664,7 +1708,7 @@
           var raw = it.item || {};
           var low = String(it.word || '').toLowerCase();
           var ownE = ownEntryFor(ownMap, it.word);
-          if (raw.pictureNone || (ownE && ownE.picture && ownE.picture.none)) { picMap[low] = null; return; }
+          if (raw.pictureNone || (ownE && ownE.picture && ownE.picture.none)) { picMap[low] = null; suppressedPicWords[low] = true; return; }
           var emb = wsSafeImgFrom(raw.wordPicture, imagesMap) || wsSafeImgFrom(raw.image, imagesMap) || wsSafeImgFrom(raw.picture, imagesMap);
           if (emb && !picMap[low]) {
             var cred = raw.imageCredit || (raw.picture && raw.picture.credit) || null;
@@ -1684,6 +1728,12 @@
     }
 
     var usedPicWords = [], usedPicByWord = Object.create(null);
+    var hasPicture = function (word) {
+      if (!picturesOn) return false;
+      var k = String(word || '').trim().toLowerCase();
+      var p = k ? picMap[k] : null;
+      return !!(p && p.uri);
+    };
     var pictureFor = function (word) {
       if (!picturesOn) return null;
       var k = String(word || '').trim().toLowerCase();
@@ -1695,7 +1745,7 @@
 
     // Pre-mark used pictures by walking sections, and compute credits.
     var computeCredits = function () {
-      var lines = creditsFor(usedPicWords, usedPicByWord, symbols, creditLine);
+      var lines = creditsFor(usedPicWords, usedPicByWord, symbols, creditLine, readingSymbolsExt);
       usedPicWords.forEach(function (w) {
         var p = usedPicByWord[w];
         if (p && p.creditText && lines.every(function (l) { return l.indexOf(p.creditText) < 0; })) {
@@ -1722,10 +1772,18 @@
       answerKeyOn: answerKeyOn,
       hintsOn: hintsOn,
       syllablesOn: syllablesOn,
+      showListeningWords: showListeningWords,
       syllablesSrc: ctx.syllablesSrc,
+      hasPicture: hasPicture,
       pictureFor: pictureFor,
       computeCredits: computeCredits,
-      words: picWords
+      words: picWords,
+      missingPicWords: picturesOn
+        ? picWords.filter(function (w) {
+            var low = String(w || '').trim().toLowerCase();
+            return !!low && !suppressedPicWords[low] && !hasPicture(w);
+          })
+        : []
     };
   }
 
@@ -1776,6 +1834,7 @@
     '.ws-pic{display:block;width:64px;height:64px;object-fit:contain;border:1px solid #808080;padding:3px;background:#ffffff;flex:none}',
     '.ws-pic-sm{display:block;width:36px;height:36px;object-fit:contain;flex:none}',
     '.ws-word{font-size:21px;font-weight:700;letter-spacing:.02em;overflow-wrap:anywhere}',
+    '.ws-listen{font-size:14px;font-style:italic;font-weight:700;color:#000000}',
     '.pc-dot{font-weight:400;color:#808080;margin:0 -0.02em}',
     '.ws-boxes{display:inline-flex;flex-wrap:wrap;align-items:center}',
     '.ws-box{display:inline-block;width:42px;height:42px;border:2px solid #000000;background:#ffffff}',
@@ -1914,7 +1973,10 @@
           var bank = model.hintsOn && it.bank && it.bank.length
             ? '<div class="ws-bank"><span class="ws-bank-label">Letter bank:</span>' + it.bank.map(function (g) { return '<span class="ws-chip">' + wsEsc(g) + '</span>'; }).join('') + '</div>'
             : '';
-          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+          var mapPrompt = it.customPrompt
+            ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>'
+            : (!pic ? '<p class="ws-prompt ws-listen">Listen to your teacher:</p>' : '');
+          inner = mapPrompt
             + '<div class="ws-row">' + pic + '<div class="ws-boxes" data-sound-boxes="' + it.soundCount + '">' + boxes + '</div></div>' + bank;
         } else if (act === 'missing_letter') {
           var mlPic = picTag(it.word, neutralAlt, false);
@@ -1924,42 +1986,62 @@
           var mlChoices = '<ul class="ws-choices">' + (it.choices || []).map(function (c) {
             return '<li class="ws-choice">' + wsEsc(c) + '</li>';
           }).join('') + '</ul>';
-          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+          var mlPrompt = it.customPrompt
+            ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>'
+            : (!mlPic ? '<p class="ws-prompt ws-listen">Listen to your teacher:</p>' : '');
+          inner = mlPrompt
             + '<div class="ws-row">' + mlPic + mlWord + '</div>' + mlChoices;
         } else if (act === 'word_scramble') {
           var wsPic = picTag(it.word, neutralAlt, false);
           var tiles = '<div class="ws-tiles">' + (it.tiles || []).map(function (t) {
             return '<span class="ws-tile">' + wsEsc(t) + '</span>';
           }).join('') + '</div>';
-          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+          var wsScrPrompt = it.customPrompt
+            ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>'
+            : (!wsPic ? '<p class="ws-prompt ws-listen">Listen to your teacher:</p>' : '');
+          inner = wsScrPrompt
             + '<div class="ws-row">' + wsPic + tiles + '</div><div class="ws-line"></div>';
         } else if (act === 'counting') {
-          var ctPic = picTag(it.word, '', false);
+          var ctPic = picTag(it.word, model.showListeningWords ? '' : neutralAlt, false);
           var bubbles = '<ul class="ws-bubbles">' + (it.values || ['1', '2', '3', '4', '5', '6']).map(function (v) {
             return '<li class="ws-bubble">' + wsEsc(v) + '</li>';
           }).join('') + '</ul>';
+          var ctCue = model.showListeningWords
+            ? '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span>'
+            : '<span class="ws-listen">Listen to your teacher:</span>';
           inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
-            + '<div class="ws-row">' + ctPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>' + bubbles;
+            + '<div class="ws-row">' + ctPic + ctCue + '</div>' + bubbles;
         } else if (act === 'isolation') {
-          var isoPic = picTag(it.word, '', false);
+          var isoPic = picTag(it.word, model.showListeningWords ? '' : neutralAlt, false);
           var isoChoices = '<ul class="ws-choices">' + (it.choices || []).map(function (c) {
             return '<li class="ws-choice">' + wsEsc(wsSoundLabel(c)) + '</li>';
           }).join('') + '</ul>';
-          var isoPromptHtml = it.customPrompt ? wsEsc(it.customPrompt) : ('What is the ' + wsEsc(it.positionName) + ' sound in ' + fmt(it.word, allowSyl) + '?');
-          inner = '<p class="ws-prompt">' + isoPromptHtml + '</p>'
-            + '<div class="ws-row">' + isoPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>' + isoChoices;
+          var isoPromptHtml = it.customPrompt
+            ? wsEsc(it.customPrompt)
+            : (model.showListeningWords
+              ? ('What is the ' + wsEsc(it.positionName) + ' sound in ' + fmt(it.word, allowSyl) + '?')
+              : ('Listen to your teacher: What is the ' + wsEsc(it.positionName) + ' sound?'));
+          var isoRowHtml = model.showListeningWords
+            ? '<div class="ws-row">' + isoPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>'
+            : (isoPic ? '<div class="ws-row">' + isoPic + '</div>' : '');
+          inner = '<p class="ws-prompt">' + isoPromptHtml + '</p>' + isoRowHtml + isoChoices;
         } else if (act === 'segmentation') {
-          var segPic = picTag(it.word, '', false);
+          var segPic = picTag(it.word, model.showListeningWords ? '' : neutralAlt, false);
           var dots = '';
           for (var di = 0; di < it.slotCount; di++) dots += '<span class="ws-tap-dot"></span>';
           var segBank = model.hintsOn && it.chips && it.chips.length
             ? '<div class="ws-bank"><span class="ws-bank-label">Sound bank:</span>' + it.chips.map(function (s) { return '<span class="ws-chip">' + wsEsc(wsSoundLabel(s)) + '</span>'; }).join('') + '</div>'
             : '';
+          var segCue = model.showListeningWords
+            ? '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span>'
+            : '<span class="ws-listen">Listen to your teacher:</span>';
           inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
-            + '<div class="ws-row">' + segPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span><div class="ws-tap-dots" data-tap-dots="' + it.slotCount + '">' + dots + '</div></div>'
+            + '<div class="ws-row">' + segPic + segCue + '<div class="ws-tap-dots" data-tap-dots="' + it.slotCount + '">' + dots + '</div></div>'
             + '<div class="ws-line"></div>' + segBank;
         } else if (act === 'blending') {
-          var seq = '<div class="ws-sounds-seq">' + (it.sounds || []).map(wsSoundLabel).map(wsEsc).join(' \u00b7 ') + '</div>';
+          var seq = model.showListeningWords
+            ? '<div class="ws-sounds-seq">' + (it.sounds || []).map(wsSoundLabel).map(wsEsc).join(' \u00b7 ') + '</div>'
+            : '<div class="ws-row"><span class="ws-listen">Listen to your teacher:</span></div>';
           var bChoices = it.choices && it.choices.length
             ? '<ul class="ws-choices">' + it.choices.map(function (c) { return '<li class="ws-choice">' + fmt(c, allowSyl) + '</li>'; }).join('') + '</ul>'
             : '';
@@ -2015,15 +2097,20 @@
           inner = '<p class="ws-prompt">' + spPromptHtml + '</p>'
             + '<div class="ws-row">' + spPic + scaffold + '</div><div class="ws-line"></div>';
         } else if (act === 'syllable_counting') {
-          var scPic = picTag(it.word, '', false);
+          var scPic = picTag(it.word, model.showListeningWords ? '' : neutralAlt, false);
           var scBubbles = '<ul class="ws-bubbles">' + (it.values || ['1', '2', '3', '4', '5']).map(function (v) {
             return '<li class="ws-bubble">' + wsEsc(v) + '</li>';
           }).join('') + '</ul>';
           var scoops = '<div class="ws-scoops" aria-hidden="true"><span class="ws-scoop"></span><span class="ws-scoop"></span><span class="ws-scoop"></span></div>';
+          var scCue = model.showListeningWords
+            ? '<span class="ws-word">' + wsEsc(it.word) + '</span>'
+            : '<span class="ws-listen">Listen to your teacher:</span>';
           inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
-            + '<div class="ws-row">' + scPic + '<span class="ws-word">' + wsEsc(it.word) + '</span></div>' + scoops + scBubbles;
+            + '<div class="ws-row">' + scPic + scCue + '</div>' + scoops + scBubbles;
         } else if (act === 'syllable_blending') {
-          var sbSeq = '<div class="ws-sounds-seq">' + (it.syllables || []).map(wsEsc).join(' \u00b7 ') + '</div>';
+          var sbSeq = model.showListeningWords
+            ? '<div class="ws-sounds-seq">' + (it.syllables || []).map(wsEsc).join(' \u00b7 ') + '</div>'
+            : '<div class="ws-row"><span class="ws-listen">Listen to your teacher:</span></div>';
           var sbChoices = it.choices && it.choices.length
             ? '<ul class="ws-choices">' + it.choices.map(function (c) { return '<li class="ws-choice">' + fmt(c, allowSyl) + '</li>'; }).join('') + '</ul>'
             : '';
@@ -2036,10 +2123,13 @@
           inner = '<p class="ws-prompt">' + wsEsc(it.prompt) + '</p><div class="ws-line"></div>' + mChoices;
         } else if (act === 'decoding') {
           var dChecks = '<div class="ws-fluency"><span class="ws-check-item"><span class="ws-checkbox"></span> Read aloud</span><span class="ws-check-item"><span class="ws-checkbox"></span> Read smoothly</span></div>';
-          var dPics = it.choices && it.choices.length
-            ? '<ul class="ws-choices">' + it.choices.map(function (c) {
+          var dChoicesWithPic = (it.choices || []).filter(function (c) { return c && c.text && model.hasPicture(c.text); });
+          var dTargetInChoices = (it.choices || []).some(function (c) { return c && String(c.text || '').toLowerCase() === String(it.word || '').toLowerCase(); });
+          var dTargetHasPic = !dTargetInChoices || model.hasPicture(it.word);
+          var dPics = dChoicesWithPic.length >= 2 && dTargetHasPic
+            ? '<ul class="ws-choices">' + dChoicesWithPic.map(function (c) {
                 var img = picTag(c.text, 'Picture choice', true);
-                return '<li class="ws-choice">' + (img || wsEsc(c.text)) + '</li>';
+                return img ? '<li class="ws-choice">' + img + '</li>' : '';
               }).join('') + '</ul>'
             : '';
           inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
@@ -2129,7 +2219,8 @@
         pictures: model.picturesOn,
         answerKey: model.answerKeyOn,
         hints: model.hintsOn,
-        syllables: model.syllablesOn
+        syllables: model.syllablesOn,
+        showListeningWords: model.showListeningWords
       }),
       '</body>',
       '</html>'
@@ -3431,6 +3522,7 @@
     var usedPicByWord = Object.create(null);
     var resolvedFromIndex = picturesOn && words.length ? picturesOf(words, ownMap, symbols, matcher) : Object.create(null);
     var picEntries = [];
+    var missingPicWords = [];
     if (picturesOn) {
       entries.forEach(function (ent) {
         if (ent.noPicture) return;
@@ -3448,6 +3540,8 @@
           picEntries.push({ word: ent.word, uri: resolved.uri, picture: resolved });
           var k = ent.word.toLowerCase();
           if (!usedPicByWord[k]) { usedPicByWord[k] = resolved; usedPicWords.push(k); }
+        } else {
+          missingPicWords.push(ent.word);
         }
       });
     }
@@ -3511,6 +3605,7 @@
       matchDefs: numberedDefs,
       clozeItems: clozeItems,
       pictureItems: pictureItems,
+      missingPicWords: missingPicWords,
       hiddenSections: custom.hiddenSections,
       hiddenParts: custom.hiddenParts,
       hiddenItems: custom.hiddenItems,
@@ -4182,9 +4277,12 @@
   }
   // Which picture each word shows: { uri, set, credit } or null. set is 'own' for a picture the teacher added.
   // Optional 4th argument matcher (AlloWordPictureMatcher) adds 696 K-12 curriculum diagrams + lemma/compound/concept matching.
-  function picturesOf(words, own, symbols, matcher) {
+  function picturesOf(words, own, symbols, matcher, readingSymbolsExt, semanticBridge) {
     var out = Object.create(null);
     var symReady = !!(symbols && typeof symbols.get === 'function' && (typeof symbols.ready !== 'function' || symbols.ready()));
+    var ext = readingSymbolsExt !== undefined ? readingSymbolsExt : getReadingSymbolsExt();
+    var extReady = !!(ext && typeof ext.get === 'function' && (typeof ext.ready !== 'function' || ext.ready()));
+    var sem = semanticBridge !== undefined ? semanticBridge : getSemanticBridge();
     words.forEach(function (word) {
       var entry = ownEntryFor(own, word);
       var picture = entry && entry.picture;
@@ -4195,9 +4293,21 @@
         ? (symbols.has(word) ? symbols.get(word) : (symbols.has(lower) ? symbols.get(lower) : null))
         : null;
       if (got && got.svg) { out[word] = { uri: svgUri(got.svg), set: got.set || 'mulberry', credit: null }; return; }
+      var gotExt = extReady
+        ? ((typeof ext.has !== 'function' || ext.has(word)) ? ext.get(word) : ((typeof ext.has !== 'function' || ext.has(lower)) ? ext.get(lower) : null))
+        : null;
+      if (gotExt && gotExt.svg) { out[word] = { uri: svgUri(gotExt.svg), set: gotExt.set || 'mulberry', credit: null }; return; }
       if (matcher && typeof matcher.matchWord === 'function') {
         var matched = null;
-        try { matched = matcher.matchWord({ word: word }, { symbols: symReady ? symbols : null, preferDiagrams: true }); } catch (_) { matched = null; }
+        try {
+          matched = matcher.matchWord({ word: word }, {
+            symbols: symReady ? symbols : null,
+            readingSymbolsExt: extReady ? ext : null,
+            semantic: sem,
+            semanticBridge: sem,
+            preferDiagrams: true
+          });
+        } catch (_) { matched = null; }
         if (matched && matched.svg) {
           out[word] = { uri: svgUri(matched.svg), set: matched.set || (matched.matchTier === 'diagram' || matched.matchType === 'diagram' ? 'diagram' : 'mulberry'), credit: null };
           return;
@@ -4211,22 +4321,29 @@
   // then one for each picture the teacher added that is not their own.
   // CC BY-SA asks for a link to the license itself, not only its name.
   var LICENSE_DEEDS = { 'CC BY-SA 4.0': 'creativecommons.org/licenses/by-sa/4.0' };
-  function setCredit(symbols, set) {
-    var credits = symbols && symbols.credits ? symbols.credits : null;
-    var credit = credits && Object.prototype.hasOwnProperty.call(credits, set) && credits[set] ? credits[set] : set === 'mulberry' && symbols && symbols.credit ? symbols.credit : null;
+  function setCredit(symbols, set, readingSymbolsExt) {
+    var pickFrom = function (bank) {
+      if (!bank) return null;
+      var credits = bank.credits ? bank.credits : null;
+      if (credits && Object.prototype.hasOwnProperty.call(credits, set) && credits[set]) return credits[set];
+      if (set === 'mulberry' && bank.credit) return bank.credit;
+      return null;
+    };
+    var credit = pickFrom(symbols) || pickFrom(readingSymbolsExt || getReadingSymbolsExt());
     if (!credit) {
       if (set === 'diagram') return 'AlloFlow Curriculum Diagrams (AGPL-3.0).';
       return '';
     }
     var deed = Object.prototype.hasOwnProperty.call(LICENSE_DEEDS, credit.license) ? LICENSE_DEEDS[credit.license] : '';
-    return credit.set + ' by ' + credit.author + '. License: ' + credit.license + (deed ? ' (' + deed + ')' : '') + '. ' + credit.url;
+    var cleanUrl = String(credit.url || '').replace(/^[a-z][a-z0-9+.-]*:\/\//i, '');
+    return credit.set + ' by ' + credit.author + '. License: ' + credit.license + (deed ? ' (' + deed + ')' : '') + (cleanUrl ? '. ' + cleanUrl : '.');
   }
-  function creditsFor(words, pictures, symbols, creditLine) {
+  function creditsFor(words, pictures, symbols, creditLine, readingSymbolsExt) {
     var sets = [], lines = [];
     words.forEach(function (word) { var p = pictures[word]; if (p && p.set !== 'own' && sets.indexOf(p.set) < 0) sets.push(p.set); });
     var rank = function (set) { var i = SET_ORDER.indexOf(set); return i < 0 ? SET_ORDER.length : i; };
     sets.sort(function (a, b) { return rank(a) - rank(b) || (a < b ? -1 : 1); });
-    sets.forEach(function (set) { var line = setCredit(symbols, set); if (line) lines.push(TEXT.picturesLine + line); });
+    sets.forEach(function (set) { var line = setCredit(symbols, set, readingSymbolsExt); if (line) lines.push(TEXT.picturesLine + line); });
     words.forEach(function (word) {
       var p = pictures[word];
       if (!p || p.set !== 'own' || !p.credit || p.credit.own === true || typeof creditLine !== 'function') return;
@@ -4241,7 +4358,7 @@
     var options = { size: DEFAULT_SIZE, shows: 'both', lines: true, syllables: false, pages: 'both' };
     var loadingSyllables = false;
     var wsView = null, wsNodes = {}, wsState = null, wsOwn = null, wsRun = 0, wsOpener = null, wsBusy = false, wsNote = '', wsSyllableNote = '';
-    var wsOptions = { pictures: true, answerKey: true, hints: true, syllables: false };
+    var wsOptions = { pictures: true, answerKey: true, hints: true, syllables: false, showListeningWords: false };
     var wsCustom = wsCreateDefaultCustom(''), wsCustomizer = null;
     var vocabView = null, vocabNodes = {}, vocabState = null, vocabOwn = null, vocabRun = 0, vocabOpener = null, vocabBusy = false, vocabNote = '', vocabSyllableNote = '';
     var vocabOptions = { wordBank: true, pictures: true, answerKey: true, syllables: false };
@@ -4602,19 +4719,32 @@
       return own.then(function (found) {
         if (mine !== run) return;
         var symbols = state.symbols;
-        var needs = !!symbols && state.words.some(function (word) {
+        var ext = state.readingSymbolsExt || getReadingSymbolsExt();
+        var sem = state.semanticBridge || getSemanticBridge();
+        var curMatcher = state.matcher || (root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher))) || null;
+        if (!state.matcher && curMatcher) state.matcher = curMatcher;
+        var symsReady = !symbols || (typeof symbols.ready !== 'function' || symbols.ready());
+        var extReady = !ext || (typeof ext.ready !== 'function' || ext.ready());
+        var hasUnownedWord = state.words.some(function (word) {
           var entry = ownEntryFor(found, word);
-          return !(entry && entry.picture) && (symbols.has(word) || symbols.has(String(word).toLowerCase()));
+          return !(entry && entry.picture);
         });
-        if (!needs || symbols.ready() || typeof state.loadPictures !== 'function') { pictures = picturesOf(state.words, found, symbols, state.matcher); return; }
+        if (!hasUnownedWord || (symsReady && extReady && !!curMatcher) || typeof state.loadPictures !== 'function') {
+          pictures = picturesOf(state.words, found, symbols, state.matcher, ext, sem);
+          return;
+        }
         busy = true;
-        note = fill(TEXT.getting, { mb: (Number(symbols.bytes || 0) / 1e6).toFixed(1) });
+        note = fill(TEXT.getting, { mb: (Number((symbols && symbols.bytes) || (ext && ext.bytes) || 0) / 1e6).toFixed(1) });
         draw();
         return Promise.resolve().then(function () { return state.loadPictures(); }).then(function (ready) { return !!ready; }, function () { return false; }).then(function (ready) {
           if (mine !== run) return;
           busy = false;
           note = ready ? '' : TEXT.gotNone;
-          pictures = picturesOf(state.words, found, ready ? symbols : null, state.matcher);
+          var freshMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
+          if (!state.matcher && freshMatcher) state.matcher = freshMatcher;
+          var freshExt = state.readingSymbolsExt || getReadingSymbolsExt();
+          var freshSem = state.semanticBridge || getSemanticBridge();
+          pictures = picturesOf(state.words, found, ready ? symbols : null, state.matcher, ready ? freshExt : null, freshSem);
         });
       });
     }
@@ -4629,7 +4759,9 @@
       var s = given || {};
       var defaultMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
       state = { words: cleanWords(s.words), title: String(s.title || '').trim(), pictures: !!s.pictures, symbols: s.symbols || null,
-        matcher: s.matcher !== undefined ? s.matcher : defaultMatcher,
+        readingSymbolsExt: s.readingSymbolsExt !== undefined ? s.readingSymbolsExt : getReadingSymbolsExt(),
+        semanticBridge: s.semanticBridge !== undefined ? s.semanticBridge : getSemanticBridge(),
+        matcher: s.matcher || defaultMatcher,
         loadPictures: s.loadPictures || null, own: s.own || null,
         creditLine: typeof s.creditLine === 'function' ? s.creditLine : root && root.AlloPacketMyWords && root.AlloPacketMyWords.creditLine };
       pictures = Object.create(null); busy = false; note = ''; syllableNote = '';
@@ -4721,17 +4853,18 @@
     // -------------------------------------------------------------------------
     // On-demand .docx loader & shared Live Worksheet Customizer UI
     // -------------------------------------------------------------------------
-    function ensureDocx() {
-      var existing = (win && win.AlloPacketDocx) || (root && root.AlloPacketDocx);
-      if (existing && typeof existing.downloadDocx === 'function') return Promise.resolve(existing);
+    function ensureDocx(opts) {
+      var existing = (win && (win.AlloPacketDocx || win.AlloPacketsDocx)) || (root && (root.AlloPacketDocx || root.AlloPacketsDocx));
+      if (existing && (typeof existing.downloadDocx === 'function' || typeof existing.buildWordSoundsDocx === 'function' || typeof existing.buildVocabDocx === 'function')) return Promise.resolve(existing);
       if (docxWait) return docxWait;
       if (!doc || !doc.createElement) return Promise.resolve(null);
+      var timeoutMs = (opts && typeof opts.timeoutMs === 'number' && opts.timeoutMs > 0) ? opts.timeoutMs : 2000;
       docxWait = new Promise(function (resolve) {
         var settled = false;
         var finish = function () {
           if (settled) return;
           settled = true;
-          var mod = (win && win.AlloPacketDocx) || (root && root.AlloPacketDocx) || null;
+          var mod = (win && (win.AlloPacketDocx || win.AlloPacketsDocx)) || (root && (root.AlloPacketDocx || root.AlloPacketsDocx)) || null;
           if (!mod) docxWait = null;
           resolve(mod);
         };
@@ -4740,7 +4873,7 @@
           if (existingScript) {
             existingScript.addEventListener('load', finish);
             existingScript.addEventListener('error', finish);
-            if (typeof win.setTimeout === 'function') win.setTimeout(finish, 4000);
+            if (typeof win.setTimeout === 'function') win.setTimeout(finish, timeoutMs);
             return;
           }
           var sc = doc.createElement('script');
@@ -4750,6 +4883,7 @@
           sc.onload = finish;
           sc.onerror = finish;
           (doc.head || doc.documentElement || doc.body).appendChild(sc);
+          if (typeof win.setTimeout === 'function') win.setTimeout(finish, timeoutMs);
         } catch (_) {
           docxWait = null;
           resolve(null);
@@ -5805,18 +5939,36 @@
         pictures: wsOptions.pictures,
         answerKey: wsOptions.answerKey,
         hints: wsOptions.hints,
-        syllables: wsOptions.syllables
+        syllables: wsOptions.syllables,
+        showListeningWords: wsOptions.showListeningWords
       });
     }
     function buildWsDocxModel(model) {
       var docSections = (model.sections || []).map(function (sec) {
         var clonedItems = (sec.items || []).map(function (it) {
-          var p = model.picturesOn ? model.pictureFor(it.origWord || it.word) : null;
+          var p = model.picturesOn && !WS_HIDE_PICTURE[sec.activity] && sec.activity !== 'decoding'
+            ? model.pictureFor(it.origWord || it.word)
+            : null;
           if (model.picturesOn) {
             if (sec.activity === 'rhyming') (it.choices || []).forEach(function (c) { model.pictureFor(c); });
             if (sec.activity === 'sound_sort') (it.chips || []).forEach(function (c) { model.pictureFor(c.text); });
           }
           var extra = { pictureUri: p && p.uri ? p.uri : '' };
+          if (sec.activity === 'decoding' && Array.isArray(it.choices)) {
+            var decWithPic = model.picturesOn
+              ? it.choices.filter(function (c) { return c && c.text && model.hasPicture(c.text); })
+              : [];
+            var decTargetIn = it.choices.some(function (c) { return c && String(c.text || '').toLowerCase() === String(it.word || '').toLowerCase(); });
+            var decTargetOk = !decTargetIn || model.hasPicture(it.word);
+            if (decWithPic.length >= 2 && decTargetOk) {
+              extra.choices = decWithPic.map(function (c) {
+                var cp = model.pictureFor(c.text);
+                return Object.assign({}, c, { pictureUri: cp && cp.uri ? cp.uri : '' });
+              });
+            } else {
+              extra.choices = [];
+            }
+          }
           if (sec.activity === 'letter_tracing' && Array.isArray(it.parts)) {
             extra.parts = it.parts.map(function (pt) {
               var ch = String((pt && pt.letter) || '');
@@ -5838,6 +5990,7 @@
         sections: docSections,
         answerKeyOn: model.answerKeyOn,
         hintsOn: model.hintsOn,
+        showListeningWords: !!model.showListeningWords,
         credits: model.computeCredits()
       };
     }
@@ -5848,7 +6001,8 @@
         pictures: wsOptions.pictures,
         answerKey: wsOptions.answerKey,
         hints: wsOptions.hints,
-        syllables: wsOptions.syllables
+        syllables: wsOptions.syllables,
+        showListeningWords: wsOptions.showListeningWords
       });
       if (typeof win.Blob !== 'function' || !win.URL || typeof win.URL.createObjectURL !== 'function') return;
       var blob = new win.Blob([html], { type: 'text/html;charset=utf-8' });
@@ -5870,7 +6024,8 @@
         pictures: wsOptions.pictures,
         answerKey: wsOptions.answerKey,
         hints: wsOptions.hints,
-        syllables: wsOptions.syllables
+        syllables: wsOptions.syllables,
+        showListeningWords: wsOptions.showListeningWords
       });
       if (!model.sections.length) return Promise.resolve(false);
       var docModel = buildWsDocxModel(model);
@@ -5902,20 +6057,23 @@
         pictures: true,
         answerKey: false,
         hints: true,
-        syllables: true
+        syllables: true,
+        showListeningWords: wsOptions.showListeningWords
       });
       if (!scaffModel.sections.length) return Promise.resolve(false);
       var indepModel = normalizeWorksheetModel(input, {
         pictures: wsOptions.pictures,
         answerKey: false,
         hints: false,
-        syllables: false
+        syllables: false,
+        showListeningWords: wsOptions.showListeningWords
       });
       var keyModel = normalizeWorksheetModel(input, {
         pictures: wsOptions.pictures,
         answerKey: true,
         hints: wsOptions.hints,
-        syllables: wsOptions.syllables
+        syllables: wsOptions.syllables,
+        showListeningWords: wsOptions.showListeningWords
       });
       var scaffDoc = buildWsDocxModel(scaffModel);
       var indepDoc = buildWsDocxModel(indepModel);
@@ -6015,6 +6173,12 @@
         audioOpener = wsOpener || wsNodes.audioBtn;
         openWorksheetAudio(stCopy);
       });
+      wsNodes.findMissingPics = el('a', 'btn btn-small pc-find-missing-pics', '');
+      wsNodes.findMissingPics.setAttribute('data-find-missing-pics', '');
+      wsNodes.findMissingPics.href = 'packets-pictures.html';
+      wsNodes.findMissingPics.target = '_blank';
+      wsNodes.findMissingPics.rel = 'noopener';
+      wsNodes.findMissingPics.hidden = true;
       wsNodes.back = el('button', 'btn', TEXT.back);
       wsNodes.back.type = 'button';
       wsNodes.back.addEventListener('click', closeWorksheet);
@@ -6023,6 +6187,7 @@
       actions.appendChild(wsNodes.docx);
       actions.appendChild(wsNodes.docxPack);
       actions.appendChild(wsNodes.audioBtn);
+      actions.appendChild(wsNodes.findMissingPics);
       actions.appendChild(wsNodes.back);
       bar.appendChild(actions);
       wsNodes.presets = el('div', 'pc-presets');
@@ -6080,6 +6245,7 @@
         if (checked) ensureSyllablesLoaded();
         drawWorksheet({ keepStructure: true });
       });
+      makeToggle('pc-ws-listening-words', 'Show printed words on listening tasks', 'showListeningWords');
       wsNodes.options.appendChild(body);
       bar.appendChild(wsNodes.options);
       wsCustomizer = createCustomizerUi('ws', 'word-sounds', function () { return wsCustom; }, {
@@ -6090,7 +6256,7 @@
         },
         getDefaultTitle: function () { return wsState ? wsState.title : 'Word Sounds Activity Worksheet'; },
         getOptions: function () {
-          return { pictures: !!wsOptions.pictures, answerKey: !!wsOptions.answerKey, hints: !!wsOptions.hints, syllables: !!wsOptions.syllables };
+          return { pictures: !!wsOptions.pictures, answerKey: !!wsOptions.answerKey, hints: !!wsOptions.hints, syllables: !!wsOptions.syllables, showListeningWords: !!wsOptions.showListeningWords };
         },
         onApplyOptions: function (o) {
           var opts = o && typeof o === 'object' ? o : {};
@@ -6113,6 +6279,10 @@
             if (wsNodes.syllablesBox) wsNodes.syllablesBox.checked = wsOptions.syllables;
             wsSyllableNote = '';
             if (wsOptions.syllables) ensureSyllablesLoaded();
+          }
+          if (typeof opts.showListeningWords === 'boolean') {
+            wsOptions.showListeningWords = opts.showListeningWords;
+            if (wsNodes.showListeningWordsBox) wsNodes.showListeningWordsBox.checked = wsOptions.showListeningWords;
           }
           wsSyncOptionClasses();
           wsSyncPresetButtons();
@@ -6202,9 +6372,10 @@
           var body = el('div', 'pc-ws-body');
 
           if (act === 'mapping') {
-            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var row = el('div', 'pc-ws-row');
-            appendPicNode(row, model, it.word, neutralAlt, false);
+            var hasMapPic = appendPicNode(row, model, it.word, neutralAlt, false);
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
+            else if (!hasMapPic) body.appendChild(el('p', 'pc-ws-prompt pc-ws-listen', 'Listen to your teacher:'));
             var boxes = el('div', 'pc-ws-boxes');
             boxes.setAttribute('data-sound-boxes', String(it.soundCount));
             for (var bi = 0; bi < it.soundCount; bi++) boxes.appendChild(el('span', 'pc-ws-box'));
@@ -6217,9 +6388,10 @@
               body.appendChild(bank);
             }
           } else if (act === 'missing_letter') {
-            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var mlRow = el('div', 'pc-ws-row');
-            appendPicNode(mlRow, model, it.word, neutralAlt, false);
+            var hasMlPic = appendPicNode(mlRow, model, it.word, neutralAlt, false);
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
+            else if (!hasMlPic) body.appendChild(el('p', 'pc-ws-prompt pc-ws-listen', 'Listen to your teacher:'));
             var mlWord = el('div', 'pc-ws-missing');
             it.letters.forEach(function (ch, ci) {
               if (ci === it.hiddenIndex) {
@@ -6236,9 +6408,10 @@
             (it.choices || []).forEach(function (c) { mlUl.appendChild(el('li', 'pc-ws-choice', c)); });
             body.appendChild(mlUl);
           } else if (act === 'word_scramble') {
-            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var wsRow = el('div', 'pc-ws-row');
-            appendPicNode(wsRow, model, it.word, neutralAlt, false);
+            var hasScrPic = appendPicNode(wsRow, model, it.word, neutralAlt, false);
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
+            else if (!hasScrPic) body.appendChild(el('p', 'pc-ws-prompt pc-ws-listen', 'Listen to your teacher:'));
             var tiles = el('div', 'pc-ws-tiles');
             (it.tiles || []).forEach(function (t) { tiles.appendChild(el('span', 'pc-ws-tile', t)); });
             wsRow.appendChild(tiles);
@@ -6247,8 +6420,9 @@
           } else if (act === 'counting') {
             if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var ctRow = el('div', 'pc-ws-row');
-            appendPicNode(ctRow, model, it.word, '', false);
-            ctRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
+            appendPicNode(ctRow, model, it.word, model.showListeningWords ? '' : neutralAlt, false);
+            if (model.showListeningWords) ctRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
+            else ctRow.appendChild(el('span', 'pc-ws-listen', 'Listen to your teacher:'));
             body.appendChild(ctRow);
             var ctUl = el('ul', 'pc-ws-bubbles');
             (it.values || ['1', '2', '3', '4', '5', '6']).forEach(function (v) { ctUl.appendChild(el('li', 'pc-ws-bubble', v)); });
@@ -6256,19 +6430,26 @@
           } else if (act === 'isolation') {
             body.appendChild(it.customPrompt
               ? el('p', 'pc-ws-prompt', it.customPrompt)
-              : wsWordNode('p', 'pc-ws-prompt', 'What is the ' + it.positionName + ' sound in ' + it.word + '?', allowSyl, model.syllablesSrc));
+              : (model.showListeningWords
+                ? wsWordNode('p', 'pc-ws-prompt', 'What is the ' + it.positionName + ' sound in ' + it.word + '?', allowSyl, model.syllablesSrc)
+                : el('p', 'pc-ws-prompt', 'Listen to your teacher: What is the ' + it.positionName + ' sound?')));
             var isoRow = el('div', 'pc-ws-row');
-            appendPicNode(isoRow, model, it.word, '', false);
-            isoRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
-            body.appendChild(isoRow);
+            var hasIsoPic = appendPicNode(isoRow, model, it.word, model.showListeningWords ? '' : neutralAlt, false);
+            if (model.showListeningWords) {
+              isoRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
+              body.appendChild(isoRow);
+            } else if (hasIsoPic) {
+              body.appendChild(isoRow);
+            }
             var isoUl = el('ul', 'pc-ws-choices');
             (it.choices || []).forEach(function (c) { isoUl.appendChild(el('li', 'pc-ws-choice', wsSoundLabel(c))); });
             body.appendChild(isoUl);
           } else if (act === 'segmentation') {
             if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var segRow = el('div', 'pc-ws-row');
-            appendPicNode(segRow, model, it.word, '', false);
-            segRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
+            appendPicNode(segRow, model, it.word, model.showListeningWords ? '' : neutralAlt, false);
+            if (model.showListeningWords) segRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
+            else segRow.appendChild(el('span', 'pc-ws-listen', 'Listen to your teacher:'));
             var dots = el('div', 'pc-ws-tap-dots');
             dots.setAttribute('data-tap-dots', String(it.slotCount));
             for (var di = 0; di < it.slotCount; di++) dots.appendChild(el('span', 'pc-ws-tap-dot'));
@@ -6283,7 +6464,13 @@
             }
           } else if (act === 'blending') {
             if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
-            body.appendChild(el('div', 'pc-ws-sounds-seq', (it.sounds || []).map(wsSoundLabel).join(' \u00b7 ')));
+            if (model.showListeningWords) {
+              body.appendChild(el('div', 'pc-ws-sounds-seq', (it.sounds || []).map(wsSoundLabel).join(' \u00b7 ')));
+            } else {
+              var bListenRow = el('div', 'pc-ws-row');
+              bListenRow.appendChild(el('span', 'pc-ws-listen', 'Listen to your teacher:'));
+              body.appendChild(bListenRow);
+            }
             body.appendChild(el('div', 'pc-ws-line'));
             if (it.choices && it.choices.length) {
               var bUl = el('ul', 'pc-ws-choices');
@@ -6368,8 +6555,9 @@
           } else if (act === 'syllable_counting') {
             if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var scRow = el('div', 'pc-ws-row');
-            appendPicNode(scRow, model, it.word, '', false);
-            scRow.appendChild(el('span', 'pc-ws-word', it.word));
+            appendPicNode(scRow, model, it.word, model.showListeningWords ? '' : neutralAlt, false);
+            if (model.showListeningWords) scRow.appendChild(el('span', 'pc-ws-word', it.word));
+            else scRow.appendChild(el('span', 'pc-ws-listen', 'Listen to your teacher:'));
             body.appendChild(scRow);
             var scoops = el('div', 'pc-ws-scoops');
             scoops.setAttribute('aria-hidden', 'true');
@@ -6380,7 +6568,13 @@
             body.appendChild(scUl);
           } else if (act === 'syllable_blending') {
             if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
-            body.appendChild(el('div', 'pc-ws-sounds-seq', (it.syllables || []).join(' \u00b7 ')));
+            if (model.showListeningWords) {
+              body.appendChild(el('div', 'pc-ws-sounds-seq', (it.syllables || []).join(' \u00b7 ')));
+            } else {
+              var sbListenRow = el('div', 'pc-ws-row');
+              sbListenRow.appendChild(el('span', 'pc-ws-listen', 'Listen to your teacher:'));
+              body.appendChild(sbListenRow);
+            }
             body.appendChild(el('div', 'pc-ws-line'));
             if (it.choices && it.choices.length) {
               var sbUl = el('ul', 'pc-ws-choices');
@@ -6408,14 +6602,16 @@
               flu.appendChild(ci);
             });
             body.appendChild(flu);
-            if (it.choices && it.choices.length) {
+            var dPicChoices = (it.choices || []).filter(function (c) { return c && c.text && model.hasPicture(c.text); });
+            var dTargetPresent = (it.choices || []).some(function (c) { return c && String(c.text || '').toLowerCase() === String(it.word || '').toLowerCase(); });
+            var dTargetOk = !dTargetPresent || model.hasPicture(it.word);
+            if (dPicChoices.length >= 2 && dTargetOk) {
               var dUl = el('ul', 'pc-ws-choices');
-              it.choices.forEach(function (c) {
+              dPicChoices.forEach(function (c) {
                 var dLi = el('li', 'pc-ws-choice');
-                if (!appendPicNode(dLi, model, c.text, 'Picture choice', true)) dLi.textContent = c.text;
-                dUl.appendChild(dLi);
+                if (appendPicNode(dLi, model, c.text, 'Picture choice', true)) dUl.appendChild(dLi);
               });
-              body.appendChild(dUl);
+              if (dUl.childNodes.length >= 2) body.appendChild(dUl);
             }
           } else if (act === 'read_sentence') {
             var rsRow = el('div', 'pc-ws-row');
@@ -6523,7 +6719,8 @@
         pictures: wsOptions.pictures,
         answerKey: wsOptions.answerKey,
         hints: wsOptions.hints,
-        syllables: wsOptions.syllables
+        syllables: wsOptions.syllables,
+        showListeningWords: wsOptions.showListeningWords
       });
       var hasBaseContent = model.allSections.length > 0;
       var hasContent = model.sections.length > 0;
@@ -6534,6 +6731,21 @@
       if (wsNodes.audioBtn) {
         var wsAud = wsState && (wsState.audio || (wsState.lesson && wsState.lesson.audio));
         wsNodes.audioBtn.hidden = !(hasContent && wsAud && Object.keys(wsAud).length > 0);
+      }
+      if (wsNodes.findMissingPics) {
+        var wsMissing = (!wsBusy && hasContent && wsOptions.pictures && Array.isArray(model.missingPicWords)) ? model.missingPicWords : [];
+        var wsQueue = picturesQueueInfo(wsMissing);
+        if (wsQueue.href) {
+          wsNodes.findMissingPics.href = wsQueue.href;
+          wsNodes.findMissingPics.textContent = wsQueue.count === 1
+            ? 'Find a picture for 1 missing word'
+            : 'Find pictures for ' + wsQueue.count + ' missing words';
+          wsNodes.findMissingPics.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
+          wsNodes.findMissingPics.hidden = false;
+        } else {
+          wsNodes.findMissingPics.href = 'packets-pictures.html';
+          wsNodes.findMissingPics.hidden = true;
+        }
       }
       wsNodes.options.hidden = !hasBaseContent;
       if (wsNodes.customizer) wsNodes.customizer.hidden = !hasBaseContent;
@@ -6598,20 +6810,31 @@
       return ownP.then(function (found) {
         if (mine !== wsRun) return;
         wsOwn = found;
+        var curMatcher = wsState.matcher || (root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher))) || null;
+        if (!wsState.matcher && curMatcher) wsState.matcher = curMatcher;
         if (!wsOptions.pictures || !modelWords.length) return;
         var syms = wsState.symbols;
-        var needs = !!syms && modelWords.some(function (word) {
+        var ext = wsState.readingSymbolsExt || getReadingSymbolsExt();
+        var symsReady = !syms || (typeof syms.ready !== 'function' || syms.ready());
+        var extReady = !ext || (typeof ext.ready !== 'function' || ext.ready());
+        var hasUnowned = modelWords.some(function (word) {
           var entry = ownEntryFor(found, word);
-          return !(entry && entry.picture) && (syms.has(word) || syms.has(String(word).toLowerCase()));
+          return !(entry && entry.picture);
         });
-        if (!needs || syms.ready() || typeof wsState.loadPictures !== 'function') return;
+        if (!hasUnowned || (symsReady && extReady && !!curMatcher) || typeof wsState.loadPictures !== 'function') return;
         wsBusy = true;
-        wsNote = fill(TEXT.getting, { mb: (Number(syms.bytes || 0) / 1e6).toFixed(1) });
+        wsNote = fill(TEXT.getting, { mb: (Number((syms && syms.bytes) || (ext && ext.bytes) || 0) / 1e6).toFixed(1) });
         drawWorksheet();
         return Promise.resolve().then(function () { return wsState.loadPictures(); }).then(function (ready) { return !!ready; }, function () { return false; }).then(function (ready) {
           if (mine !== wsRun) return;
           wsBusy = false;
           wsNote = ready ? '' : TEXT.gotNone;
+          var freshMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
+          if (freshMatcher) wsState.matcher = freshMatcher;
+          var freshExt = getReadingSymbolsExt();
+          if (!wsState.readingSymbolsExt && freshExt) wsState.readingSymbolsExt = freshExt;
+          var freshSem = getSemanticBridge();
+          if (!wsState.semanticBridge && freshSem) wsState.semanticBridge = freshSem;
         });
       });
     }
@@ -6628,7 +6851,9 @@
       wsState = Object.assign({}, s, {
         title: baseTitle,
         symbols: s.symbols || null,
-        matcher: s.matcher !== undefined ? s.matcher : defaultMatcher,
+        readingSymbolsExt: s.readingSymbolsExt !== undefined ? s.readingSymbolsExt : getReadingSymbolsExt(),
+        semanticBridge: s.semanticBridge !== undefined ? s.semanticBridge : getSemanticBridge(),
+        matcher: s.matcher || defaultMatcher,
         loadPictures: s.loadPictures || null,
         own: s.own || null,
         creditLine: typeof s.creditLine === 'function' ? s.creditLine : root && root.AlloPacketMyWords && root.AlloPacketMyWords.creditLine
@@ -6645,10 +6870,12 @@
       wsOptions.answerKey = s.answerKey !== undefined ? !!s.answerKey : (s.includeAnswerKey !== undefined ? !!s.includeAnswerKey : true);
       wsOptions.hints = s.hints !== undefined ? !!s.hints : (s.showHints !== undefined ? !!s.showHints : (initPreset === 'independent' ? false : true));
       wsOptions.syllables = s.syllables !== undefined ? !!s.syllables : (s.showSyllables !== undefined ? !!s.showSyllables : (initPreset === 'scaffolded'));
+      wsOptions.showListeningWords = s.showListeningWords !== undefined ? !!s.showListeningWords : (s.listeningWords !== undefined ? !!s.listeningWords : false);
       if (wsNodes.picturesBox) wsNodes.picturesBox.checked = wsOptions.pictures;
       if (wsNodes.answerKeyBox) wsNodes.answerKeyBox.checked = wsOptions.answerKey;
       if (wsNodes.hintsBox) wsNodes.hintsBox.checked = wsOptions.hints;
       if (wsNodes.syllablesBox) wsNodes.syllablesBox.checked = wsOptions.syllables;
+      if (wsNodes.showListeningWordsBox) wsNodes.showListeningWordsBox.checked = wsOptions.showListeningWords;
       wsSyncOptionClasses();
       wsSyncPresetButtons();
       if (wsOptions.syllables) ensureSyllablesLoaded();
@@ -6970,6 +7197,12 @@
         audioOpener = vocabOpener || vocabNodes.audioBtn;
         openVocabAudio(vocabCurrentInput());
       });
+      vocabNodes.findMissingPics = el('a', 'btn btn-small pc-find-missing-pics', '');
+      vocabNodes.findMissingPics.setAttribute('data-find-missing-pics', '');
+      vocabNodes.findMissingPics.href = 'packets-pictures.html';
+      vocabNodes.findMissingPics.target = '_blank';
+      vocabNodes.findMissingPics.rel = 'noopener';
+      vocabNodes.findMissingPics.hidden = true;
       vocabNodes.back = el('button', 'btn', TEXT.back);
       vocabNodes.back.type = 'button';
       vocabNodes.back.addEventListener('click', closeVocabWorksheet);
@@ -6978,6 +7211,7 @@
       actions.appendChild(vocabNodes.docx);
       actions.appendChild(vocabNodes.docxPack);
       actions.appendChild(vocabNodes.audioBtn);
+      actions.appendChild(vocabNodes.findMissingPics);
       actions.appendChild(vocabNodes.back);
       bar.appendChild(actions);
 
@@ -7321,6 +7555,21 @@
       vocabNodes.download.disabled = vocabBusy || !hasContent;
       if (vocabNodes.docx) vocabNodes.docx.disabled = vocabBusy || !hasContent;
       if (vocabNodes.docxPack) vocabNodes.docxPack.disabled = vocabBusy || !hasContent;
+      if (vocabNodes.findMissingPics) {
+        var vMissing = (!vocabBusy && hasContent && vocabOptions.pictures && Array.isArray(model.missingPicWords)) ? model.missingPicWords : [];
+        var vQueue = picturesQueueInfo(vMissing);
+        if (vQueue.href) {
+          vocabNodes.findMissingPics.href = vQueue.href;
+          vocabNodes.findMissingPics.textContent = vQueue.count === 1
+            ? 'Find a picture for 1 missing word'
+            : 'Find pictures for ' + vQueue.count + ' missing words';
+          vocabNodes.findMissingPics.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
+          vocabNodes.findMissingPics.hidden = false;
+        } else {
+          vocabNodes.findMissingPics.href = 'packets-pictures.html';
+          vocabNodes.findMissingPics.hidden = true;
+        }
+      }
       vocabNodes.options.hidden = !hasBaseContent;
       if (vocabNodes.customizer) vocabNodes.customizer.hidden = !hasBaseContent;
       if (vocabNodes.presets) vocabNodes.presets.hidden = !hasBaseContent;
@@ -8973,6 +9222,11 @@
       openWorksheet: openWorksheet, closeWorksheet: closeWorksheet, wireWorksheet: wireWorksheet,
       worksheetOptions: wsOptions, worksheetView: function () { return wsView; },
       buildWordSoundsWorksheetHtml: buildWordSoundsWorksheetHtml,
+      buildWordSoundsDocxModel: buildWsDocxModel,
+      buildVocabDocxModel: buildVocabDocxModel,
+      ensureDocx: ensureDocx,
+      prepareDocxModelAsync: prepareDocxModelAsync,
+      buildAudioCompanionHtml: buildAudioCompanionHtmlFromPlan,
       buildWordSoundsAudioPlan: buildWordSoundsAudioPlan,
       buildWordSoundsAudioCompanionHtml: buildWordSoundsAudioCompanionHtml,
       buildWordSoundsScoringSheetHtml: buildWordSoundsScoringSheetHtml,
@@ -9024,6 +9278,7 @@
   api.serializeWorksheetTemplate = serializeWorksheetTemplate;
   api.extractWorksheetTemplate = extractWorksheetTemplate;
   api.buildWordSoundsWorksheetHtml = buildWordSoundsWorksheetHtml;
+  api.buildAudioCompanionHtml = buildAudioCompanionHtmlFromPlan;
   api.buildWordSoundsAudioPlan = buildWordSoundsAudioPlan;
   api.buildWordSoundsAudioCompanionHtml = buildWordSoundsAudioCompanionHtml;
   api.buildWordSoundsScoringSheetHtml = buildWordSoundsScoringSheetHtml;

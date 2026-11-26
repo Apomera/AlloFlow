@@ -116,7 +116,9 @@
   function svgNumberLine(a, b, isSub) {
     var maxVal = isSub ? Math.max(10, a <= 20 ? 20 : a) : Math.max(10, a + b <= 20 ? 20 : a + b);
     var w = 220, h = 44, x0 = 12, x1 = w - 12, yLine = 30;
-    var out = ['<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Number-line jump strip">'];
+    var cue = 'Start at ' + a + ', jump ' + (isSub ? MINUS : '+') + b;
+    var out = ['<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Number-line jump strip: ' + escHtml(cue) + '">'];
+    out.push('<text x="' + (w / 2).toFixed(1) + '" y="10" text-anchor="middle" font-size="8.5" fill="#000000">' + escHtml(cue) + (isSub ? ' \u2190' : ' \u2192') + '</text>');
     out.push('<line x1="' + x0 + '" y1="' + yLine + '" x2="' + x1 + '" y2="' + yLine + '" stroke="#000000" stroke-width="1.4"/>');
     if (maxVal <= 20) {
       var step = (x1 - x0) / maxVal;
@@ -126,23 +128,24 @@
         out.push('<line x1="' + tx + '" y1="' + (yLine - tall) + '" x2="' + tx + '" y2="' + (yLine + tall) + '" stroke="#000000" stroke-width="' + (n % 5 === 0 ? '1.2' : '0.8') + '"/>');
         if (n % 5 === 0) out.push('<text x="' + tx + '" y="' + (h - 1) + '" text-anchor="middle" font-size="8" fill="#000000">' + n + '</text>');
       }
-      var sx = x0 + a * step;
-      var ex = isSub ? x0 + Math.max(0, a - b) * step : x0 + Math.min(maxVal, a + b) * step;
+      var sx = x0 + Math.max(0, Math.min(maxVal, a)) * step;
       out.push('<circle cx="' + sx.toFixed(1) + '" cy="' + yLine + '" r="3.2" fill="#000000"/>');
       if (b > 0) {
-        var mx = ((sx + ex) / 2).toFixed(1);
-        out.push('<path d="M ' + sx.toFixed(1) + ' ' + (yLine - 3) + ' Q ' + mx + ' 4 ' + ex.toFixed(1) + ' ' + (yLine - 3) + '" fill="none" stroke="#808080" stroke-width="1.4" stroke-dasharray="3 2"/>');
-        out.push('<text x="' + mx + '" y="10" text-anchor="middle" font-size="8" fill="#000000">' + (isSub ? MINUS : '+') + b + '</text>');
+        var dir = isSub ? -1 : 1;
+        var ax1 = Math.max(x0 + 4, Math.min(x1 - 4, sx + dir * 18));
+        out.push('<line x1="' + sx.toFixed(1) + '" y1="' + (yLine - 9) + '" x2="' + ax1.toFixed(1) + '" y2="' + (yLine - 9) + '" stroke="#808080" stroke-width="1.2"/>');
+        out.push('<path d="M ' + (ax1 - dir * 3.5).toFixed(1) + ' ' + (yLine - 12) + ' L ' + ax1.toFixed(1) + ' ' + (yLine - 9) + ' L ' + (ax1 - dir * 3.5).toFixed(1) + ' ' + (yLine - 6) + '" fill="none" stroke="#808080" stroke-width="1.2"/>');
       }
     } else {
       var pStart = isSub ? x1 - 24 : x0 + 24;
-      var pEnd = isSub ? x0 + 24 : x1 - 24;
-      var pMid = (pStart + pEnd) / 2;
       out.push('<circle cx="' + pStart + '" cy="' + yLine + '" r="3.2" fill="#000000"/>');
       out.push('<text x="' + pStart + '" y="' + (h - 1) + '" text-anchor="middle" font-size="8" fill="#000000">' + a + '</text>');
-      out.push('<path d="M ' + pStart + ' ' + (yLine - 3) + ' Q ' + pMid + ' 5 ' + pEnd + ' ' + (yLine - 3) + '" fill="none" stroke="#808080" stroke-width="1.4" stroke-dasharray="3 2"/>');
-      out.push('<text x="' + pMid + '" y="11" text-anchor="middle" font-size="8" fill="#000000">' + (isSub ? MINUS : '+') + b + '</text>');
-      out.push('<text x="' + pEnd + '" y="' + (h - 1) + '" text-anchor="middle" font-size="8" fill="#000000">?</text>');
+      if (b > 0) {
+        var oDir = isSub ? -1 : 1;
+        var oEnd = pStart + oDir * 30;
+        out.push('<line x1="' + pStart + '" y1="' + (yLine - 9) + '" x2="' + oEnd + '" y2="' + (yLine - 9) + '" stroke="#808080" stroke-width="1.2"/>');
+        out.push('<path d="M ' + (oEnd - oDir * 3.5) + ' ' + (yLine - 12) + ' L ' + oEnd + ' ' + (yLine - 9) + ' L ' + (oEnd - oDir * 3.5) + ' ' + (yLine - 6) + '" fill="none" stroke="#808080" stroke-width="1.2"/>');
+      }
     }
     out.push('</svg>');
     return out.join('');
@@ -163,24 +166,18 @@
     return out.join('');
   }
   function svgEqualGroups(total, groups) {
-    var perGroup = groups > 0 ? Math.floor(total / groups) : 0;
-    var gShow = Math.min(groups, 10);
+    var gShow = Math.max(1, Math.min(groups, 10));
     var boxW = 20, boxH = 22, gap = 4, pad = 4;
-    var w = pad * 2 + gShow * boxW + Math.max(0, gShow - 1) * gap;
+    var rowW = gShow * boxW + Math.max(0, gShow - 1) * gap;
+    var w = Math.max(150, pad * 2 + rowW);
+    var startX = (w - rowW) / 2;
     var h = pad * 2 + boxH + 12;
-    var out = ['<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Equal groups visual for ' + total + ' divided by ' + groups + '">'];
-    out.push('<text x="' + (w / 2).toFixed(1) + '" y="10" text-anchor="middle" font-size="8" fill="#000000">' + total + ' in ' + groups + ' equal groups</text>');
+    var label = 'Share ' + total + ' into ' + groups + ' equal groups';
+    var out = ['<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Equal groups workspace: ' + escHtml(label) + '">'];
+    out.push('<text x="' + (w / 2).toFixed(1) + '" y="10" text-anchor="middle" font-size="8" fill="#000000">' + escHtml(label) + '</text>');
     for (var g = 0; g < gShow; g++) {
-      var bx = pad + g * (boxW + gap);
-      out.push('<rect x="' + bx + '" y="14" width="' + boxW + '" height="' + boxH + '" rx="2" fill="#ffffff" stroke="#000000" stroke-width="1"/>');
-      if (perGroup > 0 && perGroup <= 9) {
-        var cols = perGroup <= 4 ? 2 : 3;
-        for (var d = 0; d < perGroup; d++) {
-          var dx = bx + 4 + (d % cols) * 5.5;
-          var dy = 19 + Math.floor(d / cols) * 5.5;
-          out.push('<circle cx="' + dx.toFixed(1) + '" cy="' + dy.toFixed(1) + '" r="1.8" fill="#808080"/>');
-        }
-      }
+      var bx = startX + g * (boxW + gap);
+      out.push('<rect x="' + bx.toFixed(1) + '" y="14" width="' + boxW + '" height="' + boxH + '" rx="2" fill="#ffffff" stroke="#000000" stroke-width="1"/>');
     }
     out.push('</svg>');
     return out.join('');
@@ -353,7 +350,7 @@
 
   // title (2026-11-13): the file's title, empty for the builder's own. learner: a student's code name for the file. It is
   // not kept: the next file is often for someone else.
-  function defaults() { return { kind: '', sets: { add: '', sub: '', mul: '', div: '' }, facts: '', method: '', known: Object.create(null), title: '', learner: '' }; }
+  function defaults() { return { kind: '', sets: { add: '', sub: '', mul: '', div: '' }, facts: '', method: '', recallFirst: false, known: Object.create(null), title: '', learner: '' }; }
   function setsOf(kind) { return builder.FAMILIES.filter(function (set) { return set.op === kind; }); }
   function setRow(id) {
     for (var i = 0; i < builder.FAMILIES.length; i++) if (builder.FAMILIES[i].id === id) return builder.FAMILIES[i];
@@ -366,7 +363,7 @@
   // ---------------------------------------------------------------------------
   function remember() {
     try {
-      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, kind: state.kind, sets: state.sets, facts: state.facts, method: state.method, known: state.known, title: state.title }));
+      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, kind: state.kind, sets: state.sets, facts: state.facts, method: state.method, recallFirst: !!state.recallFirst, known: state.known, title: state.title }));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   function recall() {
@@ -386,6 +383,7 @@
     if (typeof saved.facts === 'string') fresh.facts = saved.facts.slice(0, MAX_TYPED);
     if (typeof saved.title === 'string') fresh.title = saved.title.slice(0, 80);
     if (METHOD_IDS.indexOf(saved.method) >= 0) fresh.method = saved.method;
+    fresh.recallFirst = !!saved.recallFirst;
     if (saved.known && typeof saved.known === 'object' && !Array.isArray(saved.known)) {
       Object.keys(saved.known).forEach(function (source) {
         var keys = saved.known[source];
@@ -517,7 +515,7 @@
     return pick.set ? builder.knownByOrder(pick.set.id) : [];
   }
   function planNow(pick, mode) {
-    var input = { mode: mode, known: knownNow(pick) };
+    var input = { mode: mode, recallFirst: !!state.recallFirst, known: knownNow(pick) };
     if (pick.set) input.factSet = pick.set.id; else input.facts = pick.facts;
     return builder.planMathPractice(input);
   }
@@ -590,6 +588,7 @@
   }
   function drawStep2() {
     syncRadios('method', state.method);
+    syncRadios('recall', state.recallFirst ? 'memory' : 'study');
     drawKnown();
   }
   function stopAtStep2() {
@@ -611,7 +610,8 @@
   function titleFallback() {
     var pick = chosen(), method = builder.METHODS[state.method];
     if (!pick || !method) return '';
-    return (pick.set ? pick.set.title : 'My math facts') + ': ' + method.short;
+    var suffix = state.recallFirst ? (state.method === 'rehearsal' ? 'recall with known facts' : 'recall from memory') : method.short;
+    return (pick.set ? pick.set.title : 'My math facts') + ': ' + suffix;
   }
   function drawTitle() {
     var field = $('f-title');
@@ -655,15 +655,16 @@
   }
   function planSpec(pick, mode) {
     var omitKeys = Object.keys(previewOmit);
+    var recallFirst = !!state.recallFirst;
     if (!omitKeys.length) {
-      var plain = { mode: mode, known: knownNow(pick) };
+      var plain = { mode: mode, recallFirst: recallFirst, known: knownNow(pick) };
       if (pick.set) plain.factSet = pick.set.id; else plain.facts = pick.facts;
       return { input: plain, edited: false, facts: pick.facts };
     }
     var sourceFacts = pick.facts;
     if (pick.set && mode === 'ccc') {
       try {
-        var basePlan = builder.planMathPractice({ mode: mode, factSet: pick.set.id });
+        var basePlan = builder.planMathPractice({ mode: mode, recallFirst: recallFirst, factSet: pick.set.id });
         if (basePlan && Array.isArray(basePlan.cards) && basePlan.cards.length) {
           sourceFacts = basePlan.cards.map(function (c) { return c.fact; });
         }
@@ -685,7 +686,7 @@
         });
       } catch (_) {}
     }
-    return { input: { mode: mode, facts: keptFacts, known: knownKeys }, edited: true, facts: keptFacts };
+    return { input: { mode: mode, recallFirst: recallFirst, facts: keptFacts, known: knownKeys }, edited: true, facts: keptFacts };
   }
   function make() {
     clearTimeout(buildTimer);
@@ -825,10 +826,14 @@
       var moved = plan.cards.map(function (c) { return builder.factKey(c.fact); }).join(',') !== activeFacts.map(builder.factKey).join(',');
       rows.push(['How', plan.method + '. Every fact once, ' + (pick.set ? 'in a mixed order, so the student cannot just count on.'
         : moved ? 'in the order you typed them, except that a fact is never right beside its turnaround.' : 'in the order you typed them.')]);
-      rows.push(['Cards', capital(count(cards, 'card')) + '. Each one starts with the fact and its answer.']);
+      rows.push(['Cards', capital(count(cards, 'card')) + (plan.recallFirst
+        ? '. Answers stay hidden first so the student answers from memory.'
+        : '. Each one starts with the fact and its answer.')]);
     } else {
       rows.push(['How', plan.method + '. New ' + (plan.newFacts.length === 1 ? 'fact' : 'facts') + ': ' + listed(plan.newFacts.map(word)) + '. Known facts: ' + listed(plan.knownFacts.map(word)) + '.']);
-      rows.push(['Cards', capital(count(cards, 'card')) + '. ' + knownCards + ' are facts the student knows. Each new fact is asked 4 times, and shown with its answer the first time.']);
+      rows.push(['Cards', capital(count(cards, 'card')) + '. ' + knownCards + ' are facts the student knows. ' + (plan.recallFirst
+        ? 'Each new fact is asked 4 times, with answers hidden first on every card.'
+        : 'Each new fact is asked 4 times, and shown with its answer the first time.')]);
     }
     rows.push(['Feedback', 'Right or wrong after every answer. After a wrong answer the file shows the answer, the student types it while looking, and then answers again from memory. Up to 3 tries from memory on each card.']);
     rows.push(['Clock', 'None.']);
@@ -874,11 +879,17 @@
     who.appendChild(paperField('Name', false));
     who.appendChild(paperField('Date', true));
     sheet.appendChild(who);
-    sheet.appendChild(el('p', 'paper-how', '1. Look at the fact on the left and say it to yourself. 2. Fold or cover the left column. 3. Write the answer from memory in the middle column. 4. Uncover and compare. If it does not match, write the whole fact once on the right.'));
+    var recallSheet = !!plan.recallFirst;
+    sheet.appendChild(el('p', 'paper-how', recallSheet
+      ? '1. Read each fact and write the answer from memory. 2. Compare your answers with the teacher answer key on the separate sheet. 3. Write any missed fact once on the right.'
+      : '1. Look at the fact on the left and say it to yourself. 2. Fold or cover the left column. 3. Write the answer from memory in the middle column. 4. Uncover and compare. If it does not match, write the whole fact once on the right.'));
 
     var table = el('table', 'paper-ccc');
     var thead = el('thead'), headRow = el('tr');
-    [['No.', 'pc-n'], ['Look and cover', 'pc-look'], ['Cover and write', 'pc-try'], ['Write again if needed', 'pc-fix']].forEach(function (col) {
+    (recallSheet
+      ? [['No.', 'pc-n'], ['Answer from memory', 'pc-try'], ['Write again if needed', 'pc-fix']]
+      : [['No.', 'pc-n'], ['Look and cover', 'pc-look'], ['Cover and write', 'pc-try'], ['Write again if needed', 'pc-fix']]
+    ).forEach(function (col) {
       var th = el('th', col[1], col[0]);
       th.scope = 'col';
       headRow.appendChild(th);
@@ -890,7 +901,7 @@
     items.forEach(function (it, idx) {
       var tr = el('tr');
       tr.appendChild(el('td', 'pc-n', String(idx + 1) + '.'));
-      tr.appendChild(el('td', 'pc-look', it.word + ' = ' + it.answer));
+      if (!recallSheet) tr.appendChild(el('td', 'pc-look', it.word + ' = ' + it.answer));
       var tryCell = el('td', 'pc-try');
       tryCell.appendChild(doc.createTextNode(it.word + ' ='));
       tryCell.appendChild(el('span', 'paper-blank'));
@@ -1099,10 +1110,12 @@
     function drawNumberLine(a, b, isSub) {
       var maxVal = isSub ? Math.max(10, a <= 20 ? 20 : a) : Math.max(10, a + b <= 20 ? 20 : a + b);
       var w = 220, h = 46, x0 = 12, x1 = w - 12, yLine = 31;
+      var cue = 'Start at ' + a + ', jump ' + (isSub ? MINUS : '+') + b + (isSub ? ' \u2190' : ' \u2192');
       setup(w, h);
+      ctx.font = '8.5px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#000000';
+      ctx.fillText(cue, w / 2, 11);
       ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.4;
       ctx.beginPath(); ctx.moveTo(x0, yLine); ctx.lineTo(x1, yLine); ctx.stroke();
-      ctx.font = '8.5px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#000000';
       if (maxVal <= 20) {
         var step = (x1 - x0) / maxVal;
         for (var n = 0; n <= maxVal; n++) {
@@ -1111,26 +1124,25 @@
           ctx.beginPath(); ctx.moveTo(tx, yLine - tall); ctx.lineTo(tx, yLine + tall); ctx.stroke();
           if (n % 5 === 0) ctx.fillText(String(n), tx, h - 2);
         }
-        var sx = x0 + a * step, ex = isSub ? x0 + Math.max(0, a - b) * step : x0 + Math.min(maxVal, a + b) * step;
+        var sx = x0 + Math.max(0, Math.min(maxVal, a)) * step;
         ctx.beginPath(); ctx.arc(sx, yLine, 3.2, 0, Math.PI * 2); ctx.fill();
         if (b > 0) {
-          var mx = (sx + ex) / 2;
-          ctx.save(); ctx.strokeStyle = '#666666'; ctx.lineWidth = 1.4;
-          if (typeof ctx.setLineDash === 'function') ctx.setLineDash([3, 2]);
-          ctx.beginPath(); ctx.moveTo(sx, yLine - 3); ctx.quadraticCurveTo(mx, 4, ex, yLine - 3); ctx.stroke();
-          ctx.restore();
-          ctx.fillText((isSub ? MINUS : '+') + b, mx, 11);
+          var dir = isSub ? -1 : 1;
+          var ax1 = Math.max(x0 + 4, Math.min(x1 - 4, sx + dir * 18));
+          ctx.strokeStyle = '#666666'; ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.moveTo(sx, yLine - 9); ctx.lineTo(ax1, yLine - 9); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(ax1 - dir * 3.5, yLine - 12); ctx.lineTo(ax1, yLine - 9); ctx.lineTo(ax1 - dir * 3.5, yLine - 6); ctx.stroke();
         }
       } else {
-        var pStart = isSub ? x1 - 24 : x0 + 24, pEnd = isSub ? x0 + 24 : x1 - 24, pMid = (pStart + pEnd) / 2;
+        var pStart = isSub ? x1 - 24 : x0 + 24;
         ctx.beginPath(); ctx.arc(pStart, yLine, 3.2, 0, Math.PI * 2); ctx.fill();
         ctx.fillText(String(a), pStart, h - 2);
-        ctx.save(); ctx.strokeStyle = '#666666'; ctx.lineWidth = 1.4;
-        if (typeof ctx.setLineDash === 'function') ctx.setLineDash([3, 2]);
-        ctx.beginPath(); ctx.moveTo(pStart, yLine - 3); ctx.quadraticCurveTo(pMid, 5, pEnd, yLine - 3); ctx.stroke();
-        ctx.restore();
-        ctx.fillText((isSub ? MINUS : '+') + b, pMid, 12);
-        ctx.fillText('?', pEnd, h - 2);
+        if (b > 0) {
+          var oDir = isSub ? -1 : 1, oEnd = pStart + oDir * 30;
+          ctx.strokeStyle = '#666666'; ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.moveTo(pStart, yLine - 9); ctx.lineTo(oEnd, yLine - 9); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(oEnd - oDir * 3.5, yLine - 12); ctx.lineTo(oEnd, yLine - 9); ctx.lineTo(oEnd - oDir * 3.5, yLine - 6); ctx.stroke();
+        }
       }
       return finish();
     }
@@ -1151,23 +1163,18 @@
       return finish();
     }
     function drawEqualGroups(total, groups) {
-      var perGroup = groups > 0 ? Math.floor(total / groups) : 0, gShow = Math.min(groups, 10);
+      var gShow = Math.max(1, Math.min(groups, 10));
       var boxW = 20, boxH = 22, gap = 4, pad = 4;
-      var w = pad * 2 + gShow * boxW + Math.max(0, gShow - 1) * gap, h = pad * 2 + boxH + 13;
+      var rowW = gShow * boxW + Math.max(0, gShow - 1) * gap;
+      var w = Math.max(150, pad * 2 + rowW), h = pad * 2 + boxH + 13;
+      var startX = (w - rowW) / 2;
       setup(w, h);
       ctx.fillStyle = '#000000'; ctx.font = '8.5px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(total + ' in ' + groups + ' equal groups', w / 2, 11);
+      ctx.fillText('Share ' + total + ' into ' + groups + ' equal groups', w / 2, 11);
       for (var g = 0; g < gShow; g++) {
-        var bx = pad + g * (boxW + gap);
+        var bx = startX + g * (boxW + gap);
         ctx.strokeStyle = '#000000'; ctx.lineWidth = 1;
         ctx.strokeRect(bx, 15, boxW, boxH);
-        if (perGroup > 0 && perGroup <= 9) {
-          var cols = perGroup <= 4 ? 2 : 3;
-          ctx.fillStyle = '#666666';
-          for (var d = 0; d < perGroup; d++) {
-            ctx.beginPath(); ctx.arc(bx + 4 + (d % cols) * 5.5, 20 + Math.floor(d / cols) * 5.5, 1.8, 0, Math.PI * 2); ctx.fill();
-          }
-        }
       }
       return finish();
     }
@@ -1342,6 +1349,7 @@
       sets: { add: '', sub: '', mul: '', div: '' },
       facts: typeof raw.facts === 'string' ? raw.facts.slice(0, MAX_TYPED) : '',
       method: METHOD_IDS.indexOf(raw.method) >= 0 ? raw.method : '',
+      recallFirst: !!raw.recallFirst,
       known: Object.create(null),
       title: typeof raw.title === 'string' ? raw.title.slice(0, 80) : '',
     };
@@ -1423,6 +1431,7 @@
       sets: { add: state.sets.add, sub: state.sets.sub, mul: state.sets.mul, div: state.sets.div },
       facts: state.facts,
       method: state.method,
+      recallFirst: !!state.recallFirst,
       known: knownCopy,
       title: state.title,
     };
@@ -1468,6 +1477,7 @@
     fresh.sets = { add: match.sets.add, sub: match.sets.sub, mul: match.sets.mul, div: match.sets.div };
     fresh.facts = match.facts;
     fresh.method = match.method;
+    fresh.recallFirst = !!match.recallFirst;
     fresh.title = match.title;
     Object.keys(match.known || {}).forEach(function (source) {
       if (Array.isArray(match.known[source])) fresh.known[source] = match.known[source].slice();
@@ -1598,7 +1608,7 @@
     show('reopen-note', true);
     $('reopen-note').focus();
   }
-  function applyReopen(result, name, bytes) {
+  function applyReopen(result, name, bytes, recallFirst) {
     if (!result.ok) {
       var handoff = window.AlloPacketHandoff;
       var pageHref = result.page ? result.page.href : '';
@@ -1624,6 +1634,7 @@
     fresh.known = state.known;
     fresh.kind = got.kind;
     fresh.method = got.method;
+    fresh.recallFirst = !!recallFirst;
     if (got.kind === OWN) {
       fresh.facts = got.facts;
       if (got.method === 'rehearsal') fresh.known[OWN] = got.known.slice();
@@ -1649,7 +1660,15 @@
   function reopenText(text, name, bytes) {
     if (!reopenKit) return;
     var rawBytes = bytes || (typeof TextEncoder === 'function' ? new TextEncoder().encode(String(text || '')).buffer : null);
-    applyReopen(reopenKit.readMath(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120), rawBytes);
+    var recallFirst = false;
+    try {
+      var parts = window.AlloPacketVerify && typeof window.AlloPacketVerify.readParts === 'function' ? window.AlloPacketVerify.readParts(text) : null;
+      var block = parts && parts.lesson && Array.isArray(parts.lesson.blocks) ? parts.lesson.blocks[0] : null;
+      if (block && Array.isArray(block.items) && block.items.length) {
+        recallFirst = block.items.every(function (it) { return it && it.study === false; });
+      }
+    } catch (_) { recallFirst = false; }
+    applyReopen(reopenKit.readMath(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120), rawBytes, recallFirst);
   }
   function openReopenFile(file) {
     if (!file) return;
@@ -1911,6 +1930,9 @@
     });
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="method"]'), function (radio) {
       radio.addEventListener('change', function () { if (!radio.checked) return; state.method = radio.value; resetPreview(false); remember(); setText('step-2-problem', ''); drawStep2(); });
+    });
+    Array.prototype.forEach.call(doc.querySelectorAll('input[name="recall"]'), function (radio) {
+      radio.addEventListener('change', function () { if (!radio.checked) return; state.recallFirst = radio.value === 'memory'; resetPreview(false); remember(); setText('step-2-problem', ''); drawStep2(); });
     });
     $('next-1').addEventListener('click', function () { goTo(2); });
     $('back-2').addEventListener('click', function () { goTo(1); });

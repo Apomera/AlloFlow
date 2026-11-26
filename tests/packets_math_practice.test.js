@@ -364,7 +364,10 @@ describe('the file', () => {
       // Re-pinned 2026-11-19 (Wave 8A) from 162500: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier touch edge clamp (~163.4-164.1 KB).
       // Re-pinned 2026-11-21 (UX Waves 1-2) from 164500: folded Reading tools .lt-more, 390px #lt-stop docking, Enter learner submit, resume question progress (~166.5 KB).
       // Re-pinned 2026-11-22 (Show my teacher) from 168000: collapsed deskside conferencing fold on practice end screen (~172.6 KB).
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(176000);
+      // Re-pinned 2026-11-25 (Wave 46) from 176000: rapid transition debounce & Symbol Runner/Break it Down shell refinements (~176.0 KB).
+      // Re-pinned 2026-11-25 (Wave 47) from 178000: Slower Audio (0.75x) toggle & Practice-mode retry-missed mastery loop (~184.7-185.4 KB).
+      // Re-pinned 2026-11-26 (Wave 48) from 188000: Aa keyboard shortcuts reference & Practice-mode halfway milestone banner (~188.3 KB).
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(192000);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {
@@ -1051,5 +1054,72 @@ describe('the front door', () => {
     // Listed with the other builders on the front door and in the guide for school IT.
     for (const file of ['packets.html', 'packets-it.html']) expect(read(file), file).toContain('<code>packet_math_practice_builder.js</code>');
     expect(doc.getElementById('today').textContent).toContain('math fact practice');
+  });
+});
+
+describe('recall-first option and non-spoiling scaffolded math worksheets', () => {
+  it('plans and plays recall-first math_ccc and math_rehearsal packets with every card starting covered (study: false)', () => {
+    const cccPlan = MP.planMathPractice({ mode: 'ccc', factSet: 'mul-7', recallFirst: true });
+    expect(cccPlan.recallFirst).toBe(true);
+    expect(cccPlan.cards.every((c) => c.study === false)).toBe(true);
+
+    const cccMade = build({ mode: 'ccc', facts: '7 x 8, 6 x 7', recallFirst: true });
+    expect(lessonOf(cccMade.html).blocks[0].items.every((it) => it.study === false)).toBe(true);
+    expect(verify.verifyPacket(cccMade.html).result).toBe('closed');
+    const t = play(cccMade.html);
+    t.start();
+    // Card 1 opens directly in pad phase with answer hidden ('?'), no Cover it button
+    expect([t.phase(), t.slot()]).toEqual(['pad', '?']);
+    t.type('56');
+    expect([t.status(), t.phase(), t.slot()]).toEqual(['Yes! 7 ' + X + ' 8 = 56.', 'done', '56']);
+
+    const rehPlan = MP.planMathPractice({ mode: 'rehearsal', factSet: 'mul-7', recallFirst: true });
+    expect(rehPlan.recallFirst).toBe(true);
+    expect(rehPlan.cards.every((c) => c.study === false)).toBe(true);
+    const rehMade = build({ mode: 'rehearsal', factSet: 'mul-7', recallFirst: true });
+    const tr = play(rehMade.html);
+    tr.start();
+    expect([tr.phase(), tr.slot()]).toEqual(['pad', '?']);
+    tr.type('56');
+    expect(tr.status()).toBe('Yes! 7 ' + X + ' 8 = 56.');
+  });
+
+  it('maker UI offers recall-first radio, hides paper answers on recall-first sheets, and builds non-spoiling worksheet SVGs', async () => {
+    const page = openPage();
+    page.choose('kind', 'mul');
+    page.choose('set', 'mul-7');
+    page.$('next-1').click();
+    page.choose('method', 'ccc');
+    page.choose('recall', 'memory');
+    page.$('next-2').click();
+    await page.made();
+
+    const html = page.built();
+    expect(lessonOf(html).blocks[0].items.every((it) => it.study === false)).toBe(true);
+    expect(page.rows().Cards).toContain('Answers stay hidden first');
+    expect(page.$('paper').querySelectorAll('.pc-look')).toHaveLength(0);
+    page.wordsAreRight();
+
+    // Scaffolded worksheet visual aids must NOT spoil answers
+    const wsHtml = page.w.AlloMathWorksheet.buildMathWorksheetHtml({
+      title: 'Non-Spoiling Models',
+      scaffolded: true,
+      includeAnswerKey: false,
+      facts: [
+        { a: 14, b: 6, op: 'sub' },
+        { a: 12, b: 3, op: 'div' },
+      ],
+    });
+    const wsDoc = new JSDOM(wsHtml).window.document;
+    const svgs = [...wsDoc.querySelectorAll('svg.aid-svg')];
+    expect(svgs).toHaveLength(2);
+    // Number line: marks ONLY start point (1 circle), shows direction cue, NO dashed jump arc to exact answer tick
+    expect(svgs[0].textContent).toContain('Start at 14, jump ' + MINUS + '6');
+    expect(svgs[0].querySelectorAll('circle')).toHaveLength(1);
+    expect(svgs[0].outerHTML).not.toContain('stroke-dasharray');
+    // Equal groups: 3 empty boxes, ZERO pre-filled quotient dots, Share label
+    expect(svgs[1].textContent).toContain('Share 12 into 3 equal groups');
+    expect(svgs[1].querySelectorAll('rect')).toHaveLength(3);
+    expect(svgs[1].querySelectorAll('circle')).toHaveLength(0);
   });
 });

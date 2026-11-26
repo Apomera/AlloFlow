@@ -81,10 +81,94 @@
   var changing = Object.create(null);
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
   // Meaning recordings of the last make (text -> MP3 address, or null), and its meanings with none: see meaningsFor in make().
-  var meaningClipsNow = null, meaningsMissingNow = [];
+  var meaningClipsNow = null, meaningsMissingNow = [], blankMissingNow = [];
+  function picturesQueueInfo(wordList) {
+    var clean = [], seen = Object.create(null);
+    (Array.isArray(wordList) ? wordList : []).forEach(function (raw) {
+      var w = myWords && typeof myWords.normalizeWord === 'function'
+        ? myWords.normalizeWord(raw)
+        : (function (s) { return /^[a-z]{2,24}$/.test(s) ? s : ''; }(String(raw == null ? '' : raw).trim().toLowerCase()));
+      if (w && !seen[w]) { seen[w] = true; clean.push(w); }
+    });
+    if (!clean.length) return { href: '', count: 0 };
+    var first = clean[0], rest = clean.slice(1, 50);
+    return {
+      href: PICTURES_PAGE + '#word=' + encodeURIComponent(first)
+        + (rest.length ? '&more=' + rest.map(encodeURIComponent).join(',') : ''),
+      count: clean.length
+    };
+  }
+  function voiceMeaningsHref(list) {
+    var clean = (Array.isArray(list) ? list : []).slice(0, 120);
+    return clean.length ? VOICE_PAGE + '#meanings=' + encodeURIComponent(JSON.stringify(clean)) : VOICE_PAGE;
+  }
+  function vocabMissingPictureWords() {
+    return rows.filter(function (r) {
+      return r && !r.picture && !r.customPicture && !r.pictureOff;
+    }).map(function (r) { return r.word; });
+  }
+  function syncVocabMissingPicturesLink() {
+    var link = $('vocab-find-missing-pics');
+    if (!link) return;
+    var q = picturesQueueInfo(vocabMissingPictureWords());
+    if (q.href) {
+      link.href = q.href;
+      link.textContent = q.count === 1
+        ? 'Find a picture for the 1 missing word'
+        : 'Find pictures for the ' + q.count + ' missing words';
+      link.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
+      link.hidden = false;
+      show('vocab-find-missing-pics-row', true);
+    } else {
+      link.href = PICTURES_PAGE;
+      link.hidden = true;
+      show('vocab-find-missing-pics-row', false);
+    }
+  }
+  function usableBlankSentences() {
+    var squeeze = function (t) { return String(t).replace(/\s+/g, ' ').trim(); };
+    var out = [];
+    rows.forEach(function (r) {
+      if (!r || !r.blank || !r.blank.ask || builder.rowStop(r, 'blank')) return;
+      var s = squeeze(r.blank.ask);
+      if (s && out.indexOf(s) < 0) out.push(s);
+    });
+    return out;
+  }
+  function drawBlankKokoroCallout() {
+    var box = $('blank-kokoro-callout');
+    if (!box) return;
+    var on = state && state.types.indexOf('blank') >= 0 && state.readAloud && state.voices;
+    var missing = on ? blankMissingNow.slice(0, 120) : [];
+    if (!missing.length) {
+      box.hidden = true;
+      box.textContent = '';
+      return;
+    }
+    box.textContent = '';
+    var n = missing.length;
+    var msg = n === 1
+      ? '1 fill-in-the-blank sentence uses the device voice right now \u2014 generate Kokoro voices in 1 click. '
+      : n + ' fill-in-the-blank sentences use the device voice right now \u2014 generate Kokoro voices in 1 click. ';
+    box.appendChild(doc.createTextNode(msg));
+    var link = el('a', 'btn btn-small', 'Generate Kokoro voices');
+    link.id = 'blank-kokoro-link';
+    link.href = voiceMeaningsHref(missing);
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
+    box.appendChild(link);
+    box.hidden = false;
+  }
   var wordsTimer = 0;
-  // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js, word_picture_matcher.js, packets_my_words.js).
-  var media = null, symbols = null, art = null, matcher = null, myWords = null, pictureState = 'idle', heard = null, pendingPicWord = '';
+  // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, reading_symbols_ext_en.js, word_picture_semantic_en.js, word_sounds_packet_builder.js, word_picture_matcher.js, packets_my_words.js).
+  var media = null, symbols = null, extSymbols = null, semantic = null, art = null, matcher = null, myWords = null, pictureState = 'idle', heard = null, pendingPicWord = '';
+  function getSymbolEntry(word) {
+    var got = null;
+    if (symbols && pictureState === 'ready') { try { got = symbols.get(word); } catch (_) { got = null; } }
+    if (!got && extSymbols && typeof extSymbols.get === 'function') { try { got = extSymbols.get(word); } catch (_) { got = null; } }
+    return got;
+  }
   var myPictures = Object.create(null), myClips = Object.create(null), myClipPortable = Object.create(null), myPicSyncRun = 0, vocabAudioKitWait = null;
   var previewOmit = Object.create(null), previewSlot = Object.create(null), previewSession = null, inPreviewAction = false;
   function readJsonSafe(raw) {
@@ -380,7 +464,7 @@
   // The rows: one for each word, made again after every change
   // ---------------------------------------------------------------------------
   function listNow() { return builder.parseWords(state.words); }
-  function redraft() { rows = builder.draftRows({ words: listNow().words, bank: bankState === 'ready' ? bank : null, edits: effectiveEdits(), pictures: symbols, diagrams: !!state.diagrams, matcher: matcher, art: art }); }
+  function redraft() { rows = builder.draftRows({ words: listNow().words, bank: bankState === 'ready' ? bank : null, edits: effectiveEdits(), pictures: symbols, readingSymbolsExt: extSymbols, semantic: semantic, diagrams: !!state.diagrams, matcher: matcher, art: art }); }
   function rowOf(key) { return rows.filter(function (r) { return r.key === key; })[0] || null; }
   function changed() {
     keepEdits();
@@ -731,6 +815,7 @@
       box.appendChild(line);
       host.appendChild(box);
     });
+    syncVocabMissingPicturesLink();
   }
   // The picture questions, to look at before the file is made: each word with its picture and the 3 others, and a box to
   // leave a word out (a picture can show another meaning of the word: a bat for baseball, not the animal).
@@ -766,8 +851,8 @@
         src = r.customPicture;
       } else {
         var got = null;
-        if (symbols && pictureState === 'ready') {
-          try { got = symbols.get(word) || (r && r.pictureLookupWord ? symbols.get(r.pictureLookupWord) : null); } catch (_) { got = null; }
+        if (pictureState === 'ready') {
+          got = getSymbolEntry(word) || (r && r.pictureLookupWord ? getSymbolEntry(r.pictureLookupWord) : null);
         }
         if (got && typeof got.svg === 'string' && !(art && art.svgRefusal(got.svg))) {
           src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(got.svg)));
@@ -777,8 +862,8 @@
             try {
               var dg = matcher.getDiagram(word, (r && r.base) || '', word);
               if (!dg && typeof matcher.matchWord === 'function') {
-                var dm = matcher.matchWord({ word: word, lemma: (r && r.base) || '', definition: (r && r.def) || '' }, { symbols: symbols, preferDiagrams: true });
-                if (dm && dm.set === 'diagram') dg = dm;
+                var dm = matcher.matchWord({ word: word, lemma: (r && r.base) || '', definition: (r && r.def) || '' }, { symbols: symbols, readingSymbolsExt: extSymbols, semantic: semantic, preferDiagrams: true });
+                if (dm && dm.svg) dg = dm;
               }
               if (dg && dg.svg) dSvg = dg.svg;
             } catch (_) { dSvg = ''; }
@@ -828,14 +913,27 @@
     });
     var none = rows.filter(function (r) { return !r.picture && !r.pictureOff; }).map(function (r) { return r.word; });
     if (none.length) host.appendChild(el('p', 'v-out', 'No picture in the picture set: ' + none.join(', ') + '.'));
+    syncVocabMissingPicturesLink();
     settleFocus();
+  }
+  function loadExtSymbols() {
+    if (!extSymbols) return Promise.resolve(false);
+    if (typeof extSymbols.ready === 'function' && extSymbols.ready()) return Promise.resolve(true);
+    if (media && typeof media.extPictures === 'function') {
+      return media.extPictures(extSymbols).then(function (ok) { return !!ok; }, function () { return false; });
+    }
+    if (typeof extSymbols.load === 'function') {
+      return extSymbols.load().then(function (ok) { return !!ok; }, function () { return false; });
+    }
+    return Promise.resolve(false);
   }
   function getPictures() {
     if (!media || !symbols || pictureState === 'loading' || pictureState === 'ready') return;
     pictureState = 'loading';
-    media.pictures(symbols).then(function (ok) {
-      pictureState = ok ? 'ready' : 'failed';
-      if (step === 3) { drawPictureRows(); makeSoon(30); }
+    Promise.all([media.pictures(symbols), loadExtSymbols()]).then(function (res) {
+      pictureState = res[0] ? 'ready' : 'failed';
+      if (pictureState === 'ready') redraft();
+      if (step === 3) { drawStep3(); makeSoon(30); }
     }, function () {
       pictureState = 'failed';
       if (step === 3) { drawPictureRows(); makeSoon(30); }
@@ -901,6 +999,7 @@
       (left.indexOf(row) >= 0 ? foldBody : host).appendChild(box);
     });
     if (fold) host.appendChild(fold);
+    drawBlankKokoroCallout();
     settleFocus();
   }
   function drawMoreSummary() {
@@ -1000,7 +1099,7 @@
         : (typeof state.mixSeed === 'number' && isFinite(state.mixSeed) ? Math.floor(state.mixSeed) : null))
       : null;
     var vocabOpts = { loader: loader, rows: rows, types: types, mode: state.mode, title: state.title, readAloud: state.readAloud,
-      voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, diagrams: !!state.diagrams, matcher: matcher, art: art, syllables: sylTbl };
+      voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, readingSymbolsExt: pictureState === 'ready' ? extSymbols : null, semantic: semantic, diagrams: !!state.diagrams, matcher: matcher, art: art, syllables: sylTbl };
     if (meaningClipsNow) vocabOpts.meaningClips = meaningClipsNow;
     if (orderMode) vocabOpts.order = orderMode;
     if (orderSeed !== null) vocabOpts.orderSeed = orderSeed;
@@ -1041,7 +1140,7 @@
     };
     // Recordings made ahead of time, for the words the file says out loud (Read aloud on, recordings not turned off).
     // Teacher recordings in My words are merged with priority over built-in recordings, and work even offline.
-    if (!state.readAloud || !state.voices) { meaningClipsNow = null; meaningsMissingNow = []; return Promise.resolve(go(null)); }
+    if (!state.readAloud || !state.voices) { meaningClipsNow = null; meaningsMissingNow = []; blankMissingNow = []; drawBlankKokoroCallout(); return Promise.resolve(go(null)); }
     var wordsToHear = typeof builder.wordsToHear === 'function' ? builder.wordsToHear(rows, types) : rows.map(function (r) { return r.word; });
     var canMedia = !!(media && typeof loader.portableAudio === 'function');
     // Meanings recorded ahead of time (2026-11-23), where this site has them: each word's meaning, and with Word to
@@ -1051,6 +1150,7 @@
     var meaningsFor = function () {
       var texts = [], squeeze = function (t) { return String(t).replace(/\s+/g, ' ').trim(); };
       meaningsMissingNow = [];
+      blankMissingNow = [];
       if (types.indexOf('meaning') >= 0 || types.indexOf('word') >= 0) {
         rows.forEach(function (r) {
           if (!r || !r.def) return;
@@ -1058,6 +1158,8 @@
           if (types.indexOf('meaning') >= 0) (r.wrong || []).forEach(function (c) { if (c && c.def) texts.push(squeeze(c.def)); });
         });
       }
+      var blankTexts = types.indexOf('blank') >= 0 ? usableBlankSentences() : [];
+      blankTexts.forEach(function (s) { texts.push(s); });
       texts = texts.filter(function (t, i) { return t && texts.indexOf(t) === i; });
       if (!texts.length) return Promise.resolve(null);
       var fromSite = media && typeof media.meaningClips === 'function'
@@ -1069,6 +1171,7 @@
         return mine.then(function (found) {
           Object.keys(found || {}).forEach(function (t) { var c = found[t]; if (c && typeof c.dataUri === 'string') have[t] = c.dataUri; });
           meaningsMissingNow = texts.filter(function (t) { return !have[t]; });
+          blankMissingNow = blankTexts.filter(function (s) { return !have[s]; });
           return Object.keys(have).length ? have : null;
         });
       }, function () { return null; });
@@ -1077,6 +1180,7 @@
     return meaningsFor().then(function (gotMeanings) {
       meaningClipsNow = gotMeanings;
       if (run !== buildRun) return { html: null, said: 'Cancelled.' };
+      drawBlankKokoroCallout();
       if (!canMedia && !myWords) return go(null);
       return wordRecordings();
     });
@@ -1127,8 +1231,8 @@
         try {
           if (r.customPicture && r.customPicture === imgUri) return true;
           if (r.diagramSvg && ('data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(r.diagramSvg)))) === imgUri) return true;
-          if (symbols && pictureState === 'ready') {
-            var s = symbols.get(r.word) || (r.pictureLookupWord ? symbols.get(r.pictureLookupWord) : null);
+          if (pictureState === 'ready') {
+            var s = getSymbolEntry(r.word) || (r.pictureLookupWord ? getSymbolEntry(r.pictureLookupWord) : null);
             return s && typeof s.svg === 'string' && ('data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s.svg)))) === imgUri;
           }
           return false;
@@ -1345,7 +1449,7 @@
         mWrap.textContent = capital(count(missingMeanings.length, 'meaning')) + (missingMeanings.length === 1 ? ' in this file has' : ' in this file have') + ' no recording yet. ';
         var mLink = el('a', '', 'Make them with the computer voice');
         mLink.id = 'meanings-add-link';
-        mLink.href = VOICE_PAGE + '#meanings=' + encodeURIComponent(JSON.stringify(missingMeanings));
+        mLink.href = voiceMeaningsHref(missingMeanings);
         mLink.target = '_blank';
         mLink.rel = 'noopener';
         mLink.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
@@ -1861,6 +1965,7 @@
     if ($('f-diagrams')) $('f-diagrams').addEventListener('change', function () {
       state.diagrams = this.checked;
       remember();
+      if (state.diagrams && pictureState === 'idle') getPictures();
       redraft();
       drawStep3();
       makeSoon(30);
@@ -1957,9 +2062,10 @@
     var loadVocabPictures = symbols && media ? function () {
       if (pictureState === 'ready') return Promise.resolve(true);
       pictureState = 'loading';
-      return media.pictures(symbols).then(function (ok) {
-        pictureState = ok ? 'ready' : 'failed';
-        return !!ok;
+      return Promise.all([media.pictures(symbols), loadExtSymbols()]).then(function (res) {
+        pictureState = res[0] ? 'ready' : 'failed';
+        if (pictureState === 'ready') redraft();
+        return !!res[0];
       }, function () {
         pictureState = 'failed';
         return false;
@@ -1982,6 +2088,8 @@
         title: state.title || 'Vocabulary words',
         pictures: true,
         symbols: symbols,
+        readingSymbolsExt: extSymbols,
+        semantic: semantic,
         matcher: state.diagrams ? matcher : null,
         syllables: (window.AlloModules && window.AlloModules.SyllableTableEn) || null,
         loadPictures: loadVocabPictures,
@@ -2009,9 +2117,14 @@
             } else if (r.diagramSvg && !(art && art.svgRefusal(r.diagramSvg))) {
               picUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(r.diagramSvg);
               picSet = 'diagram';
-            } else if (symbols && pictureState === 'ready') {
-              var got = null;
-              try { got = symbols.get(r.word) || (r.pictureLookupWord ? symbols.get(r.pictureLookupWord) : null); } catch (_) { got = null; }
+            } else if (pictureState === 'ready') {
+              var got = getSymbolEntry(r.word) || (r.pictureLookupWord ? getSymbolEntry(r.pictureLookupWord) : null);
+              if (!got && matcher && typeof matcher.matchWord === 'function') {
+                try {
+                  var matched = matcher.matchWord({ word: r.word, lemma: r.base || '', definition: r.def || '' }, { symbols: symbols, readingSymbolsExt: extSymbols, semantic: semantic, preferDiagrams: !!state.diagrams });
+                  if (matched && typeof matched.svg === 'string') got = matched;
+                } catch (_) {}
+              }
               if (got && typeof got.svg === 'string' && !(art && art.svgRefusal(got.svg))) {
                 picUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(got.svg);
                 picSet = got.set || 'mulberry';
@@ -2032,6 +2145,8 @@
         }),
         pictures: true,
         symbols: symbols,
+        readingSymbolsExt: extSymbols,
+        semantic: semantic,
         matcher: state.diagrams ? matcher : null,
         syllablesTable: (window.AlloModules && window.AlloModules.SyllableTableEn) || null,
         loadPictures: loadVocabPictures,
@@ -2048,18 +2163,120 @@
       if (!built || !built.html) return;
       var zipKit = window.AlloPacketZip;
       if (!zipKit || typeof zipKit.create !== 'function' || !cards || typeof cards.buildVocabWorksheetHtml !== 'function') return;
+      var btn = $('download-bundle');
+      var prevText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Building bundle...'; }
+      var restore = function () {
+        if (btn) { btn.disabled = false; btn.textContent = prevText || 'Download classroom bundle (.zip)'; }
+      };
       var wsState = vocabWorksheetState();
-      var zip = zipKit.create();
-      zip.add('01-Interactive-Packet.html', built.html);
-      zip.add('02-Worksheet-Scaffolded.html', cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: true, showSyllables: true, includeAnswerKey: false }));
-      zip.add('03-Worksheet-Independent.html', cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: false, showSyllables: false, includeAnswerKey: false }));
-      zip.add('04-Teacher-Answer-Key.html', cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: true, showSyllables: true, includeAnswerKey: true }));
-      var zipName = fileName((built.lesson && built.lesson.title) || state.title || 'vocabulary', '-classroom-bundle.zip');
-      var url = '';
-      try { url = URL.createObjectURL(new Blob(zip.finish(), { type: 'application/zip' })); } catch (_) { url = ''; }
-      if (!url) return;
-      download(url, zipName);
-      window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
+      var ext = '.html';
+      var docxExt = '.docx';
+      var finishZip = function (extraEntries) {
+        try {
+          var zip = zipKit.create();
+          zip.add('01-Interactive-Packet' + ext, built.html);
+          zip.add('02-Worksheet-Scaffolded' + ext, cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: true, showSyllables: true, includeAnswerKey: false }));
+          zip.add('03-Worksheet-Independent' + ext, cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: false, showSyllables: false, includeAnswerKey: false }));
+          zip.add('04-Teacher-Answer-Key' + ext, cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: true, showSyllables: true, includeAnswerKey: true }));
+          (extraEntries || []).forEach(function (entry) {
+            if (entry && entry.name && entry.data !== undefined && entry.data !== null) zip.add(entry.name, entry.data);
+          });
+          if (typeof cards.buildVocabAudioPlan === 'function') {
+            try {
+              var audioPlan = cards.buildVocabAudioPlan(wsState, {});
+              if (audioPlan && audioPlan.clipCount > 0) {
+                var audioHtml = typeof cards.buildAudioCompanionHtml === 'function'
+                  ? cards.buildAudioCompanionHtml(audioPlan)
+                  : (typeof cards.buildVocabAudioCompanionHtml === 'function' ? cards.buildVocabAudioCompanionHtml(wsState) : '');
+                if (audioHtml) zip.add('08-Offline-Audio-Companion' + ext, audioHtml);
+              }
+            } catch (_) {}
+          }
+          var zipName = fileName((built.lesson && built.lesson.title) || state.title || 'vocabulary', '-classroom-bundle.zip');
+          var url = '';
+          try { url = URL.createObjectURL(new Blob(zip.finish(), { type: 'application/zip' })); } catch (_) { url = ''; }
+          if (url) {
+            download(url, zipName);
+            window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
+          }
+        } finally {
+          restore();
+        }
+      };
+      var loadDocx = typeof cards.ensureDocx === 'function'
+        ? cards.ensureDocx()
+        : Promise.resolve(window.AlloPacketDocx || window.AlloPacketsDocx || null);
+      Promise.resolve(loadDocx).then(function (docxMod) {
+        if (!docxMod) { finishZip([]); return; }
+        var prep = function (m) {
+          if (typeof cards.prepareDocxModelAsync === 'function') return cards.prepareDocxModelAsync(docxMod, m);
+          if (typeof docxMod.prepareImagesAsync === 'function') {
+            return Promise.resolve().then(function () { return docxMod.prepareImagesAsync(m, window, doc); }).then(function (p) { return p || m; }, function () { return m; });
+          }
+          return Promise.resolve(m);
+        };
+        var jobs = [];
+        if (typeof docxMod.buildVocabDocx === 'function' && typeof cards.normalizeVocabWorksheetModel === 'function' && typeof cards.buildVocabDocxModel === 'function') {
+          try {
+            var scaffModel = cards.normalizeVocabWorksheetModel(wsState, { wordBank: true, pictures: true, syllables: true, answerKey: false });
+            if (scaffModel && scaffModel.entries && scaffModel.entries.length) {
+              var scaffDoc = cards.buildVocabDocxModel(scaffModel);
+              jobs.push(prep(scaffDoc).then(function (prepared) {
+                var res = docxMod.buildVocabDocx(prepared, { zip: zipKit, filename: '05-Worksheet-Scaffolded' + docxExt });
+                return res && res.bytes ? { name: '05-Worksheet-Scaffolded' + docxExt, data: res.bytes } : null;
+              }, function () { return null; }));
+            }
+            var indepModel = cards.normalizeVocabWorksheetModel(wsState, { wordBank: false, pictures: true, syllables: false, answerKey: false });
+            if (indepModel && indepModel.entries && indepModel.entries.length) {
+              var indepDoc = cards.buildVocabDocxModel(indepModel);
+              jobs.push(prep(indepDoc).then(function (prepared) {
+                var res = docxMod.buildVocabDocx(prepared, { zip: zipKit, filename: '06-Worksheet-Independent' + docxExt });
+                return res && res.bytes ? { name: '06-Worksheet-Independent' + docxExt, data: res.bytes } : null;
+              }, function () { return null; }));
+            }
+          } catch (_) {}
+        }
+        if (typeof docxMod.buildWordCardsDocx === 'function') {
+          try {
+            var rawEntries = Array.isArray(wsState.entries) ? wsState.entries : [];
+            var cardWords = rawEntries.map(function (e) { return e && e.word; }).filter(Boolean);
+            if (cardWords.length) {
+              var pics = Object.create(null);
+              rawEntries.forEach(function (e) {
+                if (e && e.word && e.picture && !e.noPicture) {
+                  pics[e.word] = { uri: e.picture, set: e.pictureSet || 'mulberry', credit: e.pictureCredit || null };
+                }
+              });
+              var cardList = rawEntries.map(function (e) {
+                if (!e || !e.word) return null;
+                var p = pics[e.word];
+                return { word: e.word, displayWord: e.word, pictureUri: p && p.uri ? p.uri : '' };
+              }).filter(Boolean);
+              var cardsModel = {
+                title: wsState.title || 'Vocabulary Word Cards',
+                cards: cardList,
+                size: 6,
+                shows: 'both',
+                lines: true,
+                pages: 'both',
+                credits: typeof cards.creditsFor === 'function' ? cards.creditsFor(cardWords, pics, wsState.symbols, wsState.creditLine) : []
+              };
+              jobs.push(prep(cardsModel).then(function (prepared) {
+                var res = docxMod.buildWordCardsDocx(prepared, { zip: zipKit, filename: '07-Word-Cards' + docxExt });
+                return res && res.bytes ? { name: '07-Word-Cards' + docxExt, data: res.bytes } : null;
+              }, function () { return null; }));
+            }
+          } catch (_) {}
+        }
+        return Promise.all(jobs).then(function (entries) {
+          finishZip(entries.filter(Boolean));
+        }, function () {
+          finishZip([]);
+        });
+      }, function () {
+        finishZip([]);
+      });
     });
     if ($('print-worksheet') && $('print-cards') && $('print-cards').hidden) $('print-worksheet').hidden = true;
     function readReopenFile(file) {
@@ -2179,10 +2396,13 @@
     // Recordings and pictures need the network (this site only); a browser without fetch makes files without them.
     media = window.AlloVocabMedia && typeof window.AlloVocabMedia.clips === 'function' && typeof window.fetch === 'function' ? window.AlloVocabMedia : null;
     var sym = window.AlloModules && window.AlloModules.WordSoundsSymbols;
+    var extSym = window.AlloReadingSymbolsExt || (window.AlloModules && window.AlloModules.ReadingSymbolsExt) || null;
+    semantic = window.AlloWordPictureSemantic || (window.AlloModules && window.AlloModules.WordPictureSemantic) || null;
     art = window.AlloPacketBuilder && typeof window.AlloPacketBuilder.svgRefusal === 'function' ? window.AlloPacketBuilder : null;
     matcher = window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher) || null;
     myWords = window.AlloPacketMyWords && (typeof window.AlloPacketMyWords.getManyMedia === 'function' || typeof window.AlloPacketMyWords.getMany === 'function') ? window.AlloPacketMyWords : null;
     symbols = media && art && sym && typeof sym.has === 'function' && typeof sym.file === 'function' && typeof sym.get === 'function' ? sym : null;
+    extSymbols = symbols && extSym && typeof extSym.has === 'function' && typeof extSym.file === 'function' && typeof extSym.get === 'function' ? extSym : null;
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_work) setText('csv-label', loader.DEFAULT_LABELS.save_work);
     wire();
     var rehearseCount = applyRehearseHash();

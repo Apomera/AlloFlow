@@ -71,6 +71,34 @@
     return html.slice(0, from) + json + html.slice(to);
   }
 
+  function withSpeechManifest(html) {
+    var openTag = '<script type="application/json" id="packet-manifest">';
+    var at = typeof html === 'string' ? html.indexOf(openTag) : -1;
+    if (at < 0) return html;
+    var from = at + openTag.length;
+    var to = html.indexOf('</script>', from);
+    if (to < 0) return html;
+    var manifest;
+    try {
+      manifest = JSON.parse(html.slice(from, to), function (k, v) {
+        return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v;
+      });
+    } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
+    manifest.speech = {
+      engine: 'speechSynthesis',
+      localOnly: true,
+      when: 'only when the learner presses Read aloud',
+    };
+    var json = JSON.stringify(manifest)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026')
+      .replace(/\u2028/g, '\\u2028')
+      .replace(/\u2029/g, '\\u2029');
+    return html.slice(0, from) + json + html.slice(to);
+  }
+
   function fileName(title, mode, learner) {
     var base = slug(title || 'stem-lab', 48);
     var suffix = mode === 'probe' || mode === 'check' ? '-check' : '-lab';
@@ -250,7 +278,7 @@
           id: 'cir-s2',
           word: 'Series Total Resistance',
           prompt: 'Close both Switch A and Switch B. What is the total resistance (in ohms) of the two bulbs in series?',
-          hint: 'Read Total R in the circuit readout after closing both switches (3 + 3).',
+          hint: 'In a series circuit, add the resistances of the two bulbs together (3 + 3).',
           topology: 'series',
           voltage: 6,
           switches: [
@@ -515,7 +543,7 @@
           id: 'geo-g1',
           word: 'Build Area 12 Grid',
           prompt: 'Shade tiles on the grid to build a shape with an area of exactly 12 square units.',
-          hint: 'Click or press tiles (or use the width/height helper) until Area reads 12.',
+          hint: 'Click or press tiles until you have shaded 12 unit squares.',
           geoMode: 'tiles',
           rows: 5,
           cols: 6,
@@ -561,8 +589,8 @@
         {
           id: 'geo-a1',
           word: 'Classify 120-Degree Angle',
-          prompt: 'Inspect the 120-degree angle shown below. Is it acute, right, or obtuse?',
-          hint: 'Acute is less than 90 deg, right is exactly 90 deg, and obtuse is greater than 90 deg.',
+          prompt: 'Inspect the angle shown below. Is it acute, right, or obtuse?',
+          hint: 'Compare the angle opening to a 90-degree square corner.',
           geoMode: 'angle',
           targetType: 'classify_angle',
           angleDeg: 120,
@@ -571,8 +599,8 @@
         {
           id: 'geo-a2',
           word: 'Classify 45-Degree Angle',
-          prompt: 'Inspect the 45-degree angle shown below. Is it acute, right, or obtuse?',
-          hint: 'Compare 45 degrees to a 90-degree square corner.',
+          prompt: 'Inspect the angle shown below. Is it acute, right, or obtuse?',
+          hint: 'Compare the angle opening to a 90-degree square corner.',
           geoMode: 'angle',
           targetType: 'classify_angle',
           angleDeg: 45,
@@ -604,7 +632,7 @@
     cir_hint_hide: 'Hide hint',
     cir_empty: 'Enter or select an answer first.',
     cir_right: 'Correct observation.',
-    cir_retry: 'Check the live circuit readout and try again.',
+    cir_retry: 'Check the switches and your calculation, then try again.',
     cir_missed: 'Expected answer: {answer}.',
   };
 
@@ -635,7 +663,7 @@
     geo_empty_grid: 'Shade at least 1 tile before checking.',
     geo_empty_angle: 'Choose acute, right, or obtuse first.',
     geo_right: 'That matches the geometric target.',
-    geo_retry: 'Check the live measurements and adjust your model.',
+    geo_retry: 'Adjust your model and try again.',
     geo_missed: 'Target: {answer}.',
   };
 
@@ -657,6 +685,7 @@
     var locked = false;
     var hintVisible = false;
     var interacted = false;
+    var qKind = item.questionKind === 'mc' ? 'mc' : 'numeric';
 
     var computeState = function () {
       var bulbOut = [];
@@ -740,8 +769,9 @@
       }));
       board.appendChild(swRow);
 
+      var hideComputed = (qKind === 'numeric' || isCheck) && (!locked || isCheck);
       var bulbsRow = el('div', { class: 'cir-bulbs' }, st.bulbs.map(function (b) {
-        var lblTxt = b.lvl === 'off' ? 'OFF' : b.lvl.toUpperCase() + ' (' + b.i.toFixed(2) + ' A)';
+        var lblTxt = b.lvl === 'off' ? 'OFF' : (hideComputed ? b.lvl.toUpperCase() : (b.lvl.toUpperCase() + ' (' + b.i.toFixed(2) + ' A)'));
         return el('div', { class: 'cir-bulb is-' + b.lvl, 'data-cir-bulb': b.id, 'data-cir-lit': b.lit ? '1' : '0' }, [
           el('span', { class: 'cir-lamp', 'aria-hidden': 'true', text: b.lit ? '*' : 'o' }),
           el('strong', { text: b.label + ' (' + b.r + ' ohm)' }),
@@ -750,11 +780,16 @@
       }));
       board.appendChild(bulbsRow);
 
-      var rText = st.totalR != null ? (st.totalR + ' ohms') : 'Open';
-      readout.textContent = 'Status: ' + (st.closed ? 'Closed' : 'Open')
-        + ' | Lit bulbs: ' + st.litCount + ' of ' + st.bulbs.length
-        + ' | Total R: ' + rText
-        + ' | Total I: ' + st.totalI.toFixed(2) + ' A';
+      if (hideComputed) {
+        readout.textContent = 'Status: ' + (st.closed ? 'Closed' : 'Open')
+          + ' | Lit bulbs: ' + st.litCount + ' of ' + st.bulbs.length;
+      } else {
+        var rText = st.totalR != null ? (st.totalR + ' ohms') : 'Open';
+        readout.textContent = 'Status: ' + (st.closed ? 'Closed' : 'Open')
+          + ' | Lit bulbs: ' + st.litCount + ' of ' + st.bulbs.length
+          + ' | Total R: ' + rText
+          + ' | Total I: ' + st.totalI.toFixed(2) + ' A';
+      }
 
       if (focusSwId) {
         var fBtn = board.querySelector('[data-cir-sw="' + focusSwId + '"]');
@@ -782,7 +817,6 @@
     }) : null;
 
     var qWrap = el('div', { class: 'stem-question' });
-    var qKind = item.questionKind === 'mc' ? 'mc' : 'numeric';
     var numInput = null;
     var submitBtn = null;
     var mcButtons = [];
@@ -1299,6 +1333,7 @@
 
     var controlsBar = el('div', { class: 'row stem-actions' });
     var submitBtn = null;
+    var revealReadout = null;
 
     if (geoMode === 'tiles') {
       var rows = Math.max(3, Math.min(8, Number(item.rows) || 5));
@@ -1325,10 +1360,17 @@
       gridEl.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
       var tileBtns = Object.create(null);
 
-      var syncReadout = function () {
+      var syncReadout = function (showComputed) {
         var m = measure();
-        readout.textContent = 'Shaded Area: ' + m.area + ' sq units | Perimeter: ' + m.perimeter + ' units';
+        if (showComputed && !isCheck) {
+          readout.textContent = 'Shaded Area: ' + m.area + ' sq units | Perimeter: ' + m.perimeter + ' units';
+        } else {
+          readout.textContent = m.area > 0
+            ? 'Grid updated. Count the shaded tiles and outer edges, then press ' + (isCheck ? (L.geo_submit || 'Submit work') : (L.geo_check || 'Check work')) + '.'
+            : 'Grid empty. Select tiles on the ' + rows + ' by ' + cols + ' grid.';
+        }
       };
+      revealReadout = function () { syncReadout(true); };
 
       for (var r = 0; r < rows; r++) {
         for (var c = 0; c < cols; c++) {
@@ -1420,12 +1462,13 @@
             }
             var out = ctx.answer(resp, ok, {
               correctText: L.geo_right || 'That matches the target.',
-              retryText: L.geo_retry || 'Check the live measurements and adjust your grid.',
+              retryText: L.geo_retry || 'Count the tiles and outer edges, then adjust your grid.',
               missedText: fmt(L.geo_missed || 'Target: {answer}.', { answer: wantTxt }),
             });
             if (out === 'correct' || out === 'missed') {
               locked = true; submitBtn.disabled = true; clearBtn.disabled = true;
               Object.keys(tileBtns).forEach(function (k) { tileBtns[k].disabled = true; });
+              syncReadout(true);
             }
           },
         },
@@ -1447,7 +1490,7 @@
       var currentArea = function () { return shape === 'triangle' ? (base * height) / 2 : base * height; };
       var currentPerim = function () { return shape === 'rectangle' ? 2 * (base + height) : Math.round((base + height + Math.sqrt(base * base + height * height)) * 10) / 10; };
 
-      var paintDims = function (focusAttr) {
+      var paintDims = function (focusAttr, showComputed) {
         visualBox.textContent = '';
         var shapeEl = el('div', { class: 'geo-shape geo-shape-' + shape });
         shapeEl.style.width = (base * 22) + 'px';
@@ -1468,10 +1511,15 @@
         addStepper('Base', base, function () { base = Math.max(1, base - 1); paintDims('dec:base'); }, function () { base = Math.min(maxDim, base + 1); paintDims('inc:base'); }, 'base');
         addStepper('Height', height, function () { height = Math.max(1, height - 1); paintDims('dec:height'); }, function () { height = Math.min(maxDim, height + 1); paintDims('inc:height'); }, 'height');
 
-        var a = currentArea();
-        readout.textContent = (shape === 'triangle' ? 'Right Triangle' : 'Rectangle')
-          + ' | Base: ' + base + ' | Height: ' + height + ' | Area: ' + a + ' sq units'
-          + (shape === 'rectangle' ? (' | Perimeter: ' + currentPerim() + ' units') : '');
+        if (showComputed && !isCheck) {
+          var a = currentArea();
+          readout.textContent = (shape === 'triangle' ? 'Right Triangle' : 'Rectangle')
+            + ' | Base: ' + base + ' | Height: ' + height + ' | Area: ' + a + ' sq units'
+            + (shape === 'rectangle' ? (' | Perimeter: ' + currentPerim() + ' units') : '');
+        } else {
+          readout.textContent = (shape === 'triangle' ? 'Right Triangle' : 'Rectangle')
+            + ' | Base: ' + base + ' | Height: ' + height;
+        }
 
         if (focusAttr) {
           var p = focusAttr.split(':');
@@ -1481,6 +1529,7 @@
           if (tgt && !tgt.disabled && typeof tgt.focus === 'function') tgt.focus();
         }
       };
+      revealReadout = function () { paintDims(null, true); };
 
       submitBtn = el('button', {
         type: 'button',
@@ -1513,7 +1562,7 @@
               retryText: L.geo_retry || 'Adjust Base or Height and check again.',
               missedText: fmt(L.geo_missed || 'Target: {answer}.', { answer: wantTxt }),
             });
-            if (out === 'correct' || out === 'missed') { locked = true; submitBtn.disabled = true; paintDims(); }
+            if (out === 'correct' || out === 'missed') { locked = true; submitBtn.disabled = true; paintDims(null, true); }
           },
         },
         text: isCheck ? (L.geo_submit || 'Submit work') : (L.geo_check || 'Check work'),
@@ -1536,18 +1585,36 @@
       stageBox.appendChild(degLabel);
 
       var angleClassOf = function (d) { return d === 90 ? 'right' : d < 90 ? 'acute' : 'obtuse'; };
+      var isEstimate = item.hideDeg === true || item.targetType === 'estimate_angle' || /\bestimat/i.test(String(item.prompt || ''));
       var decBtn = null, decFineBtn = null, incFineBtn = null, incBtn = null;
-      var paintAngle = function () {
+      var paintAngle = function (showRevealed) {
         ray.style.transform = 'rotate(-' + deg + 'deg)';
-        degLabel.textContent = deg + ' deg';
-        readout.textContent = isBuild
-          ? ('Current angle: ' + deg + ' degrees (' + angleClassOf(deg) + ')')
-          : ('Shown angle: ' + deg + ' degrees. Choose acute, right, or obtuse.');
+        if (isBuild) {
+          var hideBuildDeg = isCheck && isEstimate;
+          if (hideBuildDeg) {
+            degLabel.hidden = true;
+            degLabel.textContent = '';
+            readout.textContent = 'Rotate the ray to match the target angle.';
+          } else {
+            degLabel.hidden = false;
+            degLabel.textContent = deg + ' deg';
+            readout.textContent = 'Current angle: ' + deg + ' degrees';
+          }
+        } else if (showRevealed && !isCheck) {
+          degLabel.hidden = false;
+          degLabel.textContent = deg + ' deg';
+          readout.textContent = 'Shown angle: ' + deg + ' degrees (' + angleClassOf(deg) + ').';
+        } else {
+          degLabel.hidden = true;
+          degLabel.textContent = '';
+          readout.textContent = 'Observe the angle opening and choose acute, right, or obtuse.';
+        }
         if (decBtn) decBtn.disabled = locked || deg <= 5;
         if (decFineBtn) decFineBtn.disabled = locked || deg <= 5;
         if (incFineBtn) incFineBtn.disabled = locked || deg >= 175;
         if (incBtn) incBtn.disabled = locked || deg >= 175;
       };
+      revealReadout = function () { paintAngle(true); };
 
       stage.appendChild(stageBox);
 
@@ -1594,9 +1661,9 @@
         controlsBar.appendChild(submitBtn);
       } else {
         var opts = [
-          ['acute', 'Acute (less than 90 deg)'],
-          ['right', 'Right (exactly 90 deg)'],
-          ['obtuse', 'Obtuse (greater than 90 deg)'],
+          ['acute', 'Acute'],
+          ['right', 'Right'],
+          ['obtuse', 'Obtuse'],
         ];
         var clsBtns = [];
         var triedCls = Object.create(null);
@@ -1630,6 +1697,7 @@
                     x.disabled = true;
                     if (x.getAttribute('data-geo-angle-pick') === want) x.className = 'stem-mc-btn is-right';
                   });
+                  paintAngle(true);
                 } else {
                   triedCls[pair[0]] = true;
                   b.className = 'stem-mc-btn is-tried';
@@ -1668,6 +1736,7 @@
         if (submitBtn) submitBtn.disabled = true;
         var allB = root.querySelectorAll('button');
         for (var i = 0; i < allB.length; i++) allB[i].disabled = true;
+        if (typeof revealReadout === 'function') revealReadout();
       },
     };
   }
@@ -1855,29 +1924,214 @@
     '.geo-vertex{position:absolute;left:calc(50% - 7px);bottom:25px;width:14px;height:14px;border-radius:50%;background:var(--ink)}',
     '.geo-deg-badge{position:absolute;right:10px;top:10px;padding:3px 10px;border-radius:999px;background:var(--soft);border:1px solid var(--accent);font-weight:700;font-size:.9rem}',
     '@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}',
-    '@media (forced-colors:active){.geo-tile.is-shaded,.dat-bar-fill,.cir-sw.is-closed,.stem-btn-sm[aria-pressed=true]{forced-color-adjust:none;border:2px solid Highlight;background:Highlight;color:HighlightText}}',
-    '@media print{.stem-tools-row,.stem-actions{display:none}}',
+    '@media (forced-colors:active){.geo-tile.is-shaded,.dat-bar-fill,.cir-sw.is-closed,.stem-btn-sm[aria-pressed=true],[data-read-aloud-btn][aria-pressed=true]{forced-color-adjust:none;border:2px solid Highlight;background:Highlight;color:HighlightText}}',
+    '@media print{.stem-tools-row,.stem-actions,[data-read-aloud-btn]{display:none!important}}',
   ].join('\n');
+
+  function stemReadAloudWrapper(origRender, dirKey) {
+    return function (item, ctx) {
+      var handle = origRender(item, ctx) || {};
+      var root = ctx && ctx.root;
+      if (!root) return handle;
+      var L = (ctx && ctx.L) || {};
+      var doc = root.ownerDocument;
+      var view = doc && doc.defaultView;
+      var synth = view && view.speechSynthesis && typeof view.speechSynthesis.speak === 'function' ? view.speechSynthesis : null;
+      var speaking = false;
+      var gen = 0;
+      var obs = null;
+      var readBtn = null;
+
+      var disconnectObs = function () {
+        if (obs) { try { obs.disconnect(); } catch (_) {} obs = null; }
+      };
+
+      var setBtnState = function (active) {
+        speaking = !!active;
+        if (readBtn) {
+          readBtn.setAttribute('aria-pressed', speaking ? 'true' : 'false');
+          readBtn.textContent = speaking ? 'Stop reading' : 'Read aloud';
+        }
+        if (!speaking) disconnectObs();
+      };
+
+      var stopSpeech = function () {
+        gen++;
+        var was = speaking;
+        setBtnState(false);
+        if (synth && (was || synth.speaking || synth.pending)) {
+          try { if (typeof synth.cancel === 'function') synth.cancel(); } catch (_) {}
+        }
+      };
+
+      var readRate = function () {
+        var attr = doc && doc.documentElement ? String(doc.documentElement.getAttribute('data-audio-speed') || '').trim().toLowerCase() : '';
+        if (attr === 'slow') return 0.75;
+        var n = Number(attr);
+        if (attr && isFinite(n) && n >= 0.5 && n <= 2) return n;
+        if (typeof ctx.speedRate === 'function') {
+          var sr = Number(ctx.speedRate());
+          if (isFinite(sr) && sr > 0 && sr !== 1) return sr;
+        }
+        if (typeof ctx.slow === 'function' && ctx.slow()) return 0.75;
+        return 1.0;
+      };
+
+      var getVisiblePromptText = function () {
+        var parts = [];
+        var add = function (s) {
+          var t = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+          if (t && parts.indexOf(t) < 0) parts.push(t);
+        };
+        add(item && item.prompt);
+        add(dirKey && L[dirKey]);
+        return parts.map(function (p) { return /[.!?]$/.test(p) ? p : p + '.'; }).join(' ');
+      };
+
+      var cleanup = function () {
+        disconnectObs();
+        if (doc) {
+          doc.removeEventListener('keydown', onKeyDown);
+          doc.removeEventListener('click', onDocClick, true);
+        }
+        if (view) {
+          view.removeEventListener('pagehide', onUnload);
+          view.removeEventListener('beforeunload', onUnload);
+        }
+      };
+
+      var onKeyDown = function (ev) {
+        if (!root.isConnected) { cleanup(); return; }
+        var k = ev && ev.key;
+        if ((k === 'Escape' || k === 'Esc') && speaking) stopSpeech();
+      };
+
+      var onDocClick = function (ev) {
+        if (!root.isConnected) { cleanup(); return; }
+        if (!speaking || !ev || !ev.target) return;
+        var t = ev.target.closest ? ev.target.closest('button') : null;
+        if (!t || t === readBtn) return;
+        if (t.hasAttribute('data-stop-audio') || /stop audio/i.test(String(t.textContent || ''))) {
+          stopSpeech();
+        }
+      };
+
+      var onUnload = function () {
+        stopSpeech();
+        cleanup();
+      };
+
+      if (synth && doc) {
+        doc.addEventListener('keydown', onKeyDown);
+        doc.addEventListener('click', onDocClick, true);
+      }
+      if (synth && view) {
+        view.addEventListener('pagehide', onUnload);
+        view.addEventListener('beforeunload', onUnload);
+      }
+
+      var speakNow = function () {
+        if (!synth) return;
+        if (speaking) { stopSpeech(); return; }
+        var text = getVisiblePromptText();
+        if (!text) return;
+        if (typeof ctx.support === 'function') ctx.support('readAloud');
+        gen++;
+        var mine = gen;
+        try { if (typeof synth.cancel === 'function') synth.cancel(); } catch (_) {}
+        var Utter = typeof view.SpeechSynthesisUtterance === 'function' ? view.SpeechSynthesisUtterance : null;
+        var u = Utter ? new Utter(text) : { text: text, rate: 1.0, lang: 'en-US' };
+        u.rate = readRate();
+        var lang = (doc && doc.documentElement && doc.documentElement.lang) || 'en-US';
+        u.lang = lang;
+        try {
+          if (typeof synth.getVoices === 'function') {
+            var voices = synth.getVoices() || [];
+            var want = String(lang).toLowerCase().split('-')[0];
+            var local = voices.filter(function (v) {
+              return v && v.localService === true && String(v.lang || '').toLowerCase().replace('_', '-').indexOf(want) === 0;
+            })[0];
+            if (local) { u.voice = local; u.lang = local.lang || lang; }
+          }
+        } catch (_) {}
+        u.onend = function () { if (mine === gen) setBtnState(false); };
+        u.onerror = function () { if (mine === gen) setBtnState(false); };
+        setBtnState(true);
+        if (view && typeof view.MutationObserver === 'function' && doc && doc.body) {
+          disconnectObs();
+          obs = new view.MutationObserver(function () {
+            if (!root.isConnected) { stopSpeech(); cleanup(); }
+          });
+          try { obs.observe(doc.getElementById('app') || doc.body, { childList: true, subtree: true }); } catch (_) {}
+        }
+        try {
+          synth.speak(u);
+        } catch (_) {
+          if (mine === gen) setBtnState(false);
+        }
+      };
+
+      readBtn = ctx.el('button', {
+        type: 'button',
+        class: 'stem-btn-sm',
+        'data-read-aloud-btn': '',
+        'aria-pressed': 'false',
+        hidden: !synth,
+        on: { click: speakNow },
+        text: 'Read aloud',
+      });
+
+      var toolsRow = root.querySelector('.stem-tools-row');
+      if (toolsRow) {
+        toolsRow.insertBefore(readBtn, toolsRow.firstChild);
+      } else {
+        var newRow = ctx.el('div', { class: 'row stem-tools-row' }, [readBtn]);
+        var anchor = root.querySelector('.stem-prompt');
+        if (anchor && anchor.parentNode === root) {
+          root.insertBefore(newRow, anchor.nextSibling);
+        } else {
+          root.insertBefore(newRow, root.firstChild);
+        }
+      }
+
+      var origReveal = handle && typeof handle.reveal === 'function' ? handle.reveal : null;
+      return Object.assign({}, handle, {
+        reveal: function () {
+          stopSpeech();
+          if (origReveal) return origReveal.apply(handle, arguments);
+        },
+      });
+    };
+  }
+
+  function wrapStemRender(origRender, dirKey) {
+    var wrapped = function (item, ctx) {
+      return stemReadAloudWrapper(origRender, dirKey)(item, ctx);
+    };
+    var src = '(' + stemReadAloudWrapper.toString() + ')(' + origRender.toString() + ',' + JSON.stringify(dirKey) + ')';
+    wrapped.toString = function () { return src; };
+    return wrapped;
+  }
 
   var ADAPTERS = {
     stem_circuit: {
       title: 'Circuit Lab',
       labels: CIRCUIT_LABELS,
-      render: renderStemCircuit,
+      render: wrapStemRender(renderStemCircuit, 'stem_circuit_directions'),
       prepare: prepareStemCircuitCheck,
       score: scoreStemCircuit,
     },
     stem_data_explorer: {
       title: 'Data & Graph Explorer',
       labels: DATA_LABELS,
-      render: renderStemDataExplorer,
+      render: wrapStemRender(renderStemDataExplorer, 'stem_data_explorer_directions'),
       prepare: prepareStemDataCheck,
       score: scoreStemData,
     },
     stem_geometry_grid: {
       title: 'Geometry Lab',
       labels: GEOMETRY_LABELS,
-      render: renderStemGeometry,
+      render: wrapStemRender(renderStemGeometry, 'stem_geometry_grid_directions'),
       prepare: prepareStemGeometryCheck,
       score: scoreStemGeometry,
     },
@@ -2031,7 +2285,7 @@
       stationBilingual: opts.stationBilingual || root.AlloPacketStationBilingual,
     };
 
-    var baseHtml = loader.buildHtml(lesson, buildOpts);
+    var baseHtml = withSpeechManifest(loader.buildHtml(lesson, buildOpts));
     var cleanLearner = codeName(opts.learner || '');
     var html = cleanLearner ? withCodeName(baseHtml, cleanLearner) : baseHtml;
     var plain = fileName(lesson.title, lesson.mode, '');

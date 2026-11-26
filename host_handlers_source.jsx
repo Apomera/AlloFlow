@@ -10378,18 +10378,38 @@ const handleQuizBulkOptionChange = (updates) => {
   };
 const handleQuizImageRefine = (qIndex, target, optIndex, newDataUrl) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'quiz') return;
-    if (!newDataUrl) return;
+    const isRemoval = newDataUrl === null || newDataUrl === '';
     const newData = { ...__d.generatedContent?.data };
     const newQuestions = [...newData.questions];
     const updatedQuestion = { ...newQuestions[qIndex] };
     if (target === 'question') {
-        updatedQuestion.imageUrl = newDataUrl;
+        if (isRemoval) {
+            delete updatedQuestion.imageUrl;
+            delete updatedQuestion.imageAltText;
+        } else {
+            updatedQuestion.imageUrl = newDataUrl;
+        }
     } else if (target === 'option' && typeof optIndex === 'number') {
         const newUrls = Array.isArray(updatedQuestion.optionImageUrls)
             ? [...updatedQuestion.optionImageUrls]
             : new Array(updatedQuestion.options ? updatedQuestion.options.length : 4).fill(null);
-        newUrls[optIndex] = newDataUrl;
-        updatedQuestion.optionImageUrls = newUrls;
+        if (isRemoval) {
+            newUrls[optIndex] = null;
+            if (newUrls.every(u => !u)) {
+                delete updatedQuestion.optionImageUrls;
+                delete updatedQuestion.optionImageAltTexts;
+            } else {
+                updatedQuestion.optionImageUrls = newUrls;
+                if (Array.isArray(updatedQuestion.optionImageAltTexts)) {
+                    const newAlts = [...updatedQuestion.optionImageAltTexts];
+                    newAlts[optIndex] = '';
+                    updatedQuestion.optionImageAltTexts = newAlts;
+                }
+            }
+        } else {
+            newUrls[optIndex] = newDataUrl;
+            updatedQuestion.optionImageUrls = newUrls;
+        }
     } else {
         return;
     }
@@ -12371,17 +12391,42 @@ const handleCopyFullPackDiagnostics = async () => {
       return false;
     }
   };
-const handleLockTimelineMode = () => {
+const handleLockTimelineMode = (nextMode) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
     const data = __d.generatedContent.data;
-    if (Array.isArray(data) || !data?.mode) return;
-    if (data.autoDetected === false) return;
-    const updated = { ...__d.generatedContent, data: { ...data, autoDetected: false } };
+    if (Array.isArray(data)) return;
+    if (typeof nextMode === 'string' && nextMode) {
+        if (nextMode === 'auto') {
+            const updated = { ...__d.generatedContent, data: { ...data, autoDetected: true } };
+            __d.setGeneratedContent(updated);
+            __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updated : item));
+            __d.setTimelineMode('auto');
+            __d.addToast(__d.t('timeline.mode_auto_unlocked') || 'Sequence type set to Auto-detect.', 'info');
+            return;
+        }
+        const defs = __d.TIMELINE_MODE_DEFINITIONS || {};
+        const prevDef = data?.mode ? defs[data.mode] : null;
+        const nextDef = defs[nextMode] || null;
+        const nextData = { ...data, mode: nextMode, autoDetected: false };
+        if (nextDef && (!nextData.progressionLabel || (prevDef && nextData.progressionLabel === prevDef.label))) {
+            nextData.progressionLabel = nextDef.label;
+        }
+        const updated = { ...__d.generatedContent, data: nextData };
+        __d.setGeneratedContent(updated);
+        __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updated : item));
+        __d.setTimelineMode(nextMode);
+        const lbl = nextDef?.label || nextMode;
+        __d.addToast(__d.t('timeline.mode_updated', { mode: lbl }) || `Sequence type: ${lbl}`, 'success');
+        return;
+    }
+    if (!data?.mode) return;
+    const unlocking = data.autoDetected === false;
+    const updated = { ...__d.generatedContent, data: { ...data, autoDetected: unlocking } };
     __d.setGeneratedContent(updated);
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updated : item));
-    __d.setTimelineMode(data.mode);
+    __d.setTimelineMode(unlocking ? 'auto' : data.mode);
     const lbl = __d.TIMELINE_MODE_DEFINITIONS[data.mode]?.label || data.mode;
-    __d.addToast(__d.t('timeline.mode_locked', { mode: lbl }) || `Mode locked: ${lbl}`, 'success');
+    __d.addToast(unlocking ? (__d.t('timeline.mode_auto_unlocked') || 'Sequence type unlocked (Auto-detect).') : (__d.t('timeline.mode_locked', { mode: lbl }) || `Mode set: ${lbl}`), unlocking ? 'info' : 'success');
   };
 const handleDeleteTimelineStep = (index) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
@@ -12439,13 +12484,25 @@ const handleGlossaryChange = (index, field, value, lang = null) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
     const newData = [...__d.generatedContent?.data];
     const updatedItem = { ...newData[index] };
-    if (lang) {
+    if (field && typeof field === 'object' && !Array.isArray(field) && !lang) {
+        Object.keys(field).forEach(k => {
+            if (k === '__proto__' || k === 'prototype' || k === 'constructor') return;
+            if (field[k] === undefined) delete updatedItem[k];
+            else updatedItem[k] = field[k];
+        });
+    } else if (field === 'etymologyByLang' && lang) {
+        updatedItem.etymologyByLang = {
+            ...(updatedItem.etymologyByLang && typeof updatedItem.etymologyByLang === 'object' && !Array.isArray(updatedItem.etymologyByLang) ? updatedItem.etymologyByLang : {}),
+            [lang]: value
+        };
+    } else if (lang) {
         updatedItem.translations = {
             ...updatedItem.translations,
             [lang]: value
         };
     } else {
-        updatedItem[field] = value;
+        if (value === undefined) delete updatedItem[field];
+        else updatedItem[field] = value;
         if (field === 'etymology' && updatedItem.etymologyByLang && typeof updatedItem.etymologyByLang === 'object' && !Array.isArray(updatedItem.etymologyByLang)) {
             const defLang = String(updatedItem.definitionLanguage || updatedItem.baseLanguage || updatedItem.termLanguage || __d.generatedContent?.baseLanguage || __d.generatedContent?.config?.baseLanguage || 'English').trim() || 'English';
             const normLang = defLang.toLowerCase();

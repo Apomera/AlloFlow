@@ -98,25 +98,26 @@ describe('Interview candidate failure recovery', () => {
     expect(h.toasts[0].message).not.toContain('previous interview candidates');
   });
 
-  it.each([null, undefined, { groundingChunks: [] }, { webSearchQueries: ['Ada notes'] }, { groundingChunks: [{ web: { uri: 'javascript:unsafe' } }] }])('refuses an explicit current search envelope with no source URL (%j), even with earlier analysis sources', async groundingMetadata => {
+  it.each([null, undefined, { groundingChunks: [] }, { webSearchQueries: ['Ada notes'] }, { groundingChunks: [{ web: { uri: 'javascript:unsafe' } }] }])('publishes open candidates when a search envelope has no source URL (%j), without borrowing earlier analysis sources', async groundingMetadata => {
     const h = harness(vi.fn().mockResolvedValue({ text: JSON.stringify(candidates), groundingMetadata }), { analysisSources: true });
     await h.api.handleGeneratePersonas();
-    expect(h.generated).toBe(h.previous);
-    expect(h.history).toHaveLength(2);
-    expect(h.toasts[0].message).toContain('no attributable sources');
+    expect(h.generated.data[0].name).toBe('Ada Lovelace');
+    expect(h.generated.config.personaSource.groundingMetadata || null).toBeNull();
+    expect(h.toasts.at(-1).level).toBe('success');
   });
 
-  it('allows retry after no attribution, then publishes valid sourced output with its lesson binding', async () => {
-    const callGemini = vi.fn().mockRejectedValueOnce(Object.assign(new Error('Canvas web search returned no attributable sources.'), { code: 'allo/search-unavailable' })).mockResolvedValueOnce(sourcedResult());
+  it('automatically falls back to open non-search generation when search returns no attributable sources', async () => {
+    const callGemini = vi.fn()
+      .mockRejectedValueOnce(Object.assign(new Error('Canvas web search returned no attributable sources.'), { code: 'allo/search-unavailable' }))
+      .mockResolvedValueOnce(JSON.stringify(candidates));
     const h = harness(callGemini);
     await h.api.handleGeneratePersonas();
     expect(h.pending).toBe(false);
-    await h.api.handleGeneratePersonas();
     expect(callGemini).toHaveBeenCalledTimes(2);
+    expect(callGemini.mock.calls[0][2]).toBe(true);
+    expect(callGemini.mock.calls[1][2]).toBe(false);
     expect(callGemini.mock.calls[1][0]).toContain('Ada wrote notes about the analytical engine');
-    expect(callGemini.mock.calls[1][2]).toBe(true);
     expect(h.generated.data[0].name).toBe('Ada Lovelace');
-    expect(h.generated.config.personaSource.groundingMetadata).toEqual(sourceUrls);
     expect(h.generated.config.personaSource.analysisId).toBe('analysis');
     expect(h.generated.config.regeneratedFromId).toBe('prior-interview');
     expect(h.history).toContain(h.previous);
@@ -127,11 +128,12 @@ describe('Interview candidate failure recovery', () => {
   it.each([
     ['data', result => ({ data: result })],
     ['content/data', result => ({ content: { data: result } })],
-  ])('refuses explicit empty grounding in a supported %s wrapper without borrowing earlier analysis sources', async (_, wrap) => {
+  ])('publishes open candidates when %s wrapper has empty grounding without borrowing earlier analysis sources', async (_, wrap) => {
     const h = harness(vi.fn().mockResolvedValue(wrap({ text: JSON.stringify(candidates), groundingMetadata: null })), { analysisSources: true });
     await h.api.handleGeneratePersonas();
-    expect(h.generated).toBe(h.previous);
-    expect(h.toasts[0].message).toContain('no attributable sources');
+    expect(h.generated.data[0].name).toBe('Ada Lovelace');
+    expect(h.generated.config.personaSource.groundingMetadata || null).toBeNull();
+    expect(h.toasts.at(-1).level).toBe('success');
   });
 
   it.each([

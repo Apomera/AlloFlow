@@ -59,6 +59,18 @@ describe('Adventure standard and immersive toolbar accessibility', () => {
     expect(source).toContain('src={item.image} alt=""');
   });
 
+  it('provides collapsible standard header controls and left-panel collapse wiring', () => {
+    expect(source).toContain('data-adventure-header-toggle');
+    expect(source).toContain('aria-expanded={!headerCollapsed}');
+    expect(source).toContain('aria-controls="adventure-header-controls"');
+    expect(source).toContain('id="adventure-header-controls"');
+    expect(source).toContain('data-adventure-toggle-sidebar');
+    expect(source).toContain('aria-pressed={isSidebarCollapsed}');
+    const hostSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+    expect(hostSource).toContain('enableFactionResources, isZenMode, isFullscreen, showNewGameSetup,');
+    expect(hostSource).toContain('handleToggleIsFullscreen: () => { setIsOutputHeaderCollapsed(!isFullscreen); handleToggleIsFullscreen(); }');
+  });
+
   it('keeps the generated deployment module synchronized', () => {
     const rootModule = fs.readFileSync('view_adventure_module.js', 'utf8');
     expect(fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(rootModule);

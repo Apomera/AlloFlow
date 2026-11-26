@@ -279,7 +279,7 @@ describe('Look up a word online (packets-vocab-lookup.html)', () => {
 // The maker, step 3
 // ---------------------------------------------------------------------------
 const PAGE_SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_zip.js', 'packets_handoff.js', 'packets_my_words.js', 'packets_vocab_bank_en.js',
-  'word_sounds_symbols_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-print-cards.js', 'packets_word_starters.js', 'packets-vocab.js'];
+  'word_sounds_symbols_en.js', 'reading_symbols_ext_en.js', 'word_picture_semantic_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-print-cards.js', 'packets_word_starters.js', 'packets-vocab.js'];
 async function maker() {
   const dom = new JSDOM(read('packets-vocab.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://site.test/packets-vocab.html' });
   const w = dom.window, d = w.document;
@@ -299,7 +299,8 @@ describe('the maker page', () => {
   it('loads the picture list, the picture credits and its own loader for recordings, and its rule allows pictures as data only', () => {
     const doc = new JSDOM(read('packets-vocab.html')).window.document;
     expect([...doc.querySelectorAll('script')].map((s) => s.getAttribute('src'))).toEqual(PAGE_SCRIPTS);
-    expect(doc.querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("img-src 'self' data:; connect-src 'self';");
+    expect(doc.querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("img-src 'self' data:;");
+    expect(doc.querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("connect-src 'self';");
     expect(doc.getElementById('f-voices')).toBeTruthy();
   });
 

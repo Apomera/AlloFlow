@@ -103,6 +103,10 @@
     // 2026-11-17: the missed questions, once more at the end (lesson.repeatMissed).
     again_of: 'Once more: {n} of {total}',
     done_again: 'Went over once more: {n}.',
+    retry_missed_one: 'Practice the 1 you missed',
+    retry_missed_many: 'Practice the {n} you missed',
+    retry_missed_banner: 'Bonus practice — your saved score stays unchanged',
+    halfway_banner: 'Halfway there! You finished {done} of {total}.',
     // 2026-11-13: a sound whose label is not its letters, as shown with letters on (ctx.sound); others print /a/.
     sound_name_oo_short: 'short oo (book)',
     sound_name_dh: 'th (this)',
@@ -208,6 +212,16 @@
     tools_speed_3: 'Faster',
     tools_speed_4: 'Fastest',
     tools_speed_hint: 'Changes how fast recorded words and read-aloud play.',
+    tools_audio_speed: 'Audio speed',
+    tools_audio_speed_1: 'Slower (0.75x)',
+    tools_shortcuts: 'Keyboard shortcuts',
+    tools_shortcuts_keys_num: 'Choose an option',
+    tools_shortcuts_keys_r: 'Replay audio',
+    tools_shortcuts_keys_enter: 'Check or continue',
+    tools_shortcuts_keys_back: 'Undo or remove',
+    tools_shortcuts_keys_esc: 'Stop audio or close',
+    tools_shortcuts_keys_arrows_key: 'Arrow keys',
+    tools_shortcuts_keys_arrows: 'Move between options or lanes',
     tools_bold: 'Bold start',
     tools_bold_hint: 'Bolds the start of each word to help your eyes follow the text.',
     tools_motion: 'Motion',
@@ -1083,7 +1097,7 @@
         item.choices.forEach(function (choice, i) {
           var right = norm(choice.text) === norm(item.target);
           var src = ctx.image(choice.image);
-          var name = ctx.fmt(ctx.L.decoding_picture_of, { word: choice.text });
+          var name = 'Picture ' + (i + 1);
           // The picture's number, the key 1-9 that chooses it (2026-11-13).
           var number = i < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:26px;border-radius:14px;border:1px solid var(--accent-ink);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(i + 1) }) : null;
           var pick = ctx.el('button', { type: 'button', 'aria-label': name, style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
@@ -1096,7 +1110,7 @@
               if (outcome !== 'correct') { box.classList.add('tried'); pick.setAttribute('aria-disabled', 'true'); }
             } } }, [number, ctx.el('img', { class: 'picture', src: src || '', alt: '', style: 'max-width:min(100%,160px);height:auto;object-fit:contain' })]);
           var box = ctx.el('li', { class: 'choice' }, [pick]);
-          cards.push({ box: box, pick: pick, right: right });
+          cards.push({ box: box, pick: pick, right: right, text: choice.text });
           list.appendChild(box);
         });
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.decoding_prompt }));
@@ -1112,9 +1126,12 @@
           reveal: function () {
             cards.forEach(function (c) {
               c.pick.setAttribute('aria-disabled', 'true');
-              if (c.right && !c.box.classList.contains('right')) {
-                c.box.classList.add('right');
-                c.pick.setAttribute('aria-label', c.pick.getAttribute('aria-label') + ' ' + ctx.L.decoding_answer_mark);
+              var revealed = ctx.fmt(ctx.L.decoding_picture_of, { word: c.text });
+              if (c.right) {
+                if (!c.box.classList.contains('right')) c.box.classList.add('right');
+                c.pick.setAttribute('aria-label', revealed + ' ' + ctx.L.decoding_answer_mark);
+              } else {
+                c.pick.setAttribute('aria-label', revealed);
               }
             });
           },
@@ -2059,7 +2076,10 @@
         ctx.root.appendChild(ctx.el('p', { text: ctx.L.manipulation_prompt }));
         // The app prints the task card (type + instruction) for every learner.
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: item.type === 'deletion' ? ctx.L.manipulation_type_deletion : ctx.L.manipulation_type_substitution }));
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', text: item.instructionText }));
+        var cueLine = !ctx.showLetters ? ctx.el('p', { class: 'muted', 'data-manipulation-audio-cue': '', text: 'Listen to the instruction, then choose the new word.' }) : null;
+        var instLine = ctx.el('p', { class: 'letters', lang: 'en', hidden: !ctx.showLetters, text: item.instructionText });
+        if (cueLine) ctx.root.appendChild(cueLine);
+        ctx.root.appendChild(instLine);
         // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. The opening already plays them.
         var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, auto: false,
           list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
@@ -2093,6 +2113,8 @@
           replay: function () { run(instructionSteps(0)); },
           reveal: function () {
             halt();
+            if (cueLine) cueLine.hidden = true;
+            instLine.hidden = false;
             cards.forEach(function (c) {
               c.choose.setAttribute('aria-disabled', 'true');
               if (c.right && !c.box.classList.contains('right')) {
@@ -2147,6 +2169,9 @@
         mapping_dropped: '{spelling} put back.',
         mapping_placed: '{spelling} is in slot {n}.',
         mapping_removed: '{spelling} taken out of slot {n}.',
+        mapping_put_back: '↩ Put back',
+        mapping_put_back_label: 'Put back in spelling pool',
+        mapping_selected: '{spelling} selected. Choose another slot to move it, or tap Put back.',
         mapping_cleared: 'All the slots are empty again.',
         mapping_clear: 'Empty the slots',
         mapping_auto: 'Your answer is checked when every slot is full.',
@@ -2226,7 +2251,7 @@
           target: graphemes.join(' '), graphemes: graphemes,
           chips: order.map(function (id) { var chip = spans[id] > 1 ? { text: graphemes[id], audio: clips[id][0], audios: clips[id], span: spans[id] } : { text: graphemes[id], audio: clips[id] }; if (says[id]) chip.says = says[id]; return chip; }),
           wordAudio: wordAudio, promptAudio: prompt,
-          introAudio: [prompt], answerAudio: [wordAudio],
+          introAudio: [prompt, wordAudio], answerAudio: [wordAudio],
         };
         if (spanning) result.spans = spans;
         return { item: result };
@@ -2243,10 +2268,16 @@
         var slots = [];
         for (var s = 0; s < n; s++) slots.push(null);
         var picked = null;
+        var pickedFrom = -1;
         var errors = [];
+        var defaultOldHow = 'Tap a spelling to pick it up, then tap a slot to put it there. Tap a filled slot to take it out.';
+        var howText = (!L.mapping_how || L.mapping_how === defaultOldHow)
+          ? 'Tap a spelling to pick it up, then tap a slot to put it there. Tap a filled slot to hear and move it, or tap Put back to return it.'
+          : L.mapping_how;
         var locked = function () { return ctx.isDone(); };
         var text = function (ci) { return item.chips[ci].text; };
         var covered = function (si) { return si > 0 && slots[si] != null && slots[si - 1] === slots[si]; };
+        var byKey = function (e) { return !e || e.detail === 0; };
         // The surprising-sound notes ("s says /z/ here.") appear the first time a chip is played and stay for this word.
         // Never in a check (ctx.check): there the note would give away what the check measures. In practice a
         // note shown while the child works counts as help (support 'spellingNotes'); the ones shown with the answer do not.
@@ -2258,7 +2289,7 @@
           notesEl.appendChild(ctx.el('p', { class: 'letters', 'data-mapping-says': chip.text, text: ctx.fmt(L.mapping_says, { spelling: chip.text, sound: chip.says }) }));
           if (help) ctx.support('spellingNotes');
         };
-        var hear = function (ci) { var chip = item.chips[ci]; if (chip.audios) ctx.playAll(chip.audios); else ctx.play(chip.audio); note(ci, true); };
+        var hear = function (ci) { var chip = item.chips[ci]; if (!chip) return; if (chip.audios) ctx.playAll(chip.audios); else if (chip.audio) ctx.play(chip.audio); note(ci, true); };
         var takeOut = function (ci) { for (var i = 0; i < n; i++) if (slots[i] === ci) slots[i] = null; };
 
         var drag = null, dragEndedAt = 0;
@@ -2284,7 +2315,8 @@
             doc.body.appendChild(g);
             drag.ghost = g;
             drag.w = r.width; drag.h = r.height;
-            if (drag.from === 'tray') { picked = drag.ci; draw(); }
+            if (drag.from === 'tray') { picked = drag.ci; pickedFrom = -1; draw(); }
+            else if (drag.from === 'slot') { picked = drag.ci; pickedFrom = drag.si; draw(); }
           }
           drag.ghost.style.left = (e.clientX - drag.w / 2) + 'px';
           drag.ghost.style.top = (e.clientY - drag.h / 2) + 'px';
@@ -2309,7 +2341,7 @@
               placeChip(d.ci, to, null);
             } else if (to !== d.si) {
               var span = spanOf(d.ci);
-              if (to + span > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(d.ci) })); return; }
+              if (to + span > n) { picked = null; pickedFrom = -1; draw(); ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(d.ci) })); return; }
               var swapSingle = span === 1 && slots[to] != null && spanOf(slots[to]) === 1 ? slots[to] : null;
               takeOut(d.ci);
               if (swapSingle != null) {
@@ -2319,25 +2351,27 @@
                 for (var k = 0; k < span; k++) if (slots[to + k] != null) takeOut(slots[to + k]);
                 for (var j = 0; j < span; j++) slots[to + j] = d.ci;
               }
-              picked = null; errors = [];
+              picked = null; pickedFrom = -1; errors = [];
               draw();
               afterPlace(d.ci, to, null);
+            } else {
+              picked = null; pickedFrom = -1; draw();
             }
           } else if (trayNode && d.from === 'slot') {
             var first = slots.indexOf(d.ci);
             takeOut(d.ci);
-            errors = [];
+            picked = null; pickedFrom = -1; errors = [];
             draw();
             ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(d.ci), n: first + 1 }));
-          } else if (d.from === 'tray') {
-            picked = null; draw();
+          } else {
+            picked = null; pickedFrom = -1; draw();
           }
         };
 
         var chipSlot = function (ci) { return ci % 6; };
         var chipBg = function (ci) { return 'var(--c' + chipSlot(ci) + 'b,var(--soft))'; };
         var chipBd = function (ci) { return 'var(--c' + chipSlot(ci) + ',var(--accent))'; };
-        var tray = ctx.el('ul', { class: 'row', 'data-map-tray': '', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:12px' });
+        var tray = ctx.el('ul', { class: 'row', 'data-map-tray': '', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:6px 0;margin:16px 0;gap:12px' });
         var chipEls = item.chips.map(function (chip, ci) {
           var two = spanOf(ci) > 1;
           var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-map-tile': String(ci), 'data-map-c': String(chipSlot(ci)),
@@ -2349,6 +2383,19 @@
           tray.appendChild(li);
           return { li: li, pick: pick };
         });
+        var putBackBtn = ctx.el('button', { type: 'button', 'data-map-put-back': '', 'aria-label': L.mapping_put_back_label || 'Put back in spelling pool',
+          style: 'min-width:var(--map-sz,72px);min-height:var(--map-h,56px);padding:0 16px;border-radius:16px;font-size:1.05rem;font-weight:800;border:3px dashed var(--accent);background:var(--soft);color:var(--accent);box-shadow:0 0 0 3px var(--accent)',
+          on: { click: function (e) {
+            if (locked() || picked == null || pickedFrom < 0) return;
+            var out = picked, first = slots.indexOf(out);
+            takeOut(out);
+            picked = null; pickedFrom = -1; errors = [];
+            draw();
+            ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: (first >= 0 ? first : 0) + 1 }));
+            if (byKey(e) && chipEls[out] && chipEls[out].pick) { try { chipEls[out].pick.focus(); } catch (_) {} }
+          } } }, [L.mapping_put_back || '↩ Put back']);
+        var putBackLi = ctx.el('li', { 'data-map-put-back-item': '', hidden: true }, [putBackBtn]);
+        tray.appendChild(putBackLi);
         var slotList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.mapping_slots });
         var slotEls = slots.map(function (_, si) {
           var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-map-slot': String(si), style: 'min-width:var(--map-box,80px);min-height:var(--map-box,80px);border-width:3px;font-size:1.5rem;font-weight:700',
@@ -2359,7 +2406,7 @@
         });
         var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
           if (locked()) return;
-          picked = null; errors = [];
+          picked = null; pickedFrom = -1; errors = [];
           for (var i = 0; i < n; i++) slots[i] = null;
           draw(); ctx.announce(L.mapping_cleared);
           if (chipEls[0] && chipEls[0].pick) { try { chipEls[0].pick.focus(); } catch (_) {} }
@@ -2367,9 +2414,13 @@
 
         var draw = function () {
           var holding = picked != null && !locked();
+          var holdingFromSlot = holding && pickedFrom >= 0;
+          putBackLi.hidden = !holdingFromSlot;
+          tray.style.outline = holdingFromSlot ? '2px dashed var(--accent)' : '';
+          tray.style.borderRadius = holdingFromSlot ? '16px' : '';
           chipEls.forEach(function (c, ci) {
             c.li.hidden = slots.indexOf(ci) >= 0;
-            var on = picked === ci;
+            var on = picked === ci && pickedFrom < 0;
             var bg = chipBg(ci), bd = chipBd(ci);
             c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
             c.pick.style.background = on ? bd : bg;
@@ -2384,6 +2435,7 @@
             el.li.hidden = covered(si);
             var two = ci != null && spanOf(ci) > 1;
             var bad = errors.indexOf(si) >= 0 && ci != null;
+            var lifted = holdingFromSlot && ci != null && ci === picked;
             btn.textContent = '';
             if (ci == null) {
               btn.style.position = '';
@@ -2404,11 +2456,14 @@
             if (two) btn.setAttribute('data-span', String(spanOf(ci))); else btn.removeAttribute('data-span');
             if (ci != null && !bad) btn.setAttribute('data-map-c', String(chipSlot(ci))); else btn.removeAttribute('data-map-c');
             if (bad) btn.setAttribute('data-mapping-error', 'true'); else btn.removeAttribute('data-mapping-error');
+            if (ci != null) btn.setAttribute('aria-pressed', lifted ? 'true' : 'false'); else btn.removeAttribute('aria-pressed');
             btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
             btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : chipBd(ci);
-            btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
-            btn.style.color = bad ? 'var(--warn)' : ci == null ? '' : 'var(--ink)';
-            btn.style.boxShadow = ci == null && holding ? '0 0 0 3px var(--accent)' : '';
+            btn.style.background = lifted ? chipBd(ci) : bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
+            btn.style.color = lifted ? 'var(--accent-ink)' : bad ? 'var(--warn)' : ci == null ? '' : 'var(--ink)';
+            btn.style.transform = lifted ? 'translateY(-6px) scale(1.08)' : '';
+            btn.style.boxShadow = lifted ? ('0 0 0 3px var(--card), 0 0 0 7px ' + chipBd(ci))
+              : (ci == null && holding ? '0 0 0 3px var(--accent)' : (holdingFromSlot && ci != null ? '0 0 0 2px var(--accent)' : ''));
             btn.style.touchAction = ci == null ? 'manipulation' : 'none';
             var baseLabel = ci == null ? ctx.fmt(L.mapping_slot_empty, { n: si + 1 })
               : two ? ctx.fmt(L.mapping_slot_filled_two, { n: si + 1, m: si + spanOf(ci), spelling: text(ci) })
@@ -2418,11 +2473,10 @@
           });
           if (locked()) clearBtn.setAttribute('aria-disabled', 'true');
         };
-        var byKey = function (e) { return !e || e.detail === 0; };
         var onChip = function (ci, e) {
           if (locked() || slots.indexOf(ci) >= 0) return;
-          if (picked === ci) { picked = null; draw(); ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(ci) })); return; }
-          picked = ci;
+          if (picked === ci && pickedFrom < 0) { picked = null; pickedFrom = -1; draw(); ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(ci) })); return; }
+          picked = ci; pickedFrom = -1;
           draw();
           ctx.support('soundListens');
           hear(ci);
@@ -2459,8 +2513,8 @@
         var placeChip = function (ci, si, e) {
           var span = spanOf(ci);
           // A spanning chip cannot start in the last slot.
-          if (si + span > n) { picked = null; draw(); ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(ci) })); return; }
-          picked = null; errors = [];
+          if (si + span > n) { picked = null; pickedFrom = -1; draw(); ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(ci) })); return; }
+          picked = null; pickedFrom = -1; errors = [];
           for (var k = 0; k < span; k++) if (slots[si + k] != null) takeOut(slots[si + k]); // chips already there go back to the tray
           for (var j = 0; j < span; j++) slots[si + j] = ci;
           draw();
@@ -2469,13 +2523,40 @@
         var onSlot = function (si, e) {
           if (locked()) return;
           if (picked == null) {
-            var out = slots[si];
-            if (out == null) { ctx.announce(L.mapping_how); return; }
-            var first = slots.indexOf(out);
-            takeOut(out);
+            var inSlot = slots[si];
+            if (inSlot == null) { ctx.announce(howText); return; }
+            var first = slots.indexOf(inSlot);
+            picked = inSlot;
+            pickedFrom = first >= 0 ? first : si;
             errors = [];
             draw();
-            ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: first + 1 }));
+            var chip = item.chips[inSlot];
+            if (chip && (chip.audios || chip.audio)) hear(inSlot);
+            ctx.announce(ctx.fmt(L.mapping_selected || '{spelling} selected. Choose another slot to move it, or tap Put back.', { spelling: text(inSlot) }));
+            return;
+          }
+          if (pickedFrom >= 0) {
+            if (slots[si] === picked || si === pickedFrom) {
+              var stayed = picked, atSlot = pickedFrom;
+              picked = null; pickedFrom = -1;
+              draw();
+              ctx.announce(ctx.fmt(L.mapping_placed, { spelling: text(stayed), n: atSlot + 1 }));
+              return;
+            }
+            var moved = picked, fromSi = pickedFrom, span = spanOf(moved);
+            if (si + span > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(moved) })); return; }
+            var swapSingle = span === 1 && slots[si] != null && spanOf(slots[si]) === 1 ? slots[si] : null;
+            takeOut(moved);
+            if (swapSingle != null) {
+              slots[si] = moved;
+              slots[fromSi] = swapSingle;
+            } else {
+              for (var k = 0; k < span; k++) if (slots[si + k] != null) takeOut(slots[si + k]);
+              for (var j = 0; j < span; j++) slots[si + j] = moved;
+            }
+            picked = null; pickedFrom = -1; errors = [];
+            draw();
+            afterPlace(moved, si, e);
             return;
           }
           if (si + spanOf(picked) > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return; }
@@ -2488,20 +2569,33 @@
             var k = String(key == null ? '' : key);
             if (k === 'Escape' || k === 'Esc') {
               if (picked == null) return false;
-              var drop = picked;
-              picked = null;
+              var drop = picked, wasSlot = pickedFrom;
+              picked = null; pickedFrom = -1;
               draw();
-              ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(drop) }));
-              if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+              if (wasSlot >= 0) {
+                ctx.announce(ctx.fmt(L.mapping_placed, { spelling: text(drop), n: wasSlot + 1 }));
+                if (slotEls[wasSlot] && slotEls[wasSlot].btn) { try { slotEls[wasSlot].btn.focus(); } catch (_) {} }
+              } else {
+                ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(drop) }));
+                if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+              }
               return true;
             }
             if (k === 'Backspace') {
+              if (picked != null && pickedFrom >= 0) {
+                var selOut = picked, selFirst = slots.indexOf(selOut);
+                takeOut(selOut);
+                picked = null; pickedFrom = -1; errors = [];
+                draw();
+                ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(selOut), n: (selFirst >= 0 ? selFirst : 0) + 1 }));
+                return true;
+              }
               for (var si = n - 1; si >= 0; si--) {
                 if (slots[si] != null) {
                   var out = slots[si];
                   var first = slots.indexOf(out);
                   takeOut(out);
-                  picked = null; errors = [];
+                  picked = null; pickedFrom = -1; errors = [];
                   draw();
                   ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: first + 1 }));
                   return true;
@@ -2512,7 +2606,7 @@
             if (k === 'Enter') {
               var ae = doc && doc.activeElement;
               var onBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
-              if (onBtn || picked == null) return false;
+              if (onBtn || picked == null || pickedFrom >= 0) return false;
               var sp = spanOf(picked);
               for (var ei = 0; ei <= n - sp; ei++) {
                 var fits = true;
@@ -2526,6 +2620,7 @@
               var idx = Number(k) - 1;
               if (picked != null) {
                 if (idx < n && !covered(idx)) {
+                  if (pickedFrom >= 0) { onSlot(idx, { detail: 1 }); return true; }
                   if (idx + spanOf(picked) > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return true; }
                   placeChip(picked, idx, { detail: 1 });
                   return true;
@@ -2541,9 +2636,10 @@
           });
         }
 
+        var wordLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.mapping_word, { word: item.word }) });
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.mapping_question }));
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.fmt(L.mapping_word, { word: item.word }) }));
-        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.mapping_how + ' ' + L.mapping_auto }));
+        ctx.root.appendChild(wordLine);
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: howText + ' ' + L.mapping_auto }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: L.hear_question }),
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
@@ -2559,7 +2655,7 @@
         draw();
         return {
           reveal: function (correct) {
-            picked = null; errors = [];
+            picked = null; pickedFrom = -1; errors = [];
             if (!correct) {
               var used = [];
               for (var i = 0; i < n; i++) slots[i] = null;
@@ -2571,10 +2667,10 @@
                 box += want;
               }
             }
+            wordLine.hidden = false;
             draw();
-            // The answer shown: every surprising spelling of the word is explained too.
             item.chips.forEach(function (chip, ci) { note(ci, false); });
-            slotEls.forEach(function (el) { el.btn.removeAttribute('data-map-c'); el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; el.btn.style.color = ''; });
+            slotEls.forEach(function (el) { el.btn.removeAttribute('data-map-c'); el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; el.btn.style.color = ''; el.btn.style.boxShadow = ''; });
           },
         };
       },
@@ -2670,8 +2766,8 @@
           }).filter(function (l) { return String(l).trim(); }).join(', ') });
         };
         var shownWord = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(ctx.L.missing_letter_word_is, { word: wordText }) });
-        var showButton = ctx.el('button', { type: 'button', 'aria-pressed': 'false', on: { click: function () {
-          if (ctx.isDone()) return;
+        var showButton = ctx.el('button', { type: 'button', hidden: true, 'aria-disabled': 'true', 'aria-pressed': 'false', on: { click: function () {
+          if (ctx.isDone() || ctx.check || ctx.attempts() <= 0) return;
           var on = shownWord.hidden;
           shownWord.hidden = !on;
           showButton.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -2679,6 +2775,12 @@
           // The app records this support once per item.
           if (on && !shownOnce) { shownOnce = true; ctx.support('wordShown'); }
         } }, text: ctx.L.missing_letter_show_word });
+        var syncShowButton = function () {
+          var unlocked = !ctx.check && typeof ctx.attempts === 'function' && ctx.attempts() > 0;
+          showButton.hidden = !unlocked;
+          if (ctx.isDone() || !unlocked) showButton.setAttribute('aria-disabled', 'true');
+          else showButton.removeAttribute('aria-disabled');
+        };
         var doc = ctx.root.ownerDocument;
         var cards = [];
         var check = ctx.el('button', { type: 'button', class: 'primary', 'aria-disabled': 'true', on: { click: function () {
@@ -2690,6 +2792,7 @@
           });
           // A retry marks the wrong letter as tried (matching all other choice adapters) and clears the slot.
           if (outcome === 'retry') {
+            syncShowButton();
             var missed = answer.trim().toLowerCase();
             cards.forEach(function (c) {
               if (c.letter === missed) {
@@ -2755,6 +2858,7 @@
           });
         }
         updateWord('');
+        syncShowButton();
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.missing_letter_question }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
@@ -3089,10 +3193,10 @@
           storyBox.appendChild(node);
         });
         var after = ctx.el('div', { class: 'row' });
+        var picEl = picture ? ctx.el('img', { class: 'picture', src: picture, alt: 'Picture clue' }) : null;
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_passage_prompt }));
-        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_passage_picture_practice : ctx.L.read_passage_matching_practice }));
-        if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_passage_picture_clue, { word: item.target }) }));
-        else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_passage_picture_practice : 'Choose the word that fits.' }));
+        if (picEl) ctx.root.appendChild(picEl);
         ctx.root.appendChild(storyBox);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_passage_hear_instructions }),
@@ -3156,6 +3260,7 @@
           // After a right answer, once the praise is over, the story is read back line by line (the app's payoff).
           payoff: function () { if (item.readBack && item.readBack.length) readBack(true); },
           reveal: function () {
+            if (picEl) picEl.setAttribute('alt', ctx.fmt(ctx.L.read_passage_picture_clue, { word: item.target }));
             // Every blank fills with the word as written in its sentence.
             blanks.forEach(function (b) {
               b.node.textContent = b.answer;
@@ -3290,10 +3395,10 @@
         var blank = ctx.el('span', { style: 'display:inline-block;min-width:4.5em;border-bottom:3px dashed var(--muted);text-align:center' }, [
           ctx.el('span', { 'aria-hidden': 'true', text: '\u00a0' }), ctx.el('span', { class: 'sr', text: ctx.L.read_sentence_blank })]);
         var after = ctx.el('div', { class: 'row' });
+        var picEl = picture ? ctx.el('img', { class: 'picture', src: picture, alt: 'Picture clue' }) : null;
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_sentence_prompt }));
-        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : ctx.L.read_sentence_matching_practice }));
-        if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }) }));
-        else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : 'Choose the word that fits.' }));
+        if (picEl) ctx.root.appendChild(picEl);
         // data-read: running text, where the shell's reading focus can go.
         // dir: an English sentence keeps its full stop on the right in a right-to-left page.
         ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:clamp(1.25rem,5vw,1.8rem);white-space:pre-wrap;overflow-wrap:anywhere', 'data-read': '' }, [item.before, blank, item.after]));
@@ -3321,6 +3426,7 @@
           // button below stays to hear it again.
           payoff: function () { if (item.sentenceAudio) ctx.play(item.sentenceAudio); },
           reveal: function () {
+            if (picEl) picEl.setAttribute('alt', ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }));
             // The blank fills with the word as written in the sentence.
             blank.textContent = item.answer;
             blank.style.borderBottomStyle = 'solid';
@@ -3645,8 +3751,13 @@
         var boxes = [];
         for (var b = 0; b < n; b++) boxes.push(null);
         var picked = null;
+        var pickedFrom = -1;
         var errors = [];
         var token = 0;
+        var defaultOldHow = 'Tap a sound to pick it up, then tap a box to put it there. Tap a filled box to take its sound out.';
+        var howText = (!L.segmentation_how || L.segmentation_how === defaultOldHow)
+          ? 'Tap a sound to pick it up, then tap a box to put it there. Tap a filled box to hear and move it, or tap Put back to return it.'
+          : L.segmentation_how;
         // With letters on, a sound like oo_short shows its friendly name (ctx.sound).
         var said = function (label) { return typeof ctx.sound === 'function' ? ctx.sound(label) : '/' + label + '/'; };
         var name = function (ci) { return ctx.showLetters ? said(item.chips[ci].label) : ctx.fmt(L.sound_n, { n: ci + 1 }); };
@@ -3699,6 +3810,19 @@
           tray.appendChild(li);
           return { li: li, pick: pick };
         });
+        var putBackBtn = ctx.el('button', { type: 'button', 'data-seg-put-back': '', 'aria-label': 'Put back in sound pool',
+          style: 'min-width:var(--seg-sz,64px);min-height:var(--seg-sz,64px);padding:0 16px;border-radius:16px;font-size:1.05rem;font-weight:800;border:3px dashed var(--accent);background:var(--soft);color:var(--accent);box-shadow:0 0 0 3px var(--accent)',
+          on: { click: function (e) {
+            if (locked() || picked == null || pickedFrom < 0) return;
+            halt();
+            var out = picked, fromBi = pickedFrom;
+            boxes[fromBi] = null; picked = null; pickedFrom = -1; errors = [];
+            draw();
+            tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: fromBi + 1 }));
+            if (byKey(e) && chipEls[out] && chipEls[out].pick) { try { chipEls[out].pick.focus(); } catch (_) {} }
+          } } }, ['↩ Put back']);
+        var putBackLi = ctx.el('li', { 'data-seg-put-back-item': '', hidden: true }, [putBackBtn]);
+        tray.appendChild(putBackLi);
         var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.segmentation_boxes, style: 'justify-content:center;margin:12px 0 0' });
         var boxEls = boxes.map(function (_, bi) {
           var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-seg-box': String(bi), style: 'min-width:var(--seg-box,76px);min-height:var(--seg-box,76px);border-width:3px;border-radius:16px;font-size:1.25rem;font-weight:800',
@@ -3731,7 +3855,8 @@
             doc.body.appendChild(g);
             drag.ghost = g;
             drag.w = r.width; drag.h = r.height;
-            if (drag.from === 'tray') { picked = drag.ci; draw(); }
+            if (drag.from === 'tray') { picked = drag.ci; pickedFrom = -1; draw(); }
+            else if (drag.from === 'box') { picked = drag.ci; pickedFrom = drag.bi; draw(); }
           }
           drag.ghost.style.left = (e.clientX - drag.w / 2) + 'px';
           drag.ghost.style.top = (e.clientY - drag.h / 2) + 'px';
@@ -3753,15 +3878,16 @@
           if (box && ctx.root.contains(box)) {
             var to = Number(box.getAttribute('data-seg-box'));
             if (d.from === 'tray') placeAt(d.ci, to);
-            else if (to !== d.bi) { var other = boxes[to]; boxes[to] = d.ci; boxes[d.bi] = other; errors = []; draw(); ctx.play(item.chips[d.ci].audio); tell(ctx.fmt(L.segmentation_placed, { sound: name(d.ci), n: to + 1 })); }
+            else if (to !== d.bi) { var other = boxes[to]; boxes[to] = d.ci; boxes[d.bi] = other; picked = null; pickedFrom = -1; errors = []; draw(); ctx.play(item.chips[d.ci].audio); tell(ctx.fmt(L.segmentation_placed, { sound: name(d.ci), n: to + 1 })); }
+            else { picked = null; pickedFrom = -1; draw(); }
           } else if (back && d.from === 'box') {
-            boxes[d.bi] = null; errors = []; draw(); tell(ctx.fmt(L.segmentation_removed, { sound: name(d.ci), n: d.bi + 1 }));
-          } else if (d.from === 'tray') { picked = null; draw(); }
+            boxes[d.bi] = null; picked = null; pickedFrom = -1; errors = []; draw(); tell(ctx.fmt(L.segmentation_removed, { sound: name(d.ci), n: d.bi + 1 }));
+          } else { picked = null; pickedFrom = -1; draw(); }
         };
         var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { onCheck(); } }, text: L.segmentation_check });
         var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
           if (locked()) return;
-          halt(); picked = null; errors = [];
+          halt(); picked = null; pickedFrom = -1; errors = [];
           for (var i = 0; i < n; i++) boxes[i] = null;
           draw(); tell(L.segmentation_cleared);
           if (chipEls[0] && chipEls[0].pick) { try { chipEls[0].pick.focus(); } catch (_) {} }
@@ -3783,9 +3909,13 @@
         var draw = function () {
           var full = boxes.every(function (x) { return x != null; });
           var holding = picked != null && !locked();
+          var holdingFromBox = holding && pickedFrom >= 0;
+          putBackLi.hidden = !holdingFromBox;
+          tray.style.outline = holdingFromBox ? '2px dashed var(--accent)' : '';
+          tray.style.borderRadius = holdingFromBox ? '16px' : '';
           chipEls.forEach(function (c, ci) {
             c.li.hidden = boxes.indexOf(ci) >= 0;
-            var on = picked === ci;
+            var on = picked === ci && pickedFrom < 0;
             var bg = chipBg(ci), bd = chipBd(ci);
             c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
             // Held: it lifts and flips to its own chip accent color with theme accent-ink and a ring.
@@ -3799,15 +3929,20 @@
           boxEls.forEach(function (btn, bi) {
             var ci = boxes[bi];
             var bad = errors.indexOf(bi) >= 0 && ci != null;
+            var lifted = holdingFromBox && pickedFrom === bi && ci != null;
             if (ci == null) { btn.textContent = ''; btn.appendChild(icon('drop')); } else face(btn, ci);
             if (ci != null && !bad) btn.setAttribute('data-seg-c', String(chipSlot(ci)));
             else btn.removeAttribute('data-seg-c');
+            if (ci != null) btn.setAttribute('aria-pressed', lifted ? 'true' : 'false');
+            else btn.removeAttribute('aria-pressed');
             btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
             btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : chipBd(ci);
-            btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
-            btn.style.color = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--ink)';
-            // While a tile is held, the empty boxes light up: that is where it can go.
-            btn.style.boxShadow = holding && ci == null ? '0 0 0 3px var(--accent)' : '';
+            btn.style.background = lifted ? chipBd(ci) : bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
+            btn.style.color = lifted ? 'var(--accent-ink)' : bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--ink)';
+            btn.style.transform = lifted ? 'translateY(-6px) scale(1.08)' : '';
+            // While a tile is held, empty boxes light up; while a placed box chip is lifted, it gets a focus ring and other boxes highlight as targets.
+            btn.style.boxShadow = lifted ? ('0 0 0 3px var(--card), 0 0 0 7px ' + chipBd(ci))
+              : (holding && ci == null ? '0 0 0 3px var(--accent)' : (holdingFromBox && ci != null ? '0 0 0 2px var(--accent)' : ''));
             btn.style.touchAction = ci == null ? 'manipulation' : 'none';
             btn.setAttribute('aria-label', ci == null ? ctx.fmt(L.segmentation_box_empty, { n: bi + 1 })
               : ctx.fmt(bad ? L.segmentation_box_check : L.segmentation_box_filled, { n: bi + 1, sound: name(ci) }));
@@ -3823,7 +3958,7 @@
         };
         // A tray tile into box bi (a sound already there goes back to the tiles).
         var placeAt = function (ci, bi) {
-          picked = null; errors = [];
+          picked = null; pickedFrom = -1; errors = [];
           boxes[bi] = ci;
           draw();
           ctx.play(item.chips[ci].audio);
@@ -3832,8 +3967,8 @@
         var onChip = function (ci, e) {
           if (locked() || boxes.indexOf(ci) >= 0) return;
           halt();
-          if (picked === ci) { picked = null; draw(); tell(ctx.fmt(L.segmentation_dropped, { sound: name(ci) })); return; }
-          picked = ci;
+          if (picked === ci && pickedFrom < 0) { picked = null; pickedFrom = -1; draw(); tell(ctx.fmt(L.segmentation_dropped, { sound: name(ci) })); return; }
+          picked = ci; pickedFrom = -1;
           draw();
           ctx.play(item.chips[ci].audio);
           tell(ctx.fmt(L.segmentation_picked, { sound: name(ci) }));
@@ -3846,11 +3981,31 @@
           halt();
           errors = [];
           if (picked == null) {
-            var out = boxes[bi];
-            if (out == null) { tell(L.segmentation_how); return; }
-            boxes[bi] = null;
+            var inBox = boxes[bi];
+            if (inBox == null) { tell(howText); return; }
+            picked = inBox;
+            pickedFrom = bi;
             draw();
-            tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: bi + 1 }));
+            ctx.play(item.chips[inBox].audio);
+            tell(name(inBox) + ' selected. Choose another box to move it, or tap Put back.');
+            return;
+          }
+          if (pickedFrom >= 0) {
+            if (bi === pickedFrom) {
+              var stayed = picked;
+              picked = null; pickedFrom = -1;
+              draw();
+              tell(ctx.fmt(L.segmentation_placed, { sound: name(stayed), n: bi + 1 }));
+              return;
+            }
+            var moved = picked, fromBi = pickedFrom, other = boxes[bi];
+            boxes[bi] = moved;
+            boxes[fromBi] = other;
+            picked = null; pickedFrom = -1;
+            draw();
+            ctx.play(item.chips[moved].audio);
+            tell(ctx.fmt(L.segmentation_placed, { sound: name(moved), n: bi + 1 }));
+            if (byKey(e)) nextFocus().focus();
             return;
           }
           placeAt(picked, bi);
@@ -3880,18 +4035,30 @@
             var k = String(key == null ? '' : key);
             if (k === 'Escape' || k === 'Esc') {
               if (picked == null) return false;
-              var drop = picked;
-              picked = null;
+              var drop = picked, wasBox = pickedFrom;
+              picked = null; pickedFrom = -1;
               draw();
-              tell(ctx.fmt(L.segmentation_dropped, { sound: name(drop) }));
-              if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+              if (wasBox >= 0) {
+                tell(ctx.fmt(L.segmentation_placed, { sound: name(drop), n: wasBox + 1 }));
+                if (boxEls[wasBox]) { try { boxEls[wasBox].focus(); } catch (_) {} }
+              } else {
+                tell(ctx.fmt(L.segmentation_dropped, { sound: name(drop) }));
+                if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+              }
               return true;
             }
             if (k === 'Backspace') {
+              if (picked != null && pickedFrom >= 0) {
+                var selOut = boxes[pickedFrom], selBi = pickedFrom;
+                halt(); boxes[selBi] = null; picked = null; pickedFrom = -1; errors = [];
+                draw();
+                tell(ctx.fmt(L.segmentation_removed, { sound: name(selOut), n: selBi + 1 }));
+                return true;
+              }
               for (var bi = n - 1; bi >= 0; bi--) {
                 if (boxes[bi] != null) {
                   var out = boxes[bi];
-                  halt(); boxes[bi] = null; picked = null; errors = [];
+                  halt(); boxes[bi] = null; picked = null; pickedFrom = -1; errors = [];
                   draw();
                   tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: bi + 1 }));
                   return true;
@@ -3909,7 +4076,11 @@
             if (/^[1-9]$/.test(k)) {
               var idx = Number(k) - 1;
               if (picked != null) {
-                if (idx < n) { placeAt(picked, idx); return true; }
+                if (idx < n) {
+                  if (pickedFrom >= 0) onBox(idx, { detail: 1 });
+                  else placeAt(picked, idx);
+                  return true;
+                }
                 return false;
               }
               if (idx < chipEls.length && boxes.indexOf(idx) < 0) {
@@ -3922,7 +4093,7 @@
         }
 
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.segmentation_question }));
-        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.segmentation_how }));
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: howText }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: L.hear_question }),
           ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
@@ -3941,7 +4112,7 @@
         return {
           reveal: function (correct) {
             halt();
-            picked = null; errors = [];
+            picked = null; pickedFrom = -1; errors = [];
             say.textContent = '';
             if (!correct) {
               // Show the right sounds in the boxes, using the tray's own chips.
@@ -4081,7 +4252,9 @@
             b.textContent = '';
             b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-inline-end:6px', text: String(i + 1) }));
             b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:clamp(48px,14vw,72px);height:clamp(48px,14vw,72px);object-fit:contain;background:#fff;border-radius:8px;padding:4px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
-            b.setAttribute('aria-label', word ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
+            b.setAttribute('aria-label', word
+              ? (right || ctx.isDone() ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : 'Slot ' + (i + 1) + ': Picture ' + (slots[i] + 1) + '. Tap to take it out.')
+              : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
             if (!word || ctx.isDone()) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
             if (mark) b.setAttribute('data-retry-mark', mark); else b.removeAttribute('data-retry-mark');
             b.style.borderColor = right || mark === 'ok' ? 'var(--ok)' : mark === 'warn' ? 'var(--warn)' : '';
@@ -4119,7 +4292,7 @@
         item.tiles.forEach(function (tile, ti) {
           // The picture's number, the key 1-9 that chooses it.
           var number = ti < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:26px;border-radius:14px;border:1px solid var(--accent-ink);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(ti + 1) }) : null;
-          var pick = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.sentence_match_picture_of, { word: tile.text }),
+          var pick = ctx.el('button', { type: 'button', 'aria-label': 'Picture ' + (ti + 1),
             style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
             on: { click: function () {
               if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true') return;
@@ -4130,7 +4303,7 @@
               slots[at] = ti;
               drawSlots(false);
               if (slots.indexOf(null) >= 0) {
-                say(ctx.fmt(ctx.L.sentence_match_placed || '{word} is in slot {n}.', { word: tile.text, n: at + 1 }));
+                say(ctx.fmt(ctx.L.sentence_match_placed || '{word} is in slot {n}.', { word: 'Picture ' + (ti + 1), n: at + 1 }));
               } else {
                 grade();
               }
@@ -4150,10 +4323,10 @@
                 return;
               }
               if (slots[i] == null) return;
-              var removed = wordIn(i);
+              var removedIdx = slots[i];
               slots[i] = null;
               drawSlots(false);
-              say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: removed, n: i + 1 }));
+              say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: 'Picture ' + (removedIdx + 1), n: i + 1 }));
             } } });
           slotButtons.push(b);
           slotRow.appendChild(ctx.el('li', {}, [b]));
@@ -4171,10 +4344,10 @@
               }
               for (var bi = slots.length - 1; bi >= 0; bi--) {
                 if (slots[bi] != null) {
-                  var out = wordIn(bi);
+                  var outIdx = slots[bi];
                   slots[bi] = null;
                   drawSlots(false);
-                  say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: out, n: bi + 1 }));
+                  say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: 'Picture ' + (outIdx + 1), n: bi + 1 }));
                   return true;
                 }
               }
@@ -4217,7 +4390,10 @@
               return null;
             });
             drawSlots(true);
-            tileCards.forEach(function (c) { if (item.sequence.indexOf(c.text) >= 0) c.box.classList.add('right'); });
+            tileCards.forEach(function (c) {
+              c.pick.setAttribute('aria-label', ctx.fmt(ctx.L.sentence_match_picture_of, { word: c.text }));
+              if (item.sequence.indexOf(c.text) >= 0) c.box.classList.add('right');
+            });
             // The app's payoff: hear the finished sentence read back.
             if (item.sentenceAudio && !after.childNodes.length) {
               after.appendChild(ctx.el('button', { type: 'button', on: { click: function () { ctx.support('sentenceReadBacks'); ctx.play(item.sentenceAudio); } }, text: ctx.L.sentence_match_hear_sentence }));
@@ -4650,6 +4826,16 @@
           countLine.hidden = !(shown && typed);
           countLine.textContent = ctx.fmt(L.spelling_bee_letters_correct, { count: right, total: total });
           moreBtn.textContent = typed.indexOf('_') >= 0 ? L.spelling_bee_hint_more : L.spelling_bee_hint_vowels;
+          var hintsUnlocked = !ctx.check && shown;
+          firstBtn.hidden = !hintsUnlocked;
+          moreBtn.hidden = !hintsUnlocked;
+          if (ctx.isDone() || !hintsUnlocked) {
+            firstBtn.setAttribute('aria-disabled', 'true');
+            moreBtn.setAttribute('aria-disabled', 'true');
+          } else {
+            firstBtn.removeAttribute('aria-disabled');
+            moreBtn.removeAttribute('aria-disabled');
+          }
         };
         var edit = function (next, clue) {
           if (ctx.isDone()) return;
@@ -4674,7 +4860,8 @@
         };
         // "Slow" plays the same recording at half speed, as playSpellingWord(0.5) does.
         var playSlow = function () { ctx.play(item.wordAudio, 0.5); };
-        var firstBtn = ctx.el('button', { type: 'button', on: { click: function () {
+        var firstBtn = ctx.el('button', { type: 'button', hidden: true, 'aria-disabled': 'true', on: { click: function () {
+          if (ctx.isDone() || ctx.check || ctx.attempts() <= 0) return;
           // The first LETTER, after any fixed slot in front of it.
           var at = 0;
           while (at < written.length - 1 && fixed(written[at])) at++;
@@ -4684,7 +4871,8 @@
           edit(next, 'spelling_first_letter');
         } }, text: L.spelling_bee_first_letter });
         // "Show Vowels", then "Show More" one letter at a time (:19846-19863).
-        var moreBtn = ctx.el('button', { type: 'button', on: { click: function () {
+        var moreBtn = ctx.el('button', { type: 'button', hidden: true, 'aria-disabled': 'true', on: { click: function () {
+          if (ctx.isDone() || ctx.check || ctx.attempts() <= 0) return;
           var current = value().toLowerCase();
           var letters = written.split('');
           var isVowel = function (ch) { return 'aeiou'.indexOf(ch.toLowerCase()) >= 0; };
@@ -5540,6 +5728,9 @@
         word_scramble_dropped: '{letter} put back.',
         word_scramble_placed: '{letter} is in box {n}.',
         word_scramble_removed: '{letter} taken out of box {n}.',
+        word_scramble_put_back: '↩ Put back',
+        word_scramble_put_back_label: 'Put back in letter pool',
+        word_scramble_selected: '{letter} selected. Choose another box to move it, or tap Put back.',
         word_scramble_cleared: 'All the boxes are empty again.',
         word_scramble_clear: 'Clear',
         word_scramble_check: 'Check',
@@ -5586,7 +5777,7 @@
         if (!prompt) missing.push('question');
         if (missing.length) return { missing: missing };
         var item = { target: word, letters: letters, wordAudio: wordAudio, promptAudio: prompt,
-          introAudio: [prompt], answerAudio: [wordAudio] };
+          introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
         // A word written with a capital (a name): how it is written.
         if (written !== word && written.length === word.length) item.shown = written;
         return { item: item };
@@ -5615,7 +5806,12 @@
           return String(letter);
         });
         var picked = null;
+        var pickedFrom = -1;
         var lastSubmitted = null;
+        var defaultOldHow = 'Tap a letter to pick it up, then tap a box to put it there. Tap a filled box to take the letter out.';
+        var howText = (!L.word_scramble_how || L.word_scramble_how === defaultOldHow)
+          ? 'Tap a letter to pick it up, then tap a box to put it there. Tap a filled box to move it, or tap Put back to return it.'
+          : L.word_scramble_how;
         var locked = function () { return ctx.isDone(); };
         var up = function (ti) { return shownOf[ti]; };
         var answerText = function () { return boxes.filter(function (x) { return x != null; }).map(function (ti) { return item.letters[ti]; }).join(''); };
@@ -5626,6 +5822,7 @@
           return target.split('').map(function (ch) { return fixed(ch) ? ch : item.letters[boxes[k++]]; }).join('');
         };
         var own = function (text) { return String(text || '').split('').filter(function (ch) { return !fixed(ch); }).join(''); };
+        var byKey = function (e) { return !e || e.detail === 0; };
 
         var drag = null, dragEndedAt = 0;
         var dragged = function () { return Date.now() - dragEndedAt < 400; };
@@ -5650,7 +5847,8 @@
             doc.body.appendChild(g);
             drag.ghost = g;
             drag.w = r.width; drag.h = r.height;
-            if (drag.from === 'tray') { picked = drag.ti; draw(); }
+            if (drag.from === 'tray') { picked = drag.ti; pickedFrom = -1; draw(); }
+            else if (drag.from === 'box') { picked = drag.ti; pickedFrom = drag.bi; draw(); }
           }
           drag.ghost.style.left = (e.clientX - drag.w / 2) + 'px';
           drag.ghost.style.top = (e.clientY - drag.h / 2) + 'px';
@@ -5672,25 +5870,27 @@
           if (boxNode && ctx.root.contains(boxNode)) {
             var to = Number(boxNode.getAttribute('data-ws-box'));
             if (d.from === 'tray') {
-              picked = null; boxes[to] = d.ti; lastSubmitted = null;
+              picked = null; pickedFrom = -1; boxes[to] = d.ti; lastSubmitted = null;
               draw();
               ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(d.ti), n: to + 1 }));
             } else if (to !== d.bi) {
               var other = boxes[to];
-              boxes[to] = d.ti; boxes[d.bi] = other; picked = null; lastSubmitted = null;
+              boxes[to] = d.ti; boxes[d.bi] = other; picked = null; pickedFrom = -1; lastSubmitted = null;
               draw();
               ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(d.ti), n: to + 1 }));
+            } else {
+              picked = null; pickedFrom = -1; draw();
             }
           } else if (trayNode && d.from === 'box') {
-            boxes[d.bi] = null; lastSubmitted = null;
+            boxes[d.bi] = null; picked = null; pickedFrom = -1; lastSubmitted = null;
             draw();
             ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(d.ti), n: d.bi + 1 }));
-          } else if (d.from === 'tray') {
-            picked = null; draw();
+          } else {
+            picked = null; pickedFrom = -1; draw();
           }
         };
 
-        var tray = ctx.el('ul', { class: 'row', 'data-ws-tray': '', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:10px' });
+        var tray = ctx.el('ul', { class: 'row', 'data-ws-tray': '', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:6px 0;margin:16px 0;gap:10px' });
         var tiles = item.letters.map(function (letter, ti) {
           var btn = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-ws-tile': String(ti), 'aria-label': ctx.fmt(L.word_scramble_pick, { letter: up(ti) }),
             style: 'min-width:var(--ws-tile,56px);min-height:var(--ws-tile,56px);font-size:1.5rem;font-weight:700;touch-action:none',
@@ -5699,6 +5899,18 @@
           tray.appendChild(li);
           return { li: li, btn: btn };
         });
+        var putBackBtn = ctx.el('button', { type: 'button', 'data-ws-put-back': '', 'aria-label': L.word_scramble_put_back_label || 'Put back in letter pool',
+          style: 'min-width:var(--ws-tile,56px);min-height:var(--ws-tile,56px);padding:0 16px;border-radius:16px;font-size:1.05rem;font-weight:800;border:3px dashed var(--accent);background:var(--soft);color:var(--accent);box-shadow:0 0 0 3px var(--accent)',
+          on: { click: function (e) {
+            if (locked() || picked == null || pickedFrom < 0) return;
+            var out = picked, fromBi = pickedFrom;
+            boxes[fromBi] = null; picked = null; pickedFrom = -1; lastSubmitted = null;
+            draw();
+            ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(out), n: fromBi + 1 }));
+            if (byKey(e) && tiles[out] && tiles[out].btn) { try { tiles[out].btn.focus(); } catch (_) {} }
+          } } }, [L.word_scramble_put_back || '↩ Put back']);
+        var putBackLi = ctx.el('li', { 'data-ws-put-back-item': '', hidden: true }, [putBackBtn]);
+        tray.appendChild(putBackLi);
         var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.word_scramble_boxes });
         var boxEls = [];
         target.split('').forEach(function (ch, i) {
@@ -5710,14 +5922,14 @@
           boxEls.push(btn);
         });
         var wordLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.word_scramble_word, { word: written }) });
-        var showWord = ctx.el('button', { type: 'button', 'aria-pressed': 'false', on: { click: function () {
-          if (locked()) return;
+        var showWord = ctx.el('button', { type: 'button', hidden: true, 'aria-disabled': 'true', 'aria-pressed': 'false', on: { click: function () {
+          if (locked() || ctx.check || ctx.attempts() <= 0) return;
           var on = wordLine.hidden;
           if (on) ctx.support('wordShown');
           wordLine.hidden = !on;
           showWord.setAttribute('aria-pressed', on ? 'true' : 'false');
         } }, text: L.word_scramble_show_word });
-        var clearAll = function () { picked = null; for (var i = 0; i < n; i++) boxes[i] = null; };
+        var clearAll = function () { picked = null; pickedFrom = -1; for (var i = 0; i < n; i++) boxes[i] = null; };
         var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
           if (locked()) return;
           clearAll(); lastSubmitted = null; draw(); ctx.announce(L.word_scramble_cleared);
@@ -5727,30 +5939,48 @@
 
         var draw = function () {
           var holding = picked != null && !locked();
+          var holdingFromBox = holding && pickedFrom >= 0;
+          putBackLi.hidden = !holdingFromBox;
+          tray.style.outline = holdingFromBox ? '2px dashed var(--accent)' : '';
+          tray.style.borderRadius = holdingFromBox ? '16px' : '';
           tiles.forEach(function (t, ti) {
             t.li.hidden = boxes.indexOf(ti) >= 0;
-            t.btn.setAttribute('aria-pressed', picked === ti ? 'true' : 'false');
+            t.btn.setAttribute('aria-pressed', picked === ti && pickedFrom < 0 ? 'true' : 'false');
             if (locked()) t.btn.setAttribute('aria-disabled', 'true');
           });
           boxEls.forEach(function (btn, bi) {
             var ti = boxes[bi];
+            var lifted = holdingFromBox && pickedFrom === bi && ti != null;
             btn.textContent = ti == null ? '' : up(ti);
+            if (ti != null) btn.setAttribute('aria-pressed', lifted ? 'true' : 'false');
+            else btn.removeAttribute('aria-pressed');
             btn.style.borderStyle = ti == null ? 'dashed' : 'solid';
             btn.style.borderColor = ti == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--accent)';
-            btn.style.background = ti == null && holding ? 'var(--soft)' : '';
-            btn.style.boxShadow = ti == null && holding ? '0 0 0 3px var(--accent)' : '';
+            btn.style.background = lifted ? 'var(--accent)' : (ti == null && holding ? 'var(--soft)' : '');
+            btn.style.color = lifted ? 'var(--accent-ink)' : '';
+            btn.style.transform = lifted ? 'translateY(-6px) scale(1.08)' : '';
+            btn.style.boxShadow = lifted ? '0 0 0 3px var(--card), 0 0 0 7px var(--accent)'
+              : (ti == null && holding ? '0 0 0 3px var(--accent)' : (holdingFromBox && ti != null ? '0 0 0 2px var(--accent)' : ''));
             btn.style.touchAction = ti == null ? 'manipulation' : 'none';
             btn.setAttribute('aria-label', ti == null ? ctx.fmt(L.word_scramble_box_empty, { n: bi + 1 }) : ctx.fmt(L.word_scramble_box_filled, { n: bi + 1, letter: up(ti) }));
             if (locked()) btn.setAttribute('aria-disabled', 'true');
           });
           checkBtn.setAttribute('aria-disabled', locked() || !answerText() ? 'true' : 'false');
+          var canShowWord = !ctx.check && ctx.attempts() > 0 && !locked();
+          showWord.hidden = !!ctx.check || ctx.attempts() <= 0;
+          if (!canShowWord) showWord.setAttribute('aria-disabled', 'true');
+          else showWord.removeAttribute('aria-disabled');
           if (locked()) { clearBtn.setAttribute('aria-disabled', 'true'); showWord.setAttribute('aria-disabled', 'true'); }
         };
-        var byKey = function (e) { return !e || e.detail === 0; };
+        var nextFocus = function () {
+          if (boxes.indexOf(null) < 0) return checkBtn;
+          for (var k = 0; k < tiles.length; k++) if (boxes.indexOf(k) < 0) return tiles[k].btn;
+          return checkBtn;
+        };
         var onTile = function (ti, e) {
           if (locked() || boxes.indexOf(ti) >= 0) return;
-          if (picked === ti) { picked = null; draw(); ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(ti) })); return; }
-          picked = ti;
+          if (picked === ti && pickedFrom < 0) { picked = null; pickedFrom = -1; draw(); ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(ti) })); return; }
+          picked = ti; pickedFrom = -1;
           draw();
           ctx.announce(ctx.fmt(L.word_scramble_picked, { letter: up(ti) }));
           var empty = boxes.indexOf(null);
@@ -5759,21 +5989,37 @@
         var onBox = function (bi, e) {
           if (locked()) return;
           if (picked == null) {
-            var out = boxes[bi];
-            if (out == null) { ctx.announce(L.word_scramble_how); return; }
-            boxes[bi] = null; lastSubmitted = null;
+            var inBox = boxes[bi];
+            if (inBox == null) { ctx.announce(howText); return; }
+            picked = inBox;
+            pickedFrom = bi;
             draw();
-            ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(out), n: bi + 1 }));
+            ctx.announce(ctx.fmt(L.word_scramble_selected || '{letter} selected. Choose another box to move it, or tap Put back.', { letter: up(inBox) }));
+            return;
+          }
+          if (pickedFrom >= 0) {
+            if (bi === pickedFrom) {
+              var stayed = picked;
+              picked = null; pickedFrom = -1;
+              draw();
+              ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(stayed), n: bi + 1 }));
+              return;
+            }
+            var moved = picked, fromBi = pickedFrom, other = boxes[bi];
+            boxes[bi] = moved;
+            boxes[fromBi] = other;
+            picked = null; pickedFrom = -1; lastSubmitted = null;
+            draw();
+            ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(moved), n: bi + 1 }));
+            if (byKey(e)) nextFocus().focus();
             return;
           }
           var ti = picked;
-          picked = null;
+          picked = null; pickedFrom = -1;
           boxes[bi] = ti; lastSubmitted = null;
           draw();
           ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(ti), n: bi + 1 }));
-          if (!byKey(e)) return;
-          if (boxes.indexOf(null) < 0) { checkBtn.focus(); return; }
-          for (var k = 0; k < tiles.length; k++) if (boxes.indexOf(k) < 0) { tiles[k].btn.focus(); return; }
+          if (byKey(e)) nextFocus().focus();
         };
         var onCheck = function () {
           if (locked()) return;
@@ -5797,18 +6043,30 @@
             var k = String(key == null ? '' : key);
             if (k === 'Escape' || k === 'Esc') {
               if (picked == null) return false;
-              var drop = picked;
-              picked = null;
+              var drop = picked, wasBox = pickedFrom;
+              picked = null; pickedFrom = -1;
               draw();
-              ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(drop) }));
-              if (tiles[drop] && tiles[drop].btn) { try { tiles[drop].btn.focus(); } catch (_) {} }
+              if (wasBox >= 0) {
+                ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(drop), n: wasBox + 1 }));
+                if (boxEls[wasBox]) { try { boxEls[wasBox].focus(); } catch (_) {} }
+              } else {
+                ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(drop) }));
+                if (tiles[drop] && tiles[drop].btn) { try { tiles[drop].btn.focus(); } catch (_) {} }
+              }
               return true;
             }
             if (k === 'Backspace') {
+              if (picked != null && pickedFrom >= 0) {
+                var selOut = boxes[pickedFrom], selBi = pickedFrom;
+                boxes[selBi] = null; picked = null; pickedFrom = -1; lastSubmitted = null;
+                draw();
+                ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(selOut), n: selBi + 1 }));
+                return true;
+              }
               for (var bi = n - 1; bi >= 0; bi--) {
                 if (boxes[bi] != null) {
                   var out = boxes[bi];
-                  boxes[bi] = null; picked = null; lastSubmitted = null;
+                  boxes[bi] = null; picked = null; pickedFrom = -1; lastSubmitted = null;
                   draw();
                   ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(out), n: bi + 1 }));
                   return true;
@@ -5830,7 +6088,7 @@
               if (emptyAt < 0) return false;
               for (var ti = 0; ti < item.letters.length; ti++) {
                 if (item.letters[ti] === lc && boxes.indexOf(ti) < 0) {
-                  picked = null; boxes[emptyAt] = ti; lastSubmitted = null;
+                  picked = null; pickedFrom = -1; boxes[emptyAt] = ti; lastSubmitted = null;
                   draw();
                   ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(ti), n: emptyAt + 1 }));
                   return true;
@@ -5842,7 +6100,7 @@
         }
 
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.word_scramble_question }));
-        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.word_scramble_how }));
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', text: howText }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: L.hear_question }),
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
@@ -5855,7 +6113,7 @@
         draw();
         return {
           reveal: function (correct) {
-            picked = null;
+            picked = null; pickedFrom = -1;
             if (!correct) {
               var used = [];
               for (var i = 0; i < n; i++) {
@@ -5867,7 +6125,7 @@
             }
             wordLine.hidden = false;
             draw();
-            boxEls.forEach(function (btn) { btn.style.borderColor = 'var(--ok)'; btn.style.background = 'var(--ok-bg)'; });
+            boxEls.forEach(function (btn) { btn.style.borderColor = 'var(--ok)'; btn.style.background = 'var(--ok-bg)'; btn.style.color = ''; btn.style.boxShadow = ''; });
           },
         };
       },
@@ -8515,13 +8773,16 @@
               if (phase !== 'study' || ctx.isDone()) return;
               phase = 'play';
               redraw();
-              try {
-                if (isLockOn && laneButtons[aimLane]) { laneButtons[aimLane].focus(); }
-                else {
-                  var nextFocus = ctx.root.querySelector('[data-lane]:not([disabled]), [data-sr-choice]:not([disabled]), input:not([disabled]):not([hidden]), button:not([disabled]):not([hidden])');
-                  if (nextFocus && typeof nextFocus.focus === 'function') nextFocus.focus();
-                }
-              } catch (_) {}
+              if (!ctx.noFocus) {
+                try {
+                  if (isLockOn && laneButtons[aimLane]) { laneButtons[aimLane].focus(); }
+                  else if (!isSingleKeyItem && textInput && !textInput.disabled) { textInput.focus(); }
+                  else {
+                    var nextFocus = ctx.root.querySelector('[data-lane]:not([disabled]), [data-sr-choice]:not([disabled]), input:not([disabled]):not([hidden]), button:not([disabled]):not([hidden])');
+                    if (nextFocus && typeof nextFocus.focus === 'function') nextFocus.focus();
+                  }
+                } catch (_) {}
+              }
             },
           },
         }, [L.symbol_runner_cover]);
@@ -8577,15 +8838,28 @@
         });
 
         var laneButtons = [];
+        var cueImg = null;
+        function focusPlayTarget() {
+          if (ctx.noFocus || phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return;
+          try {
+            if (!isSingleKeyItem && textInput && !textInput.disabled) { textInput.focus(); return; }
+            var openChoice = choiceButtons.filter(function (c) { return c && c.node && !c.node.disabled; })[0];
+            if (openChoice && openChoice.node && typeof openChoice.node.focus === 'function') { openChoice.node.focus(); return; }
+            if (textInput && !textInput.disabled) textInput.focus();
+          } catch (_) {}
+        }
         function lockToLane(idx) {
           if (phase !== 'play' || ctx.isDone()) return;
           aimLane = idx;
+          var justLocked = false;
           if (isLockOn && idx === item.lane && !lockedOn) {
             lockedOn = true;
+            justLocked = true;
             ctx.support('lockon');
             ctx.announce(L.symbol_runner_lockon_ready);
           }
           redraw();
+          if (justLocked) focusPlayTarget();
         }
 
         for (var i = 0; i < 3; i++) {
@@ -8656,11 +8930,12 @@
                 }));
               }
               if (hasSafeImg) {
-                children.push(ctx.el('img', {
+                cueImg = ctx.el('img', {
                   src: imgSrc,
-                  alt: ctx.fmt(L.symbol_runner_picture_alt, { word: item.word }),
+                  alt: 'Picture cue',
                   style: 'width:52px;height:52px;object-fit:contain;margin-top:4px;border-radius:8px;background:#fff;padding:2px',
-                }));
+                });
+                children.push(cueImg);
               }
             } else {
               children.push(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1.5rem;opacity:0.3', text: '·' }));
@@ -8678,6 +8953,8 @@
               on: {
                 mouseenter: function () { if (isTarget) lockToLane(laneIndex); else { aimLane = laneIndex; redraw(); } },
                 pointerenter: function () { if (isTarget) lockToLane(laneIndex); },
+                pointermove: function () { if (isTarget && !lockedOn) lockToLane(laneIndex); },
+                mousemove: function () { if (isTarget && !lockedOn) lockToLane(laneIndex); },
                 click: function () { lockToLane(laneIndex); },
                 keydown: function (e) {
                   if (e.key === 'ArrowLeft') { e.preventDefault(); var p1 = Math.max(0, aimLane - 1); aimLane = p1; if (laneButtons[p1]) laneButtons[p1].focus(); lockToLane(p1); }
@@ -8691,7 +8968,42 @@
           })(i);
         }
 
+        var normChoice = function (v) { return String(v == null ? '' : v).replace(/\s+/g, ' ').trim().toLowerCase(); };
         var numericChoices = item.choices.length > 0 && item.choices.every(function (c) { return /^[0-9]+$/.test(String(c).trim()); });
+        var isSingleKeyItem = !!(item.stroopInk || (item.choices.length > 0 && item.choices.every(function (c) {
+          var cl = normChoice(c);
+          return cl.length === 1 && /^[a-z0-9]$/i.test(cl);
+        })));
+        var resolveInstantKey = function (k, allowIndex) {
+          var lc = String(k == null ? '' : k).toLowerCase();
+          if (numericChoices) {
+            if (!/^[0-9]$/.test(k)) return null;
+            var matched = item.choices.filter(function (c) { return String(c).trim() === k; })[0];
+            var longerNum = item.choices.some(function (c) { var s = String(c).trim(); return s.length > 1 && s.indexOf(k) === 0; });
+            return matched && !longerNum ? matched : null;
+          }
+          if (item.stroopInk && k.length === 1) {
+            var wantColor = { r: 'red', b: 'blue', g: 'green', y: 'gold' }[lc] || '';
+            if (wantColor) {
+              var colorHit = item.choices.filter(function (c) {
+                var cl = normChoice(c);
+                return cl === wantColor || (lc === 'y' && cl === 'yellow');
+              })[0];
+              if (colorHit) return colorHit;
+            }
+          }
+          if (allowIndex && /^[1-9]$/.test(k)) {
+            var n = Number(k);
+            if (n >= 1 && n <= item.choices.length) return item.choices[n - 1];
+            return null;
+          }
+          if (k.length === 1 && /^[a-z0-9]$/i.test(k)) {
+            var exact = item.choices.filter(function (c) { return normChoice(c) === lc; })[0];
+            var longerChoice = item.choices.some(function (c) { var cl = normChoice(c); return cl.length > 1 && cl.indexOf(lc) === 0; });
+            if (exact && !longerChoice) return exact;
+          }
+          return null;
+        };
         var textInput = ctx.el('input', {
           type: 'text',
           autocomplete: 'off',
@@ -8714,23 +9026,36 @@
           },
         }, [L.symbol_runner_done]);
 
-        textInput.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' && !e.repeat && !e.isComposing && e.keyCode !== 229) {
-            e.preventDefault();
-            submitAnswer(textInput.value);
-          }
-        });
-        // Practice mode: auto-submit an exact typed match when no longer choice shares it as a prefix.
-        textInput.addEventListener('input', function () {
+        var checkPracticeTypedMatch = function () {
           if (ctx.check || phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return;
-          var raw = String(textInput.value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+          var raw = normChoice(textInput.value);
           if (!raw || raw !== item.answer) return;
           var longer = item.choices.some(function (c) {
-            var cl = String(c == null ? '' : c).trim().toLowerCase();
+            var cl = normChoice(c);
             return cl.length > raw.length && cl.indexOf(raw) === 0;
           });
           if (!longer) submitAnswer(raw);
+        };
+        textInput.addEventListener('keydown', function (e) {
+          if (e.repeat || e.isComposing || e.keyCode === 229) return;
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            submitAnswer(textInput.value);
+            return;
+          }
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          if (phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return;
+          if (isSingleKeyItem && !textInput.value && e.key && e.key.length === 1) {
+            var instant = resolveInstantKey(e.key, !!item.stroopInk);
+            if (instant) {
+              e.preventDefault();
+              textInput.value = '';
+              if (!tried[normChoice(instant)]) submitAnswer(instant);
+            }
+          }
         });
+        // Practice mode: auto-submit an exact typed match when no longer choice shares it as a prefix.
+        textInput.addEventListener('input', checkPracticeTypedMatch);
 
         var typedRow = ctx.el('div', {
           class: 'row',
@@ -8859,40 +9184,24 @@
             }
             if (phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return false;
             var lc = k.toLowerCase();
-            if (numericChoices) {
-              if (!/^[0-9]$/.test(k)) return false;
-              var matched = item.choices.filter(function (c) { return String(c).trim() === k; })[0];
-              var longerNum = item.choices.some(function (c) { var s = String(c).trim(); return s.length > 1 && s.indexOf(k) === 0; });
-              if (!matched || longerNum) return false;
-              if (!tried[matched.toLowerCase()]) submitAnswer(matched);
+            var instant = resolveInstantKey(k, !numericChoices);
+            if (instant) {
+              if (!tried[normChoice(instant)]) submitAnswer(instant);
               return true;
             }
-            if (item.stroopInk && k.length === 1) {
-              var wantColor = { r: 'red', b: 'blue', g: 'green', y: 'gold' }[lc] || '';
-              if (wantColor) {
-                var colorHit = item.choices.filter(function (c) {
-                  var cl = String(c).trim().toLowerCase();
-                  return cl === wantColor || (lc === 'y' && cl === 'yellow');
-                })[0];
-                if (colorHit && !tried[colorHit.toLowerCase()]) { submitAnswer(colorHit); return true; }
-              }
+            if (k === 'Backspace' && textInput.value) {
+              try { textInput.focus(); } catch (_) {}
+              textInput.value = textInput.value.slice(0, -1);
+              checkPracticeTypedMatch();
+              return true;
             }
-            if (/^[1-9]$/.test(k)) {
-              var n = Number(k);
-              if (n >= 1 && n <= item.choices.length) {
-                var pickChoice = item.choices[n - 1];
-                if (!tried[pickChoice.toLowerCase()]) submitAnswer(pickChoice);
-                return true;
-              }
-              return false;
-            }
-            if (k.length === 1 && /^[a-z0-9]$/i.test(k)) {
-              var exact = item.choices.filter(function (c) { return String(c).trim().toLowerCase() === lc; })[0];
-              var longerChoice = item.choices.some(function (c) { var cl = String(c).trim().toLowerCase(); return cl.length > 1 && cl.indexOf(lc) === 0; });
-              if (exact && !longerChoice) {
-                if (!tried[exact.toLowerCase()]) submitAnswer(exact);
-                return true;
-              }
+            // Multi-char or prefix-colliding choices: focus textInput and insert the first printable keystroke instead of dropping it.
+            var canType = !isSingleKeyItem && k.length === 1 && (numericChoices ? /^[0-9]$/.test(k) : /^[a-z0-9'\-]$/i.test(k));
+            if (canType && !(lc === 'r' && item.audio && !item.choices.some(function (c) { return normChoice(c).indexOf('r') === 0; }))) {
+              try { textInput.focus(); } catch (_) {}
+              textInput.value = String(textInput.value || '') + k;
+              checkPracticeTypedMatch();
+              return true;
             }
             return false;
           });
@@ -8904,14 +9213,19 @@
         ctx.root.appendChild(coverButton);
         ctx.root.appendChild(padWrap);
         redraw();
-        if (!ctx.noFocus && isLockOn && phase === 'play' && !ctx.isDone() && laneButtons[aimLane]) {
-          try { laneButtons[aimLane].focus(); } catch (_) {}
+        if (!ctx.noFocus && phase === 'play' && !ctx.isDone()) {
+          if (isLockOn && laneButtons[aimLane]) {
+            try { laneButtons[aimLane].focus(); } catch (_) {}
+          } else if (!isSingleKeyItem && lockedOn && textInput && !textInput.disabled) {
+            try { textInput.focus(); } catch (_) {}
+          }
         }
 
         return {
           replay: item.audio ? function () { if (typeof ctx.play === 'function') ctx.play(item.audio); } : null,
           reveal: function (correct) {
             phase = 'done';
+            if (cueImg) cueImg.setAttribute('alt', ctx.fmt(L.symbol_runner_picture_alt, { word: item.word }));
             if (typeof correct === 'string') {
               revealAnswer = String(correct).replace(/\s+/g, ' ').trim().toLowerCase();
               outcome = true;
@@ -9534,7 +9848,7 @@
     '.choice{position:relative;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:0 3px 0 var(--line)}.choice.tried{border-style:dashed;box-shadow:none}.choice.right{border-color:var(--ok);background:var(--ok-bg);box-shadow:0 3px 0 var(--ok)}.choice.solo{border-color:transparent}.choice.solo.tried{border-color:var(--line)}.choice.solo.right{border-color:var(--ok)}.choice.solo:not(.right){box-shadow:none}',
     '.slots{display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:16px 0}.slot{min-width:64px;min-height:64px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}',
     '.picture{max-width:160px;max-height:160px;border-radius:12px;background:#fff;padding:4px}',
-    '.letters{font-size:1.5rem;font-weight:700;line-height:1.3}.status{min-height:1.5em;margin:12px 0;padding:10px 14px;border-radius:12px}.status.ok{background:var(--ok-bg);color:var(--ok)}.status.warn{background:var(--warn-bg);color:var(--warn)}',
+    '.letters{font-size:1.5rem;font-weight:700;line-height:1.3}.status,.halfway-banner{min-height:1.5em;margin:12px 0;padding:10px 14px;border-radius:12px}.status.ok,.halfway-banner.ok{background:var(--ok-bg);color:var(--ok)}.status.warn{background:var(--warn-bg);color:var(--warn)}',
     // Right and wrong say it in words and with a mark, not by color alone: a tick on the right choice, a badge on the feedback line.
     '.choice.right::after,[data-feedback]:not(:empty)::before{flex:none;width:32px;height:32px;border-radius:50%;color:var(--card);font-weight:700;line-height:32px;text-align:center}',
     '.choice.right::after{content:"\\2713";content:"\\2713"/"";position:absolute;top:-12px;inset-inline-end:-10px;background:var(--ok)}',
@@ -9582,7 +9896,7 @@
     '@media (min-width:960px){:root{--seg-sz:78px;--seg-box:94px;--map-sz:86px;--map-h:66px;--map-box:94px;--map-span:184px;--map-span-box:196px;--ws-tile:70px;--ws-box-w:76px;--ws-box-h:78px;--trace-sz:360px;--sr-lane:680px;--sr-keys:640px}main{max-width:min(1080px,90vw);padding:32px 28px 56px}.card{padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,42px)}.choices{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.slots{gap:16px}.row{gap:14px}.picture{max-width:220px;max-height:220px}[data-seg-tray]{gap:18px!important;margin:18px 0!important}}',
     // Reading tools (takeHomeTools): attributes on <html> set the size, the colors (the variables above) and the spacing.
     '[data-lt-size="1"]{font-size:125%}[data-lt-size="2"]{font-size:150%}[data-lt-size] body{font-size:1.125rem}[data-lt-size="3"]{font-size:175%}[data-lt-size] button,[data-lt-size] .letters{overflow-wrap:anywhere}',
-    '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff;--soft:#000;--hover:#ffffff28;--c0:#ffeb3b;--c1:#00e5ff;--c2:#7dff8f;--c3:#ff8ef0;--c4:#ffb74d;--c5:#9ec5ff;--c0b:#000;--c1b:#000;--c2b:#000;--c3b:#000;--c4b:#000;--c5b:#000}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status{border:3px solid}[data-lt-colors="1"] .progress{background:var(--soft);border:1px solid var(--line)}',
+    '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff;--soft:#000;--hover:#ffffff28;--c0:#ffeb3b;--c1:#00e5ff;--c2:#7dff8f;--c3:#ff8ef0;--c4:#ffb74d;--c5:#9ec5ff;--c0b:#000;--c1b:#000;--c2b:#000;--c3b:#000;--c4b:#000;--c5b:#000}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status,[data-lt-colors="1"] .halfway-banner{border:3px solid}[data-lt-colors="1"] .progress{background:var(--soft);border:1px solid var(--line)}',
     '[data-lt-colors="2"]{--bg:#f4ead2;--card:#fdf6e3;--ink:#2a2216;--muted:#4d4230;--accent:#4b3f99;--accent-ink:#fff;--ok:#1f5e33;--ok-bg:#e4efd5;--warn:#7a4100;--warn-bg:#f8e2c0;--line:#bfae86;--focus:#a33f00;--soft:#f6ebcf;--hover:#00000012;--c0:#4b3f99;--c1:#1e665c;--c2:#963c2c;--c3:#855200;--c4:#35632a;--c5:#2c5887;--c0b:#ece6f5;--c1b:#e3f0ea;--c2b:#f7e4dc;--c3b:#f7ebd0;--c4b:#e7f0de;--c5b:#e4ecf2}',
     // 2026-11-12: themes a student may choose (Dark whatever the device says, Ocean, Sunny, Forest); each passes AA in every state (tests/packets_learner_tools.test.js).
     '[data-lt-colors="3"]{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070;--soft:#283048;--hover:#ffffff1c;--c0:#a9a7ff;--c1:#64d8cb;--c2:#f497c8;--c3:#f7c46c;--c4:#80de9d;--c5:#82c0ff;--c0b:#27284a;--c1b:#183539;--c2b:#3c2235;--c3b:#3b2d18;--c4b:#1a3626;--c5b:#1b2f49;color-scheme:dark}',
@@ -9599,7 +9913,7 @@
     '[data-lt-font="1"] body,[data-tool=font-1]{font-family:Lexend,system-ui,sans-serif}[data-lt-font="2"] body,[data-tool=font-2]{font-family:"Atkinson Hyperlegible",system-ui,sans-serif}',
     '[data-lt-font="3"] body,[data-tool=font-3]{font-family:Georgia,"Times New Roman",Times,serif}[data-lt-font="4"] body,[data-tool=font-4]{font-family:"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue","Comic Relief",system-ui,sans-serif}',
     '[data-lt-font="5"] body,[data-tool=font-5]{font-family:ui-monospace,"SF Mono",Consolas,monospace}[data-lt-font="6"] body,[data-tool=font-6]{font-family:"OpenDyslexic","OpenDyslexic3","Atkinson Hyperlegible",system-ui,sans-serif}',
-    '.lt-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}.lt-bar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 8px}.lt-panel{clear:both;display:flex;flex-direction:column}.lt-panel:not(.lt-m) [data-tool-group=lens]{display:none}.lt-more{margin:8px 0;border-top:1px solid var(--line);order:1}.lt-panel [data-tool-group=lens]{order:2}.lt-panel>.row:last-child{order:3}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
+    '.lt-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}.lt-bar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 8px}.lt-panel{clear:both;display:flex;flex-direction:column}.lt-panel:not(.lt-m) [data-tool-group=lens]{display:none}.lt-more{margin:8px 0;border-top:1px solid var(--line);order:1}.lt-shortcuts{margin:8px 0;border-top:1px solid var(--line);padding-top:4px;order:2}.lt-shortcuts summary{cursor:pointer;font-weight:700;padding:6px 0;min-height:44px;display:flex;align-items:center}.lt-keys{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;font-size:.92rem}.lt-keys li{display:flex;align-items:baseline;gap:8px}.lt-keys kbd{display:inline-block;padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--soft);font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:.85em;font-weight:700;white-space:nowrap}.lt-panel [data-tool-group=lens]{order:2}.lt-panel>.row:last-child{order:3}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
     '.lt-g{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.lt-g p{flex-basis:100%;margin:0}.lt-panel [aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}.lt-panel [aria-pressed=true]:not(:focus-visible){outline:none}',
     '.lt-read{position:relative}.lt-shade,.lt-line{position:absolute;left:0;right:0;pointer-events:none}.lt-shade{top:0;bottom:0}.lt-line{outline:3px solid var(--accent);border-radius:6px}',
     '.lt-ruler{position:fixed;left:0;right:0;height:2.4em;pointer-events:none;z-index:40;transform:translateY(-50%);background:rgba(254,240,138,.36);border-top:2px solid rgba(202,138,4,.75);border-bottom:2px solid rgba(202,138,4,.75)}.lt-ruler[data-ruler-size=tall]{height:4.4em}.lt-ruler[data-ruler-tint=sky]{background:rgba(125,211,252,.32);border-color:rgba(2,132,199,.75)}.lt-ruler[data-ruler-tint=rose]{background:rgba(253,164,175,.32);border-color:rgba(225,29,72,.7)}.lt-ruler[data-ruler-tint=mint]{background:rgba(134,239,172,.32);border-color:rgba(22,163,74,.7)}.lt-ruler[data-ruler-tint=line]{height:0!important;background:none;border-top:0;border-bottom:3px solid var(--accent)}.lt-ruler-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex-basis:100%;margin-top:4px}.lt-ruler-sub button{min-height:34px;padding:4px 9px;font-size:.86rem}',
@@ -9659,7 +9973,7 @@
   function takeHomeTools(o) {
     var doc = o.doc, win = o.win, L = o.L, el = o.el, page = o.page, html = doc.documentElement;
     var NAMES = { size: ['', 'textLarger', 'textLargest', 'textExtraLarge'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest', 'colorsRose'], spacing: ['', 'spacingWide', 'spacingExtraWide'], font: ['', 'lettersLexend', 'lettersAtkinson', 'lettersBook', 'lettersRounded', 'lettersMono', 'lettersOpenDyslexic'], focus: ['', 'readingFocus', 'readingFocus', 'readingRuler'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''], speed: ['', '', '', '', ''], sounds: ['', 'soundsMore', 'soundsLess'], bold: ['', 'boldStart'], motion: ['', ''] };
-    var EXTRA = ['syllables', 'pos', 'posLabels', 'define', 'bold', 'chunk', 'noAuto', 'posHideN', 'posHideV', 'posHideJ', 'posHideA', 'posHideP', 'posHideR', 'posHideC'];
+    var EXTRA = ['syllables', 'pos', 'posLabels', 'define', 'bold', 'chunk', 'noAuto', 'posHideN', 'posHideV', 'posHideJ', 'posHideA', 'posHideP', 'posHideR', 'posHideC', 'audioSpeed'];
     var RULER_TINTS = ['yellow', 'sky', 'rose', 'mint', 'line'];
     var KEYS = Object.keys(NAMES), p = {}, ep = {}, customBg = '', customInk = '', customSize = 0, rulerTint = 'yellow', rulerSize = 'slim', rulerY = 200, groups = {}, rec = null, text = null, at = 0, painted = '', read = null, noVoiceNote = null, bionicBusy = false;
     var HEX = /^#[0-9a-f]{6}$/i;
@@ -9716,6 +10030,23 @@
       group('bold', L.tools_bold || 'Bold start', [L.tools_off, L.tools_on], L.tools_bold_hint),
       group('motion', L.tools_motion || 'Motion', [L.tools_colors_0 || 'Usual', L.tools_motion_1 || 'Less'], L.tools_motion_hint),
     ]);
+    var audioSpeedBtns = [
+      el('button', { type: 'button', 'data-tool': 'audioSpeed-0', 'aria-pressed': 'true', on: { click: function () { ep.audioSpeed = 0; apply(); o.store(); } }, text: L.tools_normal || 'Normal' }),
+      el('button', { type: 'button', 'data-tool': 'audioSpeed-1', 'data-tool-audio-speed': '0.75', 'aria-pressed': 'false', on: { click: function () { ep.audioSpeed = ep.audioSpeed ? 0 : 1; apply(); o.store(); } }, text: L.tools_audio_speed_1 || 'Slower (0.75x)' }),
+    ];
+    var audioSpeedGroup = el('div', { class: 'lt-g', role: 'group', 'aria-labelledby': 'lt-audio-speed', 'data-tool-group': 'audio-speed' },
+      [el('span', { id: 'lt-audio-speed', class: 'lt-l', text: L.tools_audio_speed || 'Audio speed' })].concat(audioSpeedBtns));
+    var shortcuts = el('details', { class: 'lt-shortcuts', 'data-tool-shortcuts': '' }, [
+      el('summary', { text: L.tools_shortcuts || 'Keyboard shortcuts' }),
+      el('ul', { class: 'lt-keys' }, [
+        el('li', {}, [el('kbd', { text: '1\u20139' }), ' ', L.tools_shortcuts_keys_num || 'Choose an option']),
+        el('li', {}, [el('kbd', { text: 'R' }), ' ', L.tools_shortcuts_keys_r || 'Replay audio']),
+        el('li', {}, [el('kbd', { text: 'Enter' }), ' ', L.tools_shortcuts_keys_enter || 'Check or continue']),
+        el('li', {}, [el('kbd', { text: 'Backspace' }), ' ', L.tools_shortcuts_keys_back || 'Undo or remove']),
+        el('li', {}, [el('kbd', { text: 'Escape' }), ' ', L.tools_shortcuts_keys_esc || 'Stop audio or close']),
+        el('li', {}, [el('kbd', { text: L.tools_shortcuts_keys_arrows_key || 'Arrow keys' }), ' ', L.tools_shortcuts_keys_arrows || 'Move between options or lanes']),
+      ]),
+    ]);
     var panel = el('section', { id: 'lt-panel', class: 'card lt-panel', 'aria-labelledby': 'lt-title', hidden: true, 'data-tools': '',
       on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); back(); } } } }, [
       el('div', { class: 'lt-top' }, [el('p', { id: 'lt-title', class: 'lt-h', text: L.tools_button }),
@@ -9724,12 +10055,14 @@
       group('colors', L.tools_colors, [L.tools_colors_0, L.tools_colors_1, L.tools_colors_2, L.tools_colors_3, L.tools_colors_4, L.tools_colors_5, L.tools_colors_6, L.tools_colors_7 || 'Rose']),
       group('spacing', L.tools_spacing, [L.tools_normal, L.tools_spacing_1, L.tools_spacing_2 || 'Extra wide']),
       group('font', L.tools_font, [L.tools_colors_0, L.tools_font_1, L.tools_font_2, L.tools_font_3, L.tools_font_4, L.tools_font_5 || 'Mono', L.tools_font_6 || 'OpenDyslexic']),
+      audioSpeedGroup,
       group('focus', L.tools_focus, [L.tools_off, L.tools_focus_1 || L.tools_on, L.tools_focus_2 || '3 lines', L.tools_focus_3 || 'Ruler'], L.tools_focus_hint),
       group('lens', L.tools_lens, [L.tools_off, L.tools_on], L.tools_lens_hint),
       group('choices', L.tools_choices, [L.tools_off, L.tools_on], L.tools_choices_hint),
       group('directions', L.tools_directions, [L.tools_directions_0, L.tools_directions_1], L.tools_directions_hint),
       group('speed', L.tools_speed, [L.tools_speed_0, L.tools_speed_1, L.tools_speed_2 || 'Very slow', L.tools_speed_3 || 'Faster', L.tools_speed_4 || 'Fastest'], L.tools_speed_hint),
       more,
+      shortcuts,
       (noVoiceNote = el('p', { class: 'muted', hidden: true, 'data-tools-no-voice': '', text: L.tools_no_voice })),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', 'data-tools-reset': '', on: { click: function () { clean(); apply(); o.store(); } }, text: L.tools_reset })]),
@@ -9892,7 +10225,7 @@
       if (!rec) return;
       var s = rec.supports = rec.supports && typeof rec.supports === 'object' ? rec.supports : {}, changed = false, forced = false;
       try { forced = win.matchMedia('(forced-colors: active)').matches; } catch (_) {}
-      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], NAMES.font[p.font], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : '', o.sounds ? NAMES.sounds[p.sounds] : '', NAMES.bold[p.bold]].forEach(function (n) {
+      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], NAMES.font[p.font], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : '', o.sounds ? NAMES.sounds[p.sounds] : '', NAMES.bold[p.bold], ep.audioSpeed ? 'slowAudio' : ''].forEach(function (n) {
         if (n && !s[n]) { s[n] = 1; changed = true; }
       });
       if (changed) o.save();
@@ -9921,6 +10254,10 @@
       if (bgPicker) bgPicker.value = customBg || '#fdfbf7';
       if (inkPicker) inkPicker.value = customInk || '#1e293b';
       KEYS.forEach(function (k) { groups[k].buttons.forEach(function (b, v) { b.setAttribute('aria-pressed', String(v === p[k])); }); });
+      audioSpeedBtns[0].setAttribute('aria-pressed', String(!ep.audioSpeed));
+      audioSpeedBtns[1].setAttribute('aria-pressed', String(!!ep.audioSpeed));
+      if (ep.audioSpeed) html.setAttribute('data-audio-speed', '0.75');
+      else html.removeAttribute('data-audio-speed');
       var isRuler = p.focus === 3;
       rulerSub.hidden = !isRuler;
       ruler.hidden = !isRuler;
@@ -10022,7 +10359,7 @@
       noVoice: function (on) { if (noVoiceNote) noVoiceNote.hidden = !on; },
       soundGap: function () { return o.sounds ? [500, 800, 250][p.sounds] || 500 : 500; },
       getExtra: function (k) { return k === 'bold' ? (p.bold ? 1 : 0) : (EXTRA.indexOf(k) >= 0 ? (ep[k] || 0) : null); },
-      setExtra: function (k, v) { if (k === 'bold') { set('bold', v ? 1 : 0); return; } if (EXTRA.indexOf(k) < 0) return; ep[k] = v ? 1 : 0; o.store(); },
+      setExtra: function (k, v) { if (k === 'bold') { set('bold', v ? 1 : 0); return; } if (EXTRA.indexOf(k) < 0) return; ep[k] = v ? 1 : 0; if (k === 'audioSpeed') apply(); o.store(); },
       prefs: function () {
         var out = null;
         KEYS.forEach(function (k) { if (p[k] !== def(k)) (out = out || {})[k] = p[k]; });
@@ -10429,6 +10766,8 @@
     }
     // The missed questions once more (lesson.repeatMissed, practice files only): appended after the others, by their places.
     var baseItems = items.slice(), repeatMissed = lesson.repeatMissed === true && lesson.mode !== 'probe';
+    var bonusRetry = null;
+    var halfwayShown = false;
     var addAgain = function (list) {
       if (items.some(function (e) { return e.again; })) return;
       list.forEach(function (at, k) { var e = items[at]; items.push({ activity: e.activity, item: Object.assign({}, e.item, { id: String(e.item.id) + '-again' }), n: k + 1, total: list.length, again: true }); });
@@ -10597,7 +10936,9 @@
         a.onended = function () { settle(true); };
         a.onerror = function () { settle(false); };
         a.ontimeupdate = watch;
-        var speed = rate > 0 ? rate : (tools && tools.speedRate ? tools.speedRate() : (tools && tools.slow && tools.slow() ? 0.8 : 1));
+        var slowAudioOn = !!(tools && tools.getExtra && tools.getExtra('audioSpeed'));
+        var baseSpeed = rate > 0 ? rate : (tools && tools.speedRate ? tools.speedRate() : (tools && tools.slow && tools.slow() ? 0.8 : 1));
+        var speed = slowAudioOn ? Math.max(0.5, Math.round(baseSpeed * 0.75 * 1000) / 1000) : baseSpeed;
         var seekSec = Number(startAt) > 0 ? Number(startAt) : 0;
         var p;
         try {
@@ -10747,7 +11088,8 @@
         else { e.preventDefault(); keyItem.replay(); playAll(ids); }
         return;
       }
-      if (e.isTrusted && keyItem.shownAt && Date.now() - keyItem.shownAt < 250) return;
+      var minGap = keyItem.activity === 'symbol_runner' ? 60 : 250;
+      if (e.isTrusted && keyItem.shownAt && Date.now() - keyItem.shownAt < minGap) return;
       if (keyItem.pad) {
         var pk = /^[0-9]$/.test(key) ? key : key === 'Backspace' ? 'back' : key === '-' || key === String.fromCharCode(0x2212) ? 'minus' : key === 'Enter' && tag !== 'BUTTON' ? 'next' : '';
         if (pk) { e.preventDefault(); keyItem.pad.press(pk); return; }
@@ -10884,6 +11226,8 @@
     };
 
     var renderStart = function () {
+      bonusRetry = null;
+      halfwayShown = false;
       savingFile = '';
       // 2026-11-23: the start screen may be the next child on a shared device. What the last reader kept in memory
       // (voice recordings, reading-view choices) goes, and the recordings are released, not only hidden.
@@ -11010,10 +11354,26 @@
         nextButton.hidden = false;
         if (!silentFocus) nextButton.focus();
       };
+      var halfwayBanner = el('p', { class: 'halfway-banner ok', role: 'status', 'aria-live': 'polite', hidden: true, 'data-halfway-banner': '', style: 'margin:0 0 12px' });
       var finishItem = function (correct, reopen) {
         clockStop();
         rec.done = true; rec.correct = correct; rec.firstTry = correct && rec.attempts === 1;
         if (!reopen && ad) ad.onDone(state, items, entry, rec, area, nextButton, save, renderItem);
+        if (!reopen && !check && lesson.mode !== 'probe' && !bonusRetry && !halfwayShown && !(entry && (entry.again || entry.ad))) {
+          var scoredTotal = 0, scoredDone = 0;
+          for (var hi = 0; hi < items.length; hi++) {
+            var he = items[hi], hr = state.items[hi];
+            if (!he || he.again || he.ad) continue;
+            if ((hr && hr.practice) || he.activity === 'letter_tracing' || he.activity === 'read_along' || he.activity === 'playlist_roadmap' || /^sel_/.test(he.activity || '')) continue;
+            scoredTotal++;
+            if (hr && hr.done) scoredDone++;
+          }
+          if (scoredTotal >= 10 && scoredDone === Math.floor(scoredTotal / 2)) {
+            halfwayShown = true;
+            halfwayBanner.textContent = fmt(L.halfway_banner || 'Halfway there! You finished {done} of {total}.', { done: scoredDone, total: scoredTotal });
+            halfwayBanner.hidden = false;
+          }
+        }
         save();
         if (handle && typeof handle.reveal === 'function') { try { handle.reveal(correct); } catch (_) {} }
         nextButton.hidden = false;
@@ -11071,13 +11431,24 @@
           return state.bookmark && typeof state.bookmark === 'object' ? state.bookmark : null;
         },
         studentMic: kit.studentMic ? function (opts) { return kit.studentMic(doc, win, el, L, Object.assign({ cache: sessionCache }, opts || {})); } : null,
-        deviceVoice: kit.deviceVoice ? function (lang) { return kit.deviceVoice(win, lang, function () { return tools && tools.speedRate ? tools.speedRate() : 1; }); } : null,
+        deviceVoice: kit.deviceVoice ? function (lang) { return kit.deviceVoice(win, lang, function () {
+          var r = tools && tools.speedRate ? tools.speedRate() : 1;
+          if (tools && tools.getExtra && tools.getExtra('audioSpeed')) {
+            if (r > 0.75) r = 0.75;
+            ctx.support('slowAudio');
+          }
+          return r;
+        }); } : null,
         keys: function (handler) { if (keyItem) keyItem.keys = handler; },
         keypad: kit.keypad ? function (options) { var pad = kit.keypad(el, win, L, options); if (keyItem) keyItem.pad = pad; return pad; } : null,
         vocabChoice: kit.vocabChoice ? function (it, P, pic) { return kit.vocabChoice(it, ctx, P, pic); } : null,
         goPrev: state.index > 0 ? function () { clockStop(); state.index--; save(); renderItem(); } : null,
         goNext: function () { clockStop(); state.index++; save(); renderItem(); },
-        play: play, playAll: playAll, stop: stop, announce: announce,
+        play: function (id, rate, onProgress, startAt) {
+          if (tools && tools.getExtra && tools.getExtra('audioSpeed')) ctx.support('slowAudio');
+          return play(id, rate, onProgress, startAt);
+        },
+        playAll: playAll, stop: stop, announce: announce,
         audioTime: function () { return audioEl && Number(audioEl.currentTime) > 0 ? Number(audioEl.currentTime) : 0; },
         hearAll: hearAllIn(area, function (name) { ctx.support(name); }),
         image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
@@ -11170,9 +11541,9 @@
         entry.total < items.length ? el('p', { class: ownOrder ? '' : 'muted', 'data-progress': '', style: ownOrder ? 'margin:0;font-weight:700' : 'margin:0',
           text: ownOrder ? fmt(L.progress_own, { n: state.index + 1, total: items.length, activity: activityTitle(entry.activity) }) : fmt(L.progress_all, { n: state.index + 1, total: items.length }) }) : null,
         el('div', { class: 'progress', 'aria-hidden': 'true' }, [el('span', { style: 'width:' + Math.round(100 * (state.index + 1) / items.length) + '%' })]),
-        el('div', { class: 'card' }, [bi && bi.v('item', item), ad && ad.banner(entry), area, feedback, nextButton]),
+        el('div', { class: 'card' }, [bi && bi.v('item', item), ad && ad.banner(entry), halfwayBanner, area, feedback, nextButton]),
       ]);
-      keyItem = { area: area, item: item, shownAt: shownAt, replay: function () { ctx.support('questionReplays'); } };
+      keyItem = { area: area, item: item, activity: entry.activity, shownAt: shownAt, replay: function () { ctx.support('questionReplays'); } };
       try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
       activeHandle = handle;
       keyItem.handle = handle;
@@ -11200,9 +11571,9 @@
               ? (item.wordAudio ? [item.wordAudio] : []) : openingAudio;
           } else if (entry.activity === 'letter_tracing') {
             openingAudio = item.promptAudio && openingAudio[0] === item.promptAudio ? openingAudio.slice(1) : openingAudio;
-          } else if (/^(counting|missing_letter|orthography|segmentation|spelling_bee)$/.test(entry.activity)) {
+          } else if (/^(counting|mapping|missing_letter|orthography|segmentation|spelling_bee|word_scramble)$/.test(entry.activity)) {
             openingAudio = item.wordAudio ? [item.wordAudio] : [];
-          } else if (/^(mapping|word_scramble|decoding|read_sentence|read_passage|sentence_match)$/.test(entry.activity)) {
+          } else if (/^(decoding|read_sentence|read_passage|sentence_match)$/.test(entry.activity)) {
             openingAudio = [];
           }
         }
@@ -11288,6 +11659,120 @@
       if (!state.sendSid) { state.sendSid = 'SUB-' + uuid(); save(); }
       return sendNow(state.sendSid, JSON.stringify({ kind: 'alloflow-take-home-submission', schemaVersion: 1, studentName: String(state.name || 'Student').slice(0, 80),
         submissionDate: state.finishedAt, takeHomeResult: resultFile() }));
+    };
+    var startBonusRetry = function (indices) {
+      if (!indices || !indices.length || check || lesson.mode === 'probe') return;
+      bonusRetry = {
+        entries: indices.map(function (i, k) {
+          var e = items[i];
+          return { activity: e.activity, item: e.item, n: k + 1, total: indices.length };
+        }),
+        index: 0,
+      };
+      renderBonusItem();
+    };
+    var renderBonusItem = function () {
+      if (!bonusRetry || bonusRetry.index >= bonusRetry.entries.length) {
+        bonusRetry = null;
+        renderFinish();
+        return;
+      }
+      var entry = bonusRetry.entries[bonusRetry.index];
+      var item = entry.item;
+      var render = renders[entry.activity];
+      var rec = { itemId: item.id, activity: entry.activity, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: {} };
+      var feedback = statusLine('', '');
+      feedback.setAttribute('data-feedback', '');
+      var area = el('div', {});
+      var shownAt = Date.now();
+      area.addEventListener('click', function (e) { if (e.isTrusted && Date.now() - shownAt < 250 && e.target && e.target.closest && e.target.closest('button')) { e.stopPropagation(); e.preventDefault(); } }, true);
+      var handle = null;
+      var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, 'data-next': '', on: { click: function () { bonusRetry.index++; renderBonusItem(); } },
+        text: bonusRetry.index === bonusRetry.entries.length - 1 ? L.finish : L.next });
+      var finishBonusItem = function (correct) {
+        rec.done = true; rec.correct = !!correct; rec.firstTry = !!correct && rec.attempts === 1;
+        if (handle && typeof handle.reveal === 'function') { try { handle.reveal(correct); } catch (_) {} }
+        nextButton.hidden = false;
+        if (!silentFocus) nextButton.focus();
+      };
+      var ctx = {
+        root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters, skipDirections: false, noFocus: silentFocus,
+        sessionCache: sessionCache, nav: null, goto: null, bilingual: bi && bi.ctx,
+        soundGap: function () { return tools && tools.soundGap ? tools.soundGap() : 500; },
+        slow: function () { return !!(tools && tools.slow && tools.slow()); },
+        speedRate: function () { return tools && tools.speedRate ? tools.speedRate() : 1; },
+        noVoice: function (on) { if (tools && tools.noVoice) tools.noVoice(on); },
+        toolPref: function (k, v) { if (!tools) return null; if (arguments.length > 1) { if (tools.setExtra) tools.setExtra(k, v); return v ? 1 : 0; } return tools.getExtra ? tools.getExtra(k) : null; },
+        place: function () { return 0; },
+        checkNote: function () { return null; },
+        bookmark: function () { return null; },
+        studentMic: kit.studentMic ? function (opts) { return kit.studentMic(doc, win, el, L, Object.assign({ cache: sessionCache }, opts || {})); } : null,
+        deviceVoice: kit.deviceVoice ? function (lang) { return kit.deviceVoice(win, lang, function () {
+          var r = tools && tools.speedRate ? tools.speedRate() : 1;
+          if (tools && tools.getExtra && tools.getExtra('audioSpeed') && r > 0.75) r = 0.75;
+          return r;
+        }); } : null,
+        keys: function (handler) { if (keyItem) keyItem.keys = handler; },
+        keypad: kit.keypad ? function (options) { var pad = kit.keypad(el, win, L, options); if (keyItem) keyItem.pad = pad; return pad; } : null,
+        vocabChoice: kit.vocabChoice ? function (it, P, pic) { return kit.vocabChoice(it, ctx, P, pic); } : null,
+        goPrev: null,
+        goNext: function () { bonusRetry.index++; renderBonusItem(); },
+        play: play, playAll: playAll, stop: stop, announce: announce,
+        audioTime: function () { return audioEl && Number(audioEl.currentTime) > 0 ? Number(audioEl.currentTime) : 0; },
+        hearAll: hearAllIn(area, function () {}),
+        image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
+        ordinal: function (p) { return (L.ordinals && L.ordinals[p]) || String(p + 1); },
+        sound: function (label) { return L['sound_name_' + label] || '/' + label + '/'; },
+        support: function () {},
+        lap: function () {},
+        isDone: function () { return rec.done; },
+        attempts: function () { return rec.attempts; },
+        practiceKind: function () { return ''; },
+        practice: function (_status, text) {
+          if (rec.done) return;
+          feedback.className = 'status ok'; feedback.textContent = text || '';
+          finishBonusItem(null);
+        },
+        feedback: function (text) { if (rec.done) return; feedback.className = 'status'; feedback.removeAttribute('data-missed'); feedback.textContent = text ? String(text) : ''; },
+        answer: function (response, isCorrect, options) {
+          if (rec.done) return rec.correct ? 'correct' : 'missed';
+          var o = options || {}, fb = lesson.feedback || {};
+          var max = Number(item.maxAttempts) > 0 ? Number(item.maxAttempts) : 2;
+          var offered = Array.isArray(item.choices) ? item.choices.length : Array.isArray(item.options) ? item.options.length : 0;
+          if (!(Number(item.maxAttempts) > 0) && offered === 2) max = 1;
+          rec.attempts++;
+          rec.responses.push(typeof response === 'string' ? response.slice(0, 80) : JSON.stringify(response).slice(0, 200));
+          if (isCorrect) {
+            feedback.className = 'status ok'; feedback.textContent = o.correctText || L.correct;
+            var praise = fb.correct || [];
+            finishBonusItem(true);
+            var cheered = play(praise.length ? praise[bonusRetry.index % praise.length] : null), mine = screenId;
+            if (handle && handle.payoff && pressed) cheered.then(function () { if (mine === screenId) handle.payoff(); });
+            return 'correct';
+          }
+          if (rec.attempts < max) {
+            feedback.className = 'status warn'; feedback.textContent = o.retryText || L.try_again;
+            try { if (typeof feedback.scrollIntoView === 'function') feedback.scrollIntoView({ block: 'nearest' }); } catch (_) {}
+            play(fb.retry);
+            return 'retry';
+          }
+          feedback.className = 'status warn'; feedback.textContent = o.missedText || L.missed; feedback.setAttribute('data-missed', '');
+          finishBonusItem(false);
+          playAll(item.answerAudio || []);
+          return 'missed';
+        },
+      };
+      var banner = el('p', { class: 'status', 'data-bonus-retry-banner': '', style: 'margin:0 0 12px', text: L.retry_missed_banner || 'Bonus practice — your saved score stays unchanged' });
+      screen(fmt(L.again_of || 'Once more: {n} of {total}', { n: entry.n, total: entry.total }), [
+        el('div', { class: 'progress', 'aria-hidden': 'true' }, [el('span', { style: 'width:' + Math.round(100 * (bonusRetry.index + 1) / bonusRetry.entries.length) + '%' })]),
+        el('div', { class: 'card' }, [banner, bi && bi.v('item', item), area, feedback, nextButton]),
+      ]);
+      keyItem = { area: area, item: item, activity: entry.activity, shownAt: shownAt, replay: function () {} };
+      try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
+      activeHandle = handle;
+      keyItem.handle = handle;
+      var openingAudio = item.introAudio || [];
+      autoHear(openingAudio.length ? playAll(openingAudio) : (handle && handle.opening ? handle.opening : null));
     };
     var renderFinish = function () {
       if (!state.finishedAt) { var ended = new Date(); state.finishedAt = ended.toISOString(); state.finishedLocal = localIso(ended); save(); }
@@ -11380,6 +11865,7 @@
         if (state.sent) sendButton.setAttribute('aria-disabled', 'true');
       }
       var startOver = function (stn) {
+        bonusRetry = null;
         put(null); state = null;
         if (stn) { namePrompted = false; bi && bi.setLang(''); tools && tools.reset(lesson.defaultTools); }
         else if (tools) storePrefs();
@@ -11443,7 +11929,7 @@
         var supList = [], supSeen = Object.create(null), addSup = function (label) { if (label && !supSeen[label]) { supSeen[label] = 1; supList.push(label); } };
         var prefs = tools && tools.prefs ? tools.prefs() : null;
         if (prefs) {
-          var tMap = { size: L.tools_size, colors: L.tools_colors, spacing: L.tools_spacing, font: L.tools_font, focus: L.tools_focus, lens: L.tools_lens, choices: L.tools_choices, speed: L.tools_speed, sounds: L.tools_sounds, bold: L.tools_bold };
+          var tMap = { size: L.tools_size, colors: L.tools_colors, spacing: L.tools_spacing, font: L.tools_font, focus: L.tools_focus, lens: L.tools_lens, choices: L.tools_choices, speed: L.tools_speed, audioSpeed: L.tools_audio_speed || 'Audio speed', sounds: L.tools_sounds, bold: L.tools_bold };
           Object.keys(prefs).forEach(function (k) { if (tMap[k]) addSup(tMap[k]); });
         }
         var counts = Object.create(null), skipTool = /^(?:text(?:Larg|Extra)|contrast|colors|spacing(?:Wide|ExtraWide)$|letters|reading(?:Focus|Ruler)$|magnifier$|readChoices$|sounds(?:More|Less)$|boldStart$)/;
@@ -11470,6 +11956,16 @@
           el('p', { class: 'muted', style: 'margin:6px 0 0', text: L.confer_note }),
         ]);
       })();
+      var missedIndices = [];
+      if (!check && lesson.mode !== 'probe') {
+        state.items.forEach(function (r, i) {
+          var e = items[i];
+          if (!e || e.again || e.ad || !r || !r.done || r.practice || e.activity === 'letter_tracing' || e.activity === 'read_along') return;
+          if (!r.correct) missedIndices.push(i);
+        });
+      }
+      var retryMissedButton = missedIndices.length ? el('button', { type: 'button', 'data-retry-missed': '', on: { click: function () { startBonusRetry(missedIndices); } },
+        text: missedIndices.length === 1 ? (L.retry_missed_one || 'Practice the 1 you missed') : fmt(L.retry_missed_many || 'Practice the {n} you missed', { n: missedIndices.length }) }) : null;
       screen(L.done_title, [
         el('div', { class: 'card' }, [
           biEnd,
@@ -11487,7 +11983,7 @@
           fileStatus,
           // A closing date that has passed is said outside the fold: it changes what the student does.
           closedNote ? el('p', { class: 'muted', text: closedNote }) : null,
-          el('div', { class: 'row', style: 'justify-content:center' }, [againButton]),
+          el('div', { class: 'row', style: 'justify-content:center' }, [retryMissedButton, againButton]),
           confirmBox,
           copyBox,
           conferCard,
@@ -11511,7 +12007,10 @@
       directions: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return !/^(math_|vocab_|read_along$|symbol_runner$|manipulation$|sound_sort$|word_families$)/.test(b.activity); }),
       directionsOnce: !!lesson.instructionsOnce,
       speed: Object.keys(lesson.audio || {}).length > 0 || lesson.deviceVoice === true || lesson.blocks.some(function (b) { return b.items.some(function (it) { return it.read === true; }); }),
-      onSpeed: function (rate) { if (audioEl && !audioEl.paused) { try { audioEl.defaultPlaybackRate = rate; audioEl.playbackRate = rate; } catch (_) {} } },
+      onSpeed: function (rate) {
+        var eff = (tools && tools.getExtra && tools.getExtra('audioSpeed')) ? Math.max(0.5, Math.round(rate * 0.75 * 1000) / 1000) : rate;
+        if (audioEl && !audioEl.paused) { try { audioEl.defaultPlaybackRate = eff; audioEl.playbackRate = eff; } catch (_) {} }
+      },
       sounds: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return /^(blending|syllable_blending|segmentation)$/.test(b.activity); }) }) : null;
     stopBtn = el('button', { type: 'button', hidden: true, 'data-player-stop-audio': '', on: { click: function () {
       var backTo = doc.querySelector('[data-tools-open]') || main.querySelector('h2');
@@ -12320,7 +12819,12 @@
         try {
           synth.cancel();
           var u = new view.SpeechSynthesisUtterance(text);
-          u.voice = v; u.lang = v.lang; u.rate = ctx.speedRate ? (ctx.speedRate() === 1 ? 0.9 : Math.max(0.5, Math.min(1.5, Math.round(ctx.speedRate() * 0.975 * 100) / 100))) : (ctx.slow && ctx.slow() ? 0.78 : 0.9);
+          var baseRate = ctx.speedRate ? (ctx.speedRate() === 1 ? 0.9 : Math.max(0.5, Math.min(1.5, Math.round(ctx.speedRate() * 0.975 * 100) / 100))) : (ctx.slow && ctx.slow() ? 0.78 : 0.9);
+          if (ctx.toolPref && ctx.toolPref('audioSpeed')) {
+            if (baseRate > 0.75) baseRate = 0.75;
+            if (typeof ctx.support === 'function') ctx.support('slowAudio');
+          }
+          u.voice = v; u.lang = v.lang; u.rate = baseRate;
           u.onend = function () { end(tok === sayToken); }; u.onerror = function () { end(false); };
           synth.speak(u);
         } catch (_) { end(false); return; }
@@ -12774,7 +13278,7 @@
       var answer = function (response) {
         var cur = current;
         if (!cur || rec.done) return 'ignored';
-        if (api.now() - cur.at < 250) return 'ignored';
+        if (api.now() - cur.at < (cur.activity === 'symbol_runner' ? 60 : 250)) return 'ignored';
         var right = answerOf(entry.item);
         var mark = markOf(entry, right, response);
         rec.attempts = 1; rec.done = true; rec.practice = 'practice';
@@ -12793,7 +13297,7 @@
       api.screen(fmt(L.check_practice_title, { n: n, total: practiceTotal }), [
         el('div', { class: 'card' }, [el('p', { class: 'muted', text: L.check_practice_note }), area, feedback, next]),
       ]);
-      current = { rec: rec, at: api.now(), keys: null, pad: null, halts: [], handle: null };
+      current = { rec: rec, activity: entry.activity, at: api.now(), keys: null, pad: null, halts: [], handle: null };
       handle = show(entry, rec, ctxFor(entry, rec, area, true, answer));
     };
     var readyScreen = function () {
@@ -12879,8 +13383,8 @@
       var s = S(), c = C(), cur = current;
       if (!cur || cur.rec.done || c.phase !== 'run' || c.pausedFrom || (api.held && !api.held())) return 'ignored';
       if (c.deadline && nowMs() >= c.deadline) { timeUp(); return 'time_up'; }
-      // A tap within a quarter second of a new item is the tail of a double tap, not an answer.
-      if (api.now() - cur.at < 250) return 'ignored';
+      // A tap within a quarter second of a new item is the tail of a double tap, not an answer (60 ms for rapid Symbol Runner checks).
+      if (api.now() - cur.at < (cur.activity === 'symbol_runner' ? 60 : 250)) return 'ignored';
       cur.rec.attempts = 1; cur.rec.done = true;
       if (skipped) cur.rec.flag = 'skipped'; else cur.rec.responses = [String(response == null ? '' : response).slice(0, 80)];
       api.clockStop();
@@ -12943,7 +13447,7 @@
         ]),
       ]);
       api.screen(fmt(L.check_item_of, { n: n, total: scoredTotal }), [timer, card, el('div', { class: 'row' }, [stopButton]), stopBox]);
-      current = { rec: rec, at: api.now(), keys: null, pad: null, halts: [], handle: null };
+      current = { rec: rec, activity: entry.activity, at: api.now(), keys: null, pad: null, halts: [], handle: null };
       show(entry, rec, ctxFor(entry, rec, area, false, function (response) { return record(response, false); }));
     };
     // At the deadline the item on screen ends unanswered.
